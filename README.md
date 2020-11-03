@@ -1,3 +1,6 @@
+项目说明请见：
+https://www.jianshu.com/p/550bb43c0c0f
+
 使用方法：
 mvn package -DskipTests=true
 将生成的包flink-connector-redis_2.12-1.11.1.jar引入flink引擎中无需设置即可直接使用
