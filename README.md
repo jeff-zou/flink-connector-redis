@@ -4,6 +4,7 @@ mvn package -DskipTests=true
 
 
 SQL示例解析： 
+
 create table redis_table (appid varchar, accountid varchar, channel varchar, level varchar , PRIMARY KEY (appid, accountid) not enforced) with ( 'connector'='redis', 'cluster-nodes'='redis1:6379, redis2:6379, redis3:6379', 'redis-mode'='cluster', 'additional-key'='new_user', 'password'='*****','command'='HSET', 'maxIdle'='10', 'minIdle'='1','partition-column'='appid' );
 
 insert into redis_table  SELECT t.appid, t.accountid, t.channel, t.server from source_table t where t.is_new_account = 1;
