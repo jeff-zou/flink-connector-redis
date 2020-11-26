@@ -136,6 +136,9 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
         this.additionalTTL = redisCommandDescription.getAdditionalTTL();
         this.additionalKey = redisCommandDescription.getAdditionalKey();
         this.partitionColumn = redisCommandDescription.getPartitionColumn();
+        if(redisCommand == RedisCommand.ZADD || redisCommand == RedisCommand.ZINCRBY || redisCommand == RedisCommand.ZREM || redisCommand == RedisCommand.HSET || redisCommand == RedisCommand.HINCRBY
+                || redisCommand== RedisCommand.LPUSH || redisCommand== RedisCommand.RPUSH || redisCommand== RedisCommand.SADD)
+            Objects.requireNonNull(additionalKey, "addition key can not be null for redis data structure: list set hash sortset!");
         getKeyValueIndex(tableSchema);
     }
 
@@ -166,10 +169,12 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
     }
 
     private void getKeyIndex( TableSchema tableSchema,  String[] fieldNames) {
-
         Optional<UniqueConstraint> uniqueConstraint = tableSchema.getPrimaryKey();
-        if(!uniqueConstraint.isPresent()){
+        if(!uniqueConstraint.isPresent() || !isHasMultiKey()){
             this.keyIndexs.add(0);
+            for(int i=0;i<fieldNames.length;i++) {
+                this.valueIndexs.add(i);
+            }
             return;
         }
 
@@ -190,6 +195,12 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
         }
     }
 
+    public boolean isHasMultiKey(){
+        if(redisCommand == RedisCommand.ZADD || redisCommand == RedisCommand.ZINCRBY || redisCommand == RedisCommand.ZREM || redisCommand == RedisCommand.HSET || redisCommand == RedisCommand.HINCRBY )
+            return true;
+        return false;
+    }
+
     /**
      * Called when new data arrives to the sink, and forwards it to Redis channel.
      * Depending on the specified Redis data type (see {@link RedisDataType}),
@@ -207,9 +218,13 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
         Optional<Integer> optAdditionalTTL = redisSinkMapper.getAdditionalTTL(input);
         String additionalFinalKey = optAdditionalKey.orElse(this.additionalKey);
 
+        if(redisCommand== RedisCommand.LPUSH || redisCommand== RedisCommand.RPUSH || redisCommand== RedisCommand.SADD){
+            key = additionalFinalKey;
+        }
+
         if(partitionIndex != null){
             String partitionValue = redisSinkMapper.getPartitionFromData(input, partitionIndex);
-            if(redisCommand == RedisCommand.ZADD || redisCommand == RedisCommand.ZINCRBY || redisCommand == RedisCommand.ZREM || redisCommand == RedisCommand.HSET || redisCommand == RedisCommand.HINCRBY ){
+            if(isHasMultiKey()){
                 StringBuilder stringBuilder = new StringBuilder(partitionValue).append(RowRedisMapper.REDIS_VALUE_SEPERATOR).append(additionalFinalKey);
                 additionalFinalKey = stringBuilder.toString();
             } else {
