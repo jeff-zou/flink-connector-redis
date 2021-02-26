@@ -76,7 +76,7 @@ public class RedisDataStreamInsertTest {
                 .field("school", DataTypes.STRING()).primaryKey("name").build();
 
         FlinkJedisConfigBase conf = getLocalRedisClusterConfig();
-        RedisSink redisSink = new RedisSink<>(conf, redisMapper, null);
+        RedisSink redisSink = new RedisSink<>(conf, redisMapper, tableSchema);
 
         dataStream.addSink(redisSink);
         env.execute("RedisSinkTest");
