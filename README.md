@@ -27,3 +27,6 @@ PRIMARY KEY 可以指定一个或者多个字段(command需为hset)， 不可见
 在redis中保存结果如下：
 
 key:  new_user_91000285   hashfield: 91000285\x01jeff  value(按顺序拼接非primary key字段值): git\x0110
+
+2021.02.25更新：
+增加datastream示例：RedisDataStreamInsertTest
