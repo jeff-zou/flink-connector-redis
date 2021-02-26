@@ -44,15 +44,20 @@ public class RedisDataStreamInsertTest {
         set.add(host3);
         set.add(host4);
         set.add(host5);
-        FlinkJedisClusterConfig config = new FlinkJedisClusterConfig.Builder().setNodes(set).setPassword("*****")
+        FlinkJedisClusterConfig config = new FlinkJedisClusterConfig.Builder().setNodes(set).setPassword("***")
                 .build();
         return config;
     }
 
+    /**
+     *   hget  exam_yizhong tom
+     return: yizhong\x01math\x01150
+     * @throws Exception
+     */
     @Test
     public void testDateStreamInsert() throws  Exception {
         Map properties = new HashMap();
-        properties.put(RedisOptions.ADDITIONALKEY.key(), "province");
+        properties.put(RedisOptions.ADDITIONALKEY.key(), "exam");
         properties.put(REDIS_PARTITION_COLUMN, "school");
         properties.put(REDIS_MODE, REDIS_CLUSTER);
         properties.put(REDIS_COMMAND, RedisCommand.HSET.name());
@@ -63,22 +68,24 @@ public class RedisDataStreamInsertTest {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        GenericRowData genericRowData = new GenericRowData(5);
-        genericRowData.setField(0, "tom");
-        genericRowData.setField(1, "math");
-        genericRowData.setField(2, "150");
-        genericRowData.setField(3, "guangdong");
-        genericRowData.setField(4, "yizhong");
+        GenericRowData genericRowData = new GenericRowData(4);
+        genericRowData.setField(0, "yizhong");
+        genericRowData.setField(1, "tom");
+        genericRowData.setField(2, "math");
+        genericRowData.setField(3, "150");
         DataStream<GenericRowData> dataStream = env.fromElements(genericRowData);
 
-        TableSchema tableSchema =  new TableSchema.Builder().field("name", DataTypes.STRING().notNull()).field("subject", DataTypes.STRING()).field("scope", DataTypes.INT())
-                .field("province", DataTypes.STRING())
-                .field("school", DataTypes.STRING()).primaryKey("name").build();
+        TableSchema tableSchema =  new TableSchema.Builder() .field("school", DataTypes.STRING()).field("name", DataTypes.STRING().notNull()).field("subject", DataTypes.STRING()).field("scope", DataTypes.INT())
+                .primaryKey("name").build();
 
         FlinkJedisConfigBase conf = getLocalRedisClusterConfig();
         RedisSink redisSink = new RedisSink<>(conf, redisMapper, tableSchema);
 
         dataStream.addSink(redisSink);
         env.execute("RedisSinkTest");
+        /*
+        hget  exam_yizhong tom
+        return: yizhong\x01math\x01150
+         */
     }
 }

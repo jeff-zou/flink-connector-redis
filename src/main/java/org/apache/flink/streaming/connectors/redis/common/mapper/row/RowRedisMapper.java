@@ -43,6 +43,7 @@ public abstract class RowRedisMapper implements RedisMapper<GenericRowData>, Red
 
     public static final char REDIS_VALUE_SEPERATOR = '\01';
 
+    public static final char REDIS_KEY_SEPERATOR = '_';
     private Integer ttl;
 
     private RedisCommand redisCommand;
@@ -119,7 +120,7 @@ public abstract class RowRedisMapper implements RedisMapper<GenericRowData>, Red
         StringBuilder sb = new StringBuilder();
         for(int i=0;i<keyIndexs.size();i++){
             if(i!=0)
-                sb.append(REDIS_VALUE_SEPERATOR);
+                sb.append(REDIS_KEY_SEPERATOR);
             Integer index = keyIndexs.get(i);
             sb.append(row.getField(index));
 

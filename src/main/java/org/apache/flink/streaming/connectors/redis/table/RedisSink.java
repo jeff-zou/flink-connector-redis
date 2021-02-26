@@ -225,10 +225,10 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
         if(partitionIndex != null){
             String partitionValue = redisSinkMapper.getPartitionFromData(input, partitionIndex);
             if(isHasMultiKey()){
-                StringBuilder stringBuilder = new StringBuilder(partitionValue).append(RowRedisMapper.REDIS_VALUE_SEPERATOR).append(additionalFinalKey);
+                StringBuilder stringBuilder = new StringBuilder(additionalFinalKey).append(RowRedisMapper.REDIS_KEY_SEPERATOR).append(partitionValue);
                 additionalFinalKey = stringBuilder.toString();
             } else {
-                StringBuilder stringBuilder = new StringBuilder(partitionValue).append(RowRedisMapper.REDIS_VALUE_SEPERATOR).append(key);
+                StringBuilder stringBuilder = new StringBuilder(key).append(RowRedisMapper.REDIS_KEY_SEPERATOR).append(partitionValue);
                 key = stringBuilder.toString();
             }
         }
