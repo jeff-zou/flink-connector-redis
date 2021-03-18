@@ -28,5 +28,6 @@ PRIMARY KEY 可以指定一个或者多个字段(command需为hset)， 不可见
 
 key:  new_user_91000285   hashfield: 91000285\x01jeff  value(按顺序拼接非primary key字段值): git\x0110
 
-2021.02.25更新：
-增加datastream示例：RedisDataStreamInsertTest
+
+datastream api示例：RedisDataStreamInsertTest
+table/sql api示例类：InsertSQLTest
