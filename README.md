@@ -1,33 +1,67 @@
-项目说明请见：
-https://www.jianshu.com/p/550bb43c0c0f
+###插件名称：flink-connector-redis
+###插件地址：https://github.com/jeff-zou/flink-connector-redis.git
 
-使用方法：
-mvn package -DskipTests=true
-将生成的包flink-connector-redis_2.12-1.11.1.jar引入flink引擎中无需设置即可直接使用
+### 项目介绍
+基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，使它支持SQL直接定义写入redis,用户通过DDL指定自己需要保存的字段。
 
+### 使用方法: 
+命令行执行 mvn package -DskipTests=true打包后，将生成的包flink-connector-redis_2.12-1.11.1.jar引入flink lib中即可，无需其它设置。
 
-SQL示例解析： 
+###重构介绍：
+相对上一个版本简化了参数设置，思路更清晰，上一版本字段的值会根据主键等条件来自动生成，这要求使用者需要了解相关规则，有一定的学习成本并且容易埋坑，重构后字段的值由用户在DDL中显示地指定，如下：
+```
+  'key-column'='username','value-column'='passport',' //直接指定字段名
+```
+取消了必须有主键的限制，使用更简单，如果有多个字段组合成key或者value,需要用户在DML中使用concat_ws等方式组装，不再是插件在后台用不可见字符拼装。
 
-create table redis_table (appid varchar, accountid varchar, channel varchar, level varchar , PRIMARY KEY (appid, accountid) not enforced) with ( 'connector'='redis', 'cluster-nodes'='redis1:6379, redis2:6379, redis3:6379', 'redis-mode'='cluster', 'additional-key'='new_user', 'password'='*****','command'='HSET', 'maxIdle'='10', 'minIdle'='1','partition-column'='appid' );
+###使用示例:
+- 1.SQL方式 
+**示例代码路径:**  src/test/java/org.apache.flink.streaming.connectors.redis.table.SQLInsertTest.java
+set示例，相当于redis命令： *set test test11*
+```
+       StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        EnvironmentSettings environmentSettings = EnvironmentSettings.newInstance().useBlinkPlanner().inStreamingMode().build();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
-insert into redis_table  SELECT t.appid, t.accountid, t.channel, t.server from source_table t where t.is_new_account = 1;
+        String ddl = "create table sink_redis(username VARCHAR, passport VARCHAR) with ( 'connector'='redis', " +
+                "'host'='10.11.80.147','port'='7001', 'redis-mode'='single','password'='******','key-column'='username','value-column'='passport','command'='set')" ;
 
+        tEnv.executeSql(ddl);
+        String sql = " insert into sink_redis select * from (values ('test', 'test11'))";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get()
+                .getJobExecutionResult()
+                .get();
+```
+- 2.DataStream方式
+**示例代码路径:** 
+ src/test/java/org.apache.flink.streaming.connectors.redis.datastream.DataStreamInsertTest.java
+hset示例，相当于redis命令：*hset tom math 150*
+```
+        Configuration configuration = new Configuration();
+        configuration.setString(RedisOptions.KEY_COLUMN, "name");
+        configuration.setString(RedisOptions.FIELD_COLUMN, "subject"); //对应hash的field、 sorted set的score
+        configuration.setString(RedisOptions.VALUE_COLUMN, "score");
+        configuration.setString(REDIS_MODE, REDIS_CLUSTER);
+        configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
 
-additional-key 指定redis key
+        RedisMapper redisMapper = RedisHandlerServices
+                .findRedisHandler(RedisMapperHandler.class, configuration.toMap())
+                .createRedisMapper(configuration);
 
-partition-column 指定了分区字段为appid,appid的值将会被追加到additional-key值后（_为分割符）
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-PRIMARY KEY 可以指定一个或者多个字段(command需为hset)， 不可见字符拼接后的值会被保存成hashmap的hashfield值。定义redis表也可以无主键，command 对应改为set即可
+        GenericRowData genericRowData = new GenericRowData(3);
+        genericRowData.setField(0, "tom");
+        genericRowData.setField(1, "math");
+        genericRowData.setField(2, "150");
+        DataStream<GenericRowData> dataStream = env.fromElements(genericRowData);
 
+        TableSchema tableSchema =  new TableSchema.Builder() .field("name", DataTypes.STRING().notNull()).field("subject", DataTypes.STRING()).field("score", DataTypes.INT()).build();
 
-假设测试数据如下：
+        FlinkJedisConfigBase conf = getLocalRedisClusterConfig();
+        RedisSink redisSink = new RedisSink<>(conf, redisMapper, tableSchema);
 
-{"accountid":"jeff","appid":"91000285","channel":"git","level ":"10"}
-
-在redis中保存结果如下：
-
-key:  new_user_91000285   hashfield: 91000285\x01jeff  value(按顺序拼接非primary key字段值): git\x0110
-
-
-datastream api示例：RedisDataStreamInsertTest
-table/sql api示例类：InsertSQLTest
+        dataStream.addSink(redisSink);
+        env.execute("RedisSinkTest");
+```
