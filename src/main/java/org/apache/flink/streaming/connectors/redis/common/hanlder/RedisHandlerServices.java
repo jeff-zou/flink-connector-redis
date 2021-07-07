@@ -155,11 +155,11 @@ public class RedisHandlerServices<T> {
             // check if required context is met
             return plainContext.keySet()
                     .stream()
-                    .allMatch(e -> meta.containsKey(e) && meta.get(e).toUpperCase().equals(plainContext.get(e).toUpperCase()));
+                    .allMatch(e -> meta.containsKey(e) && meta.get(e).equals(plainContext.get(e)));
         }).collect(Collectors.toList());
 
         if (matchingredis.isEmpty()) {
-            throw new RuntimeException("no matcher for 'command'" );
+            throw new RuntimeException("no match redis");
         }
 
         return matchingredis;

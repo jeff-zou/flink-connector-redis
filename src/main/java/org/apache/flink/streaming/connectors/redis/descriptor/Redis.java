@@ -56,17 +56,6 @@ public class Redis extends ConnectorDescriptor {
     }
 
     /**
-     * ttl for specified key.
-     * @param ttl time for key.
-     * @returnthis descriptor
-     */
-    public Redis ttl(Integer ttl) {
-        this.ttl = ttl;
-        properties.put(REDIS_KEY_TTL, String.valueOf(ttl));
-        return this;
-    }
-
-    /**
      * redis mode to connect a specified redis cluster
      * @param mode redis mode
      * @return this descriptor

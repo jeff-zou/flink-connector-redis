@@ -17,7 +17,10 @@
 
 package org.apache.flink.streaming.connectors.redis.common.mapper.row;
 
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+
+import java.util.Map;
 
 /**
  * decrease with expire operation redis mapper.
@@ -28,11 +31,8 @@ public class DecrByExMapper extends RowRedisMapper {
         super(RedisCommand.DESCRBY_EX);
     }
 
-    public DecrByExMapper(Integer ttl, String partitionColumn) {
-        super(ttl, RedisCommand.DESCRBY_EX, partitionColumn);
+    public DecrByExMapper(ReadableConfig config) {
+        super(RedisCommand.DESCRBY_EX, config);
     }
 
-    public DecrByExMapper(String additionalKey, String partitionColumn) {
-        super(additionalKey, RedisCommand.DESCRBY_EX, partitionColumn);
-    }
 }

@@ -18,6 +18,7 @@ package org.apache.flink.streaming.connectors.redis.common.container;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
 import java.io.Closeable;
@@ -425,5 +426,32 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
             }
             throw e;
         }
+    }
+
+    @Override
+    public void srem(String setName, String value)  {
+        try {
+             jedisCluster.srem(setName, value);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Cannot send Redis message with command srem to setName {} with value {} error message {}",
+                        setName, value, e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public long incrByLong(String key, long value){
+        long result = 0;
+        try {
+            result = jedisCluster.incrBy(key, value);
+        } catch (Exception e) {
+            if(LOG.isErrorEnabled()) {
+                LOG.error("Cannot send Redis message with command incrBy to key {} and value {} error message {}", new Object[]{key, value, e.getMessage()});
+            }
+            throw e;
+        }
+        return result;
     }
 }

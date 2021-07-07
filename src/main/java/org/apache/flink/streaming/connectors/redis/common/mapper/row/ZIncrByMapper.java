@@ -18,18 +18,22 @@
 package org.apache.flink.streaming.connectors.redis.common.mapper.row;
 
 
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+
+import java.util.Map;
 
 /**
  * ZINCRBY operation redis mapper.
  */
 public class ZIncrByMapper extends RowRedisMapper {
 
+
     public ZIncrByMapper() {
         super(RedisCommand.ZINCRBY);
     }
 
-    public ZIncrByMapper(String additionalKey, String partitionColumn) {
-        super(additionalKey, RedisCommand.ZINCRBY, partitionColumn);
+    public ZIncrByMapper(ReadableConfig config) {
+        super(RedisCommand.ZINCRBY, config);
     }
 }

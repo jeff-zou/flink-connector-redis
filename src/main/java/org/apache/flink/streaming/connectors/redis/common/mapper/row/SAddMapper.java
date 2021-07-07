@@ -17,7 +17,10 @@
 
 package org.apache.flink.streaming.connectors.redis.common.mapper.row;
 
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+
+import java.util.Map;
 
 /**
  * SADD  operation redis mapper.
@@ -28,7 +31,8 @@ public class SAddMapper extends RowRedisMapper {
         super(RedisCommand.SADD);
     }
 
-    public SAddMapper(String additionalKey, String partitionColumn) {
-        super(additionalKey, RedisCommand.SADD, partitionColumn);
+    public SAddMapper(ReadableConfig config) {
+        super(RedisCommand.SADD, config);
     }
+
 }

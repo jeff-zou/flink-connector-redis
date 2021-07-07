@@ -17,7 +17,10 @@
 
 package org.apache.flink.streaming.connectors.redis.common.mapper.row;
 
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+
+import java.util.Map;
 
 /**
  * SET with expire key operation redis mapper.
@@ -28,11 +31,7 @@ public class SetExMapper extends RowRedisMapper {
         super(RedisCommand.SETEX);
     }
 
-    public SetExMapper(Integer ttl, String partitionColumn) {
-        super(ttl, RedisCommand.SETEX, partitionColumn);
-    }
-
-    public SetExMapper(String additionalKey, String partitionColumn) {
-        super(additionalKey, RedisCommand.SETEX, partitionColumn);
+    public SetExMapper(ReadableConfig config) {
+        super(RedisCommand.SETEX, config);
     }
 }

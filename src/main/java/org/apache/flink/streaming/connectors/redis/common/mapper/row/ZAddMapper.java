@@ -18,7 +18,10 @@
 package org.apache.flink.streaming.connectors.redis.common.mapper.row;
 
 
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+
+import java.util.Map;
 
 /**
  * ZADD operation redis mapper.
@@ -29,7 +32,8 @@ public class ZAddMapper extends RowRedisMapper {
         super(RedisCommand.ZADD);
     }
 
-    public ZAddMapper(String additionalKey, String partitionColumn) {
-        super(additionalKey, RedisCommand.ZADD, partitionColumn);
+    public ZAddMapper(ReadableConfig config) {
+        super(RedisCommand.ZADD, config);
     }
+
 }

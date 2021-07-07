@@ -17,22 +17,23 @@
 
 package org.apache.flink.streaming.connectors.redis.common.mapper.row;
 
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+
+import java.util.Map;
 
 /**
  * Delta plus with expire key operation redis mapper.
  */
 public class IncrByExMapper extends RowRedisMapper {
 
+
     public IncrByExMapper() {
         super(RedisCommand.INCRBY_EX);
     }
 
-    public IncrByExMapper(Integer ttl, String partitionColumn) {
-        super(ttl, RedisCommand.INCRBY_EX, partitionColumn);
+    public IncrByExMapper(ReadableConfig config) {
+        super(RedisCommand.INCRBY_EX, config);
     }
 
-    public IncrByExMapper(String additionalKey, String partitionColumn) {
-        super(additionalKey, RedisCommand.INCRBY_EX, partitionColumn);
-    }
 }

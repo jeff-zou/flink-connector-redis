@@ -1,106 +1,37 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.apache.flink.streaming.connectors.redis.table;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisClusterConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisSentinelConfig;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainerBuilder;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisDataType;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
-
-import org.apache.flink.streaming.connectors.redis.common.mapper.row.RowRedisMapper;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.api.constraints.UniqueConstraint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
 
-/**
- * A sink that delivers data to a Redis channel using the Jedis client.
- * <p> The sink takes two arguments {@link FlinkJedisConfigBase} and {@link RedisMapper}.
- * <p> When {@link FlinkJedisPoolConfig} is passed as the first argument,
- * the sink will create connection using {@link redis.clients.jedis.JedisPool}. Please use this when
- * you want to connect to a single Redis server.
- * <p> When {@link FlinkJedisSentinelConfig} is passed as the first argument, the sink will create connection
- * using {@link redis.clients.jedis.JedisSentinelPool}. Please use this when you want to connect to Sentinel.
- * <p> Please use {@link FlinkJedisClusterConfig} as the first argument if you want to connect to
- * a Redis Cluster.
- *
- * <p>Example:
- *
- * <pre>
- *{@code
- *public static class RedisExampleMapper implements RedisMapper<Tuple2<String, String>> {
- *
- *    private RedisCommand redisCommand;
- *
- *    public RedisExampleMapper(RedisCommand redisCommand){
- *        this.redisCommand = redisCommand;
- *    }
- *    public RedisCommandDescription getCommandDescription() {
- *        return new RedisCommandDescription(redisCommand, REDIS_ADDITIONAL_KEY);
- *    }
- *    public String getKeyFromData(Tuple2<String, String> data) {
- *        return data.f0;
- *    }
- *    public String getValueFromData(Tuple2<String, String> data) {
- *        return data.f1;
- *    }
- *}
- *JedisPoolConfig jedisPoolConfig = new JedisPoolConfig.Builder()
- *    .setHost(REDIS_HOST).setPort(REDIS_PORT).build();
- *new RedisSink<String>(jedisPoolConfig, new RedisExampleMapper(RedisCommand.LPUSH));
- *}</pre>
- *
- * @param <IN> Type of the elements emitted by this sink
- */
 public class RedisSink<IN> extends RichSinkFunction<IN> {
 
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisSink.class);
 
-    /**
-     * This additional key needed for {@link RedisDataType#HASH} and {@link RedisDataType#SORTED_SET}.
-     * Other {@link RedisDataType} works only with two variable i.e. name of the list and value to be added.
-     * But for {@link RedisDataType#HASH} and {@link RedisDataType#SORTED_SET} we need three variables.
-     * <p>For {@link RedisDataType#HASH} we need hash name, hash key and element.
-     * {@code additionalKey} used as hash name for {@link RedisDataType#HASH}
-     * <p>For {@link RedisDataType#SORTED_SET} we need set name, the element and it's score.
-     * {@code additionalKey} used as set name for {@link RedisDataType#SORTED_SET}
-     */
-    private String additionalKey;
+    private boolean putIfAbsent;
 
-    /**
-     * This additional time to live is optional for {@link RedisDataType#HASH} and required for {@link RedisCommand#SETEX}.
-     * It sets the TTL for a specific key.
-     */
-    private Integer additionalTTL;
+    private Integer valueIndex;
+
+    private Integer keyIndex;
+
+    private Integer fieldIndex;
+
+    private Integer ttl;
 
     private RedisMapper<IN> redisSinkMapper;
     private RedisCommand redisCommand;
@@ -108,13 +39,6 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
     private FlinkJedisConfigBase flinkJedisConfigBase;
     private RedisCommandsContainer redisCommandsContainer;
 
-    private List<Integer> valueIndexs;
-
-    private List<Integer> keyIndexs;
-
-    private String partitionColumn;
-
-    private Integer partitionIndex;
 
     /**
      * Creates a new {@link RedisSink} that connects to the Redis server.
@@ -133,73 +57,31 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
         RedisCommandDescription redisCommandDescription = redisSinkMapper.getCommandDescription();
 
         this.redisCommand = redisCommandDescription.getCommand();
-        this.additionalTTL = redisCommandDescription.getAdditionalTTL();
-        this.additionalKey = redisCommandDescription.getAdditionalKey();
-        this.partitionColumn = redisCommandDescription.getPartitionColumn();
-        if(redisCommand == RedisCommand.ZADD || redisCommand == RedisCommand.ZINCRBY || redisCommand == RedisCommand.ZREM || redisCommand == RedisCommand.HSET || redisCommand == RedisCommand.HINCRBY
-                || redisCommand== RedisCommand.LPUSH || redisCommand== RedisCommand.RPUSH || redisCommand== RedisCommand.SADD)
-            Objects.requireNonNull(additionalKey, "addition key can not be null for redis data structure: list set hash sortset!");
-        getKeyValueIndex(tableSchema);
+        this.putIfAbsent = redisCommandDescription.isPutIfAbsent();
+
+        this.ttl = redisCommandDescription.getTTL();
+        findKeyIndex(tableSchema, redisCommandDescription.getKeyColumn(), redisCommandDescription.getFieldColumn(), redisCommandDescription.getValueColumn());
     }
 
-    private void getKeyValueIndex(TableSchema tableSchema) {
-        this.keyIndexs = new ArrayList<>();
-        this.valueIndexs = new ArrayList<>();
-        if(tableSchema == null ){
-            this.keyIndexs.add(0);
-            return;
-        }
+    private void findKeyIndex(TableSchema tableSchema, String keyColumn, String fieldColumn, String valueColumn) {
         String[] fieldNames = tableSchema.getFieldNames();
-        getPartitionIndex(fieldNames);
-
-        getKeyIndex(tableSchema, fieldNames);
-    }
-
-    private void getPartitionIndex(String[] fieldNames) {
-        if(StringUtils.isEmpty(partitionColumn))
-            return;
-
         for(int i=0;i<fieldNames.length;i++){
-            if(fieldNames[i].equals(partitionColumn)){
-                this.partitionIndex = i;
-                break;
+            if(fieldNames[i].equals(keyColumn)){
+                this.keyIndex = i;
+            }else if(fieldNames[i].equals(fieldColumn)){
+                this.fieldIndex = i;
+            }else if(fieldNames[i].equals(valueColumn)){
+                this.valueIndex = i;
             }
-
-        }
-    }
-
-    private void getKeyIndex( TableSchema tableSchema,  String[] fieldNames) {
-        Optional<UniqueConstraint> uniqueConstraint = tableSchema.getPrimaryKey();
-        if(!uniqueConstraint.isPresent() || !isHasMultiKey()){
-            this.keyIndexs.add(0);
-            for(int i=0;i<fieldNames.length;i++) {
-                this.valueIndexs.add(i);
-            }
-            return;
         }
 
-        List<String> primayKeyList = uniqueConstraint.get().getColumns();
-        for(int i=0;i<fieldNames.length;i++){
-            boolean flag = false;
-            for(String primaryKey : primayKeyList){
-                if(primaryKey.equals(fieldNames[i])){
-                    this.keyIndexs.add(i);
-                    flag = true;
-                    break;
-                }
-
-            }
-
-            if(!flag)
-                this.valueIndexs.add(i);
+        if(redisCommand.getRedisDataType() == RedisDataType.HASH || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET){
+            Objects.requireNonNull(fieldIndex, "Hash and Sorted Set should find field column in table schame");
         }
+        Objects.requireNonNull(keyIndex, "key column should find in tables schema");
+        Objects.requireNonNull(valueIndex, "value column should find in tables schema");
     }
 
-    public boolean isHasMultiKey(){
-        if(redisCommand == RedisCommand.ZADD || redisCommand == RedisCommand.ZINCRBY || redisCommand == RedisCommand.ZREM || redisCommand == RedisCommand.HSET || redisCommand == RedisCommand.HINCRBY )
-            return true;
-        return false;
-    }
 
     /**
      * Called when new data arrives to the sink, and forwards it to Redis channel.
@@ -211,26 +93,11 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
      */
     @Override
     public void invoke(IN input, Context context) throws Exception {
-        String key = redisSinkMapper.getKeyFromData(input, keyIndexs);
-        String value = redisSinkMapper.getValueFromData(input, valueIndexs);
-
-        Optional<String> optAdditionalKey = redisSinkMapper.getAdditionalKey(input);
-        Optional<Integer> optAdditionalTTL = redisSinkMapper.getAdditionalTTL(input);
-        String additionalFinalKey = optAdditionalKey.orElse(this.additionalKey);
-
-        if(redisCommand== RedisCommand.LPUSH || redisCommand== RedisCommand.RPUSH || redisCommand== RedisCommand.SADD){
-            key = additionalFinalKey;
-        }
-
-        if(partitionIndex != null){
-            String partitionValue = redisSinkMapper.getPartitionFromData(input, partitionIndex);
-            if(isHasMultiKey()){
-                StringBuilder stringBuilder = new StringBuilder(additionalFinalKey).append(RowRedisMapper.REDIS_KEY_SEPERATOR).append(partitionValue);
-                additionalFinalKey = stringBuilder.toString();
-            } else {
-                StringBuilder stringBuilder = new StringBuilder(key).append(RowRedisMapper.REDIS_KEY_SEPERATOR).append(partitionValue);
-                key = stringBuilder.toString();
-            }
+        String key = redisSinkMapper.getKeyFromData(input, keyIndex);
+        String value = redisSinkMapper.getValueFromData(input, valueIndex);
+        String field = null;
+        if(redisCommand.getRedisDataType() == RedisDataType.HASH || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET){
+            field = redisSinkMapper.getFieldFromData(input, fieldIndex);
         }
 
         switch (redisCommand) {
@@ -247,7 +114,7 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
                 this.redisCommandsContainer.set(key, value);
                 break;
             case SETEX:
-                this.redisCommandsContainer.setex(key, value, optAdditionalTTL.orElse(this.additionalTTL));
+                this.redisCommandsContainer.setex(key, value, this.ttl);
                 break;
             case PFADD:
                 this.redisCommandsContainer.pfadd(key, value);
@@ -256,32 +123,38 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
                 this.redisCommandsContainer.publish(key, value);
                 break;
             case ZADD:
-                this.redisCommandsContainer.zadd(additionalFinalKey, value, key);
+                this.redisCommandsContainer.zadd(key, field, value);
                 break;
             case ZINCRBY:
-                this.redisCommandsContainer.zincrBy(additionalFinalKey, value, key);
+                this.redisCommandsContainer.zincrBy(key, field, value);
                 break;
             case ZREM:
-                this.redisCommandsContainer.zrem(additionalFinalKey, key);
+                this.redisCommandsContainer.zrem(key, field);
                 break;
             case HSET:
-                this.redisCommandsContainer.hset(additionalFinalKey, key, value,
-                        optAdditionalTTL.orElse(this.additionalTTL));
+                if(!putIfAbsent){
+                    this.redisCommandsContainer.hset(key, field, value,this.ttl);
+                } else if(putIfAbsent && !this.redisCommandsContainer.hexists(key, field)){
+                    this.redisCommandsContainer.hset(key, field, value,this.ttl);
+                }
                 break;
             case HINCRBY:
-                this.redisCommandsContainer.hincrBy(additionalFinalKey, key, Long.valueOf(value), optAdditionalTTL.orElse(this.additionalTTL));
+                this.redisCommandsContainer.hincrBy(key, field, Long.valueOf(value), this.ttl);
                 break;
             case INCRBY:
                 this.redisCommandsContainer.incrBy(key, Long.valueOf(value));
                 break;
             case INCRBY_EX:
-                this.redisCommandsContainer.incrByEx(key, Long.valueOf(value), optAdditionalTTL.orElse(this.additionalTTL));
+                this.redisCommandsContainer.incrByEx(key, Long.valueOf(value), this.ttl);
                 break;
             case DECRBY:
                 this.redisCommandsContainer.decrBy(key, Long.valueOf(value));
                 break;
             case DESCRBY_EX:
-                this.redisCommandsContainer.decrByEx(key, Long.valueOf(value), optAdditionalTTL.orElse(this.additionalTTL));
+                this.redisCommandsContainer.decrByEx(key, Long.valueOf(value), this.ttl);
+                break;
+            case HGET:
+
                 break;
             default:
                 throw new IllegalArgumentException("Cannot process such data type: " + redisCommand);

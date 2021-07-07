@@ -81,12 +81,6 @@ public class RedisOptions {
             .noDefaultValue()
             .withDescription("Optional redis-mode for connect to redis");
 
-    public static final ConfigOption<String> ADDITIONALKEY = ConfigOptions
-            .key("additional-key")
-            .stringType()
-            .noDefaultValue()
-            .withDescription("Optional additional-key for connect to redis");
-
     public static final ConfigOption<String> REDIS_MASTER_NAME = ConfigOptions
             .key("master.name")
             .stringType()
@@ -105,10 +99,35 @@ public class RedisOptions {
             .noDefaultValue()
             .withDescription("Optional sentinels.password for connect to redis sentinels");
 
-    public static final ConfigOption<String> PARTITION_COLUMN = ConfigOptions
-            .key("partition-column")
+    public static final ConfigOption<String> KEY_COLUMN = ConfigOptions
+            .key("key-column")
             .stringType()
             .noDefaultValue()
-            .withDescription("Optional partition-column for connect to redis sentinels");
+            .withDescription("Optional key-column for insert to redis");
 
+    public static final ConfigOption<String> VALUE_COLUMN = ConfigOptions
+            .key("value-column")
+            .stringType()
+            .noDefaultValue()
+            .withDescription("Optional value_column for insert to redis");
+
+
+    public static final ConfigOption<String> FIELD_COLUMN = ConfigOptions
+            .key("field-column")
+            .stringType()
+            .noDefaultValue()
+            .withDescription("Optional field_column for insert to redis");
+
+
+    public static final ConfigOption<Boolean> PUT_IF_ABSENT = ConfigOptions
+            .key("put-if-absent")
+            .booleanType()
+            .defaultValue(false)
+            .withDescription("Optional put_if_absent for insert to redis");
+
+    public static final ConfigOption<Integer> TTL = ConfigOptions
+            .key("ttl")
+            .intType()
+            .noDefaultValue()
+            .withDescription("Optional ttl for insert to redis");
 }

@@ -1,31 +1,12 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.apache.flink.streaming.connectors.redis.common.mapper.row;
 
-import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.configuration.ReadableConfig;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 import org.apache.flink.table.data.GenericRowData;
-import org.apache.flink.types.Row;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,112 +20,74 @@ import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValida
  */
 public abstract class RowRedisMapper implements RedisMapper<GenericRowData>, RedisMapperHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RowRedisMapper.class);
-
-    public static final char REDIS_VALUE_SEPERATOR = '\01';
-
-    public static final char REDIS_KEY_SEPERATOR = '_';
     private Integer ttl;
 
     private RedisCommand redisCommand;
 
-    private String additionalKey;
+    private String fieldColumn;
 
-    private String partitionColumn;
+    private String keyColumn;
 
-    public String getAdditionalKey() {
-        return additionalKey;
-    }
+    private String valueColumn;
 
-    public void setAdditionalKey(String additionalKey) {
-        this.additionalKey = additionalKey;
-    }
+    private boolean putIfAbsent;
 
-    public Integer getTtl() {
-        return ttl;
-    }
-
-    public void setTtl(int ttl) {
-        this.ttl = ttl;
-    }
-
-    public RedisCommand getRedisCommand() {
-        return redisCommand;
-    }
-
-    public void setRedisCommand(RedisCommand redisCommand) {
-        this.redisCommand = redisCommand;
-    }
-
-    public String getPartitionColumn() {
-        return partitionColumn;
-    }
-
-    public void setPartitionColumn(String partitionColumn) {
-        this.partitionColumn = partitionColumn;
-    }
-
-    public RowRedisMapper() {
-    }
-
-    public RowRedisMapper(int ttl, RedisCommand redisCommand, String partitionColumn) {
+    public RowRedisMapper(int ttl, RedisCommand redisCommand, String keyColumn, String valueColumn, boolean putIfAbsent) {
         this.ttl = ttl;
         this.redisCommand = redisCommand;
-        this.partitionColumn = partitionColumn;
+        this.keyColumn = keyColumn;
+        this.valueColumn = valueColumn;
+        this.putIfAbsent = putIfAbsent;
     }
 
-    public RowRedisMapper( String additionalKey, RedisCommand redisCommand, String partitionColumn) {
-        this.additionalKey = additionalKey;
-        this.redisCommand = redisCommand;
-        this.partitionColumn = partitionColumn;
-    }
-
-    public RowRedisMapper(RedisCommand redisCommand) {
-        this.redisCommand = redisCommand;
-    }
-
-    public RowRedisMapper(int ttl, String additionalKey, RedisCommand redisCommand, String partitionColumn) {
+    public RowRedisMapper(RedisCommand redisCommand,  String keyColumn, String fieldColumn, String valueColumn, boolean putIfAbsent, int ttl){
         this.ttl = ttl;
-        this.additionalKey = additionalKey;
         this.redisCommand = redisCommand;
-        this.partitionColumn = partitionColumn;
+        this.keyColumn = keyColumn;
+        this.fieldColumn = fieldColumn;
+        this.valueColumn = valueColumn;
+        this.putIfAbsent = putIfAbsent;
+    }
+
+    public RowRedisMapper(RedisCommand redisCommand){
+        this.redisCommand = redisCommand;
+    }
+
+    public RowRedisMapper(RedisCommand redisCommand, Map<String, String> config){
+        this.redisCommand = redisCommand;
+    }
+
+    public RowRedisMapper(RedisCommand redisCommand, ReadableConfig config){
+        this.redisCommand = redisCommand;
+        this.ttl = config.get(RedisOptions.TTL);
+        this.valueColumn = config.get(RedisOptions.VALUE_COLUMN);
+        this.keyColumn = config.get(RedisOptions.KEY_COLUMN);
+        this.fieldColumn = config.get(RedisOptions.FIELD_COLUMN);
+        this.putIfAbsent = config.get(RedisOptions.PUT_IF_ABSENT);
     }
 
     @Override
     public RedisCommandDescription getCommandDescription() {
-        return new RedisCommandDescription(redisCommand, additionalKey, ttl, partitionColumn);
+        return new RedisCommandDescription(redisCommand, ttl, keyColumn, fieldColumn, valueColumn, putIfAbsent);
     }
 
     @Override
-    public String getKeyFromData(GenericRowData row, List<Integer> keyIndexs) {
-        StringBuilder sb = new StringBuilder();
-        for(int i=0;i<keyIndexs.size();i++){
-            if(i!=0)
-                sb.append(REDIS_KEY_SEPERATOR);
-            Integer index = keyIndexs.get(i);
-            sb.append(row.getField(index));
-
-        }
-        return sb.toString();
+    public String getKeyFromData(GenericRowData row, Integer keyIndex) {
+        return String.valueOf(row.getField(keyIndex));
     }
 
     @Override
-    public String getValueFromData(GenericRowData row, List<Integer> valueIndexs) {
-        StringBuilder sb = new StringBuilder();
-        for(int i=0;i<valueIndexs.size();i++){
-            if(i!=0)
-                sb.append(REDIS_VALUE_SEPERATOR);
-            Integer index = valueIndexs.get(i);
-            sb.append(row.getField(index));
-
-        }
-        return sb.toString();
+    public String getValueFromData(GenericRowData row,  Integer valueIndex) {
+        return String.valueOf(row.getField(valueIndex));
     }
 
-
     @Override
-    public String getPartitionFromData(GenericRowData row, Integer partitionColumnIndexs) {
-        return String.valueOf(row.getField(partitionColumnIndexs));
+    public String getFieldFromData(GenericRowData row, Integer fieldIndex) {
+        return String.valueOf(row.getField(fieldIndex));
+    }
+
+    public RedisCommand getRedisCommand() {
+        return redisCommand;
     }
 
     @Override
@@ -160,8 +103,4 @@ public abstract class RowRedisMapper implements RedisMapper<GenericRowData>, Red
         return this.redisCommand == redisCommand;
     }
 
-    @Override
-    public Optional<Integer> getAdditionalTTL(GenericRowData row) {
-        return Optional.ofNullable(getTtl());
-    }
 }

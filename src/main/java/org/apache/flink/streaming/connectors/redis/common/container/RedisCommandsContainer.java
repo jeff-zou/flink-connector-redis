@@ -195,4 +195,8 @@ public interface RedisCommandsContainer extends Serializable {
     long scard(String key);
 
     boolean hexists(String key, String field);
+
+    void srem(String setName, String value);
+
+    long incrByLong(String key, long value);
 }

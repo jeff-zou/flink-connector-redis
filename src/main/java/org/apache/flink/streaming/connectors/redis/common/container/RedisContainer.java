@@ -593,4 +593,38 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
         }
         return result;
     }
+
+    @Override
+    public void srem(String setName, String value) {
+        Jedis jedis = null;
+        try {
+            jedis = getInstance();
+            jedis.srem(setName, value);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Cannot send Redis message with command srem to setName {} value : {} error message {}",
+                        setName, value, e.getMessage());
+            }
+            throw e;
+        } finally {
+            releaseInstance(jedis);
+        }
+    }
+
+    public long incrByLong(String key, long value) {
+        Jedis jedis = null;
+        long result = 0;
+        try {
+            jedis = this.getInstance();
+            result = jedis.incrBy(key, value);
+        } catch (Exception e) {
+            if(LOG.isErrorEnabled()) {
+                LOG.error("Cannot send Redis message with command incrBy to key {} and value {} error message {}", new Object[]{key, value, e.getMessage()});
+            }
+            throw e;
+        } finally {
+            this.releaseInstance(jedis);
+        }
+        return result;
+    }
 }

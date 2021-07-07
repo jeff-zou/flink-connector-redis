@@ -23,15 +23,18 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import java.util.Map;
 
 /**
- * decrease operation redis mapper.
+ * HSET operation redis mapper.
  */
-public class DecrByMapper extends RowRedisMapper {
+public class HGetMapper extends RowRedisMapper {
 
-    public DecrByMapper() {
-        super(RedisCommand.DECRBY);
+    public HGetMapper() {
+        super(RedisCommand.HGET);
     }
 
-    public DecrByMapper(ReadableConfig config) {
-        super(RedisCommand.DECRBY, config);
+
+    public HGetMapper(ReadableConfig config) {
+        super(RedisCommand.HGET, config);
     }
+
+
 }

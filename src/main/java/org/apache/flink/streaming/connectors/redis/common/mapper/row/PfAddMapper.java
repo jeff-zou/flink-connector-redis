@@ -17,18 +17,22 @@
 
 package org.apache.flink.streaming.connectors.redis.common.mapper.row;
 
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+
+import java.util.Map;
 
 /**
  * PFADD operation redis mapper.
  */
 public class PfAddMapper extends RowRedisMapper {
 
+
     public PfAddMapper() {
         super(RedisCommand.PFADD);
     }
 
-    public PfAddMapper(String additionalKey, String partitionColumn) {
-        super(additionalKey, RedisCommand.PFADD, partitionColumn);
+    public PfAddMapper(ReadableConfig config) {
+        super(RedisCommand.PFADD, config);
     }
 }

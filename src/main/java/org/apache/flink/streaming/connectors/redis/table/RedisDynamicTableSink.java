@@ -37,7 +37,7 @@ public class RedisDynamicTableSink implements DynamicTableSink {
 
         redisMapper = RedisHandlerServices
                 .findRedisHandler(RedisMapperHandler.class, properties)
-                .createRedisMapper(properties);
+                .createRedisMapper(config);
         flinkJedisConfigBase = RedisHandlerServices
                 .findRedisHandler(FlinkJedisConfigHandler.class, properties).createFlinkJedisConfig(config);
     }

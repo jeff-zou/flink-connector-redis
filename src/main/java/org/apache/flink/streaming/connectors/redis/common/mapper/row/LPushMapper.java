@@ -17,7 +17,10 @@
 
 package org.apache.flink.streaming.connectors.redis.common.mapper.row;
 
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+
+import java.util.Map;
 
 /**
  * LPUSH operation redis mapper.
@@ -28,7 +31,8 @@ public class LPushMapper extends RowRedisMapper {
         super(RedisCommand.LPUSH);
     }
 
-    public LPushMapper(String additionalKey, String partitionColumn) {
-        super(additionalKey, RedisCommand.LPUSH, partitionColumn);
+    public LPushMapper(ReadableConfig config) {
+        super(RedisCommand.LPUSH, config);
     }
+
 }

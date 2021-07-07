@@ -31,6 +31,4 @@ public class RedisValidator {
     public static final String REDIS_MASTER_NAME = "master.name";
     public static final String SENTINELS_INFO = "sentinels.info";
     public static final String SENTINELS_PASSWORD = "sentinels.password";
-    public static final String REDIS_KEY_TTL = "key.ttl";
-    public static final String REDIS_PARTITION_COLUMN = "partition-column";
 }

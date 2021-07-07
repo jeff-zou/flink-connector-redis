@@ -17,6 +17,7 @@ org.apache.flink.streaming.connectors.redis.common.mapper.row.SetExMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.DecrByMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.DecrByExMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.HSetMapper
+org.apache.flink.streaming.connectors.redis.common.mapper.row.HGetMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.IncrByMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.IncrByExMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.LPushMapper

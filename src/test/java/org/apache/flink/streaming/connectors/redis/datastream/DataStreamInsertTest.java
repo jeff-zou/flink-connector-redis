@@ -1,5 +1,7 @@
 package org.apache.flink.streaming.connectors.redis.datastream;
 
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisClusterConfig;
@@ -19,13 +21,14 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.*;
 
 /**
  * Created by jeff.zou on 2021/2/26.
  */
-public class RedisDataStreamInsertTest {
+public class DataStreamInsertTest {
 
 
     public static FlinkJedisClusterConfig getLocalRedisClusterConfig(){
@@ -44,48 +47,43 @@ public class RedisDataStreamInsertTest {
         set.add(host3);
         set.add(host4);
         set.add(host5);
-        FlinkJedisClusterConfig config = new FlinkJedisClusterConfig.Builder().setNodes(set).setPassword("***")
+        FlinkJedisClusterConfig config = new FlinkJedisClusterConfig.Builder().setNodes(set).setPassword("******")
                 .build();
         return config;
     }
 
-    /**
-     *   hget  exam_yizhong tom
-     return: yizhong\x01math\x01150
-     * @throws Exception
-     */
+    /*
+       hget tom math
+       return: 150
+        */
     @Test
     public void testDateStreamInsert() throws  Exception {
-        Map properties = new HashMap();
-        properties.put(RedisOptions.ADDITIONALKEY.key(), "exam");
-        properties.put(REDIS_PARTITION_COLUMN, "school");
-        properties.put(REDIS_MODE, REDIS_CLUSTER);
-        properties.put(REDIS_COMMAND, RedisCommand.HSET.name());
+
+        Configuration configuration = new Configuration();
+        configuration.setString(RedisOptions.KEY_COLUMN, "name");
+        configuration.setString(RedisOptions.FIELD_COLUMN, "subject");
+        configuration.setString(RedisOptions.VALUE_COLUMN, "score");
+        configuration.setString(REDIS_MODE, REDIS_CLUSTER);
+        configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
 
         RedisMapper redisMapper = RedisHandlerServices
-                .findRedisHandler(RedisMapperHandler.class, properties)
-                .createRedisMapper(properties);
+                .findRedisHandler(RedisMapperHandler.class, configuration.toMap())
+                .createRedisMapper(configuration);
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        GenericRowData genericRowData = new GenericRowData(4);
-        genericRowData.setField(0, "yizhong");
-        genericRowData.setField(1, "tom");
-        genericRowData.setField(2, "math");
-        genericRowData.setField(3, "150");
+        GenericRowData genericRowData = new GenericRowData(3);
+        genericRowData.setField(0, "tom");
+        genericRowData.setField(1, "math");
+        genericRowData.setField(2, "150");
         DataStream<GenericRowData> dataStream = env.fromElements(genericRowData);
 
-        TableSchema tableSchema =  new TableSchema.Builder() .field("school", DataTypes.STRING()).field("name", DataTypes.STRING().notNull()).field("subject", DataTypes.STRING()).field("scope", DataTypes.INT())
-                .primaryKey("name").build();
+        TableSchema tableSchema =  new TableSchema.Builder() .field("name", DataTypes.STRING().notNull()).field("subject", DataTypes.STRING()).field("score", DataTypes.INT()).build();
 
         FlinkJedisConfigBase conf = getLocalRedisClusterConfig();
         RedisSink redisSink = new RedisSink<>(conf, redisMapper, tableSchema);
 
         dataStream.addSink(redisSink);
         env.execute("RedisSinkTest");
-        /*
-        hget  exam_yizhong tom
-        return: yizhong\x01math\x01150
-         */
     }
 }
