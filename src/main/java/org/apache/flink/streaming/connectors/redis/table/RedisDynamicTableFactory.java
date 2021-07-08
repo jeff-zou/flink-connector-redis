@@ -10,6 +10,8 @@ import org.apache.flink.table.factories.FactoryUtil;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
+
 /**
  * Created by jeff.zou on 2020/9/10.
  */
@@ -19,6 +21,9 @@ public class RedisDynamicTableFactory implements DynamicTableSinkFactory {
 
     @Override
     public DynamicTableSink createDynamicTableSink(Context context) {
+        if(context.getCatalogTable().getOptions().containsKey(REDIS_COMMAND)){
+            context.getCatalogTable().getOptions().put(REDIS_COMMAND, context.getCatalogTable().getOptions().get(REDIS_COMMAND).toUpperCase());
+        }
         FactoryUtil.TableFactoryHelper helper = FactoryUtil.createTableFactoryHelper(this, context);
         ReadableConfig config = helper.getOptions();
         helper.validate();
