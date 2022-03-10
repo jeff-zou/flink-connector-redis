@@ -1,24 +1,22 @@
-package org.apache.flink.streaming.connectors.redis.common.mapper.row;
+package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
 import org.apache.flink.table.data.GenericRowData;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 
 /**
  * base row redis mapper implement.
  */
-public abstract class RowRedisMapper implements RedisMapper<GenericRowData>, RedisMapperHandler {
+public abstract class RowRedisSinkMapper implements RedisSinkMapper<GenericRowData>, RedisMapperHandler {
 
     private Integer ttl;
 
@@ -32,7 +30,7 @@ public abstract class RowRedisMapper implements RedisMapper<GenericRowData>, Red
 
     private boolean putIfAbsent;
 
-    public RowRedisMapper(int ttl, RedisCommand redisCommand, String keyColumn, String valueColumn, boolean putIfAbsent) {
+    public RowRedisSinkMapper(int ttl, RedisCommand redisCommand, String keyColumn, String valueColumn, boolean putIfAbsent) {
         this.ttl = ttl;
         this.redisCommand = redisCommand;
         this.keyColumn = keyColumn;
@@ -40,7 +38,7 @@ public abstract class RowRedisMapper implements RedisMapper<GenericRowData>, Red
         this.putIfAbsent = putIfAbsent;
     }
 
-    public RowRedisMapper(RedisCommand redisCommand,  String keyColumn, String fieldColumn, String valueColumn, boolean putIfAbsent, int ttl){
+    public RowRedisSinkMapper(RedisCommand redisCommand, String keyColumn, String fieldColumn, String valueColumn, boolean putIfAbsent, int ttl){
         this.ttl = ttl;
         this.redisCommand = redisCommand;
         this.keyColumn = keyColumn;
@@ -49,26 +47,23 @@ public abstract class RowRedisMapper implements RedisMapper<GenericRowData>, Red
         this.putIfAbsent = putIfAbsent;
     }
 
-    public RowRedisMapper(RedisCommand redisCommand){
+    public RowRedisSinkMapper(RedisCommand redisCommand){
         this.redisCommand = redisCommand;
     }
 
-    public RowRedisMapper(RedisCommand redisCommand, Map<String, String> config){
+    public RowRedisSinkMapper(RedisCommand redisCommand, Map<String, String> config){
         this.redisCommand = redisCommand;
     }
 
-    public RowRedisMapper(RedisCommand redisCommand, ReadableConfig config){
+    public RowRedisSinkMapper(RedisCommand redisCommand, ReadableConfig config){
         this.redisCommand = redisCommand;
         this.ttl = config.get(RedisOptions.TTL);
-        this.valueColumn = config.get(RedisOptions.VALUE_COLUMN);
-        this.keyColumn = config.get(RedisOptions.KEY_COLUMN);
-        this.fieldColumn = config.get(RedisOptions.FIELD_COLUMN);
         this.putIfAbsent = config.get(RedisOptions.PUT_IF_ABSENT);
     }
 
     @Override
     public RedisCommandDescription getCommandDescription() {
-        return new RedisCommandDescription(redisCommand, ttl, keyColumn, fieldColumn, valueColumn, putIfAbsent);
+        return new RedisCommandDescription(redisCommand, ttl, putIfAbsent);
     }
 
     @Override
@@ -99,7 +94,7 @@ public abstract class RowRedisMapper implements RedisMapper<GenericRowData>, Red
 
     @Override
     public boolean equals(Object obj) {
-        RedisCommand redisCommand = ((RowRedisMapper) obj).redisCommand;
+        RedisCommand redisCommand = ((RowRedisSinkMapper) obj).redisCommand;
         return this.redisCommand == redisCommand;
     }
 

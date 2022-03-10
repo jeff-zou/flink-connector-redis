@@ -16,7 +16,7 @@
 
 ### 使用示例:
 - 1.SQL方式 <br>
-**示例代码路径:**  src/test/java/org.apache.flink.streaming.connectors.redis.table.SQLInsertTest.java<br>
+**示例代码路径:**  src/test/java/org.apache.flink.streaming.connectors.redis.table.SQLTest.java<br>
 set示例，相当于redis命令： *set test test11*
 ```
        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -24,7 +24,7 @@ set示例，相当于redis命令： *set test test11*
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
         String ddl = "create table sink_redis(username VARCHAR, passport VARCHAR) with ( 'connector'='redis', " +
-                "'host'='10.11.80.147','port'='7001', 'redis-mode'='single','password'='******','key-column'='username','value-column'='passport','command'='set')" ;
+                "'host'='10.11.80.147','port'='7001', 'redis-mode'='single','password'='******','command'='set')" ;
 
         tEnv.executeSql(ddl);
         String sql = " insert into sink_redis select * from (values ('test', 'test11'))";
@@ -35,13 +35,10 @@ set示例，相当于redis命令： *set test test11*
 ```
 - 2.DataStream方式<br>
 **示例代码路径:** 
- src/test/java/org.apache.flink.streaming.connectors.redis.datastream.DataStreamInsertTest.java<br>
+ src/test/java/org.apache.flink.streaming.connectors.redis.datastream.DataStreamTest.java<br>
 hset示例，相当于redis命令：*hset tom math 150*
 ```
         Configuration configuration = new Configuration();
-        configuration.setString(RedisOptions.KEY_COLUMN, "name");
-        configuration.setString(RedisOptions.FIELD_COLUMN, "subject"); //对应hash的field、 sorted set的score
-        configuration.setString(RedisOptions.VALUE_COLUMN, "score");
         configuration.setString(REDIS_MODE, REDIS_CLUSTER);
         configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
 
@@ -60,8 +57,8 @@ hset示例，相当于redis命令：*hset tom math 150*
         TableSchema tableSchema =  new TableSchema.Builder() .field("name", DataTypes.STRING().notNull()).field("subject", DataTypes.STRING()).field("score", DataTypes.INT()).build();
 
         FlinkJedisConfigBase conf = getLocalRedisClusterConfig();
-        RedisSink redisSink = new RedisSink<>(conf, redisMapper, tableSchema);
+        RedisSinkFunction redisSinkFunction = new RedisSinkFunction<>(conf, redisMapper, tableSchema);
 
-        dataStream.addSink(redisSink);
+        dataStream.addSink(redisSinkFunction);
         env.execute("RedisSinkTest");
 ```

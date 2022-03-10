@@ -79,7 +79,6 @@ public enum RedisCommand {
      */
     HSET(RedisDataType.HASH),
 
-    HGET(RedisDataType.HASH),
 
 
     HINCRBY(RedisDataType.HINCRBY),
@@ -102,8 +101,11 @@ public enum RedisCommand {
     /**
      * decrease with fixed num for specified key and expire the key with fixed time.
      */
-    DESCRBY_EX(RedisDataType.STRING);
+    DESCRBY_EX(RedisDataType.STRING),
 
+    HGET(RedisDataType.HASH),
+
+    GET(RedisDataType.SET);
 
     /**
      * The {@link RedisDataType} this command belongs to.

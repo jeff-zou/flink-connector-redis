@@ -15,25 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.common.mapper.row;
+package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-import java.util.Map;
-
 /**
- * Delta plus operation
+ * HSET operation redis mapper.
  */
-public class IncrByMapper extends RowRedisMapper {
+public class HSetSinkMapper extends RowRedisSinkMapper {
 
-
-    public IncrByMapper() {
-        super(RedisCommand.INCRBY);
+    public HSetSinkMapper() {
+        super(RedisCommand.HSET);
     }
 
-    public IncrByMapper(ReadableConfig config) {
-        super(RedisCommand.INCRBY, config);
+    public HSetSinkMapper(ReadableConfig config) {
+        super(RedisCommand.HSET, config);
     }
+
 
 }

@@ -18,13 +18,10 @@
 package org.apache.flink.streaming.connectors.redis.common.hanlder;
 
 import org.apache.flink.configuration.ReadableConfig;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Constructor;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * handler for create redis mapper.
@@ -40,7 +37,10 @@ public interface RedisMapperHandler extends RedisHandler {
     default RedisMapper createRedisMapper(ReadableConfig config) {
         try {
             Class redisMapper = Class.forName(this.getClass().getCanonicalName());
-            return (RedisMapper) redisMapper.getConstructor(ReadableConfig.class).newInstance(config);
+            if(config == null){
+                return (RedisMapper)redisMapper.getConstructor().newInstance();
+            }
+            return (RedisMapper)redisMapper.getConstructor(ReadableConfig.class).newInstance(config);
         } catch (Exception e) {
             LOG.error("create redis mapper failed", e);
             throw new RuntimeException(e);

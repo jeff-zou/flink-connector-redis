@@ -99,26 +99,6 @@ public class RedisOptions {
             .noDefaultValue()
             .withDescription("Optional sentinels.password for connect to redis sentinels");
 
-    public static final ConfigOption<String> KEY_COLUMN = ConfigOptions
-            .key("key-column")
-            .stringType()
-            .noDefaultValue()
-            .withDescription("Optional key-column for insert to redis");
-
-    public static final ConfigOption<String> VALUE_COLUMN = ConfigOptions
-            .key("value-column")
-            .stringType()
-            .noDefaultValue()
-            .withDescription("Optional value_column for insert to redis");
-
-
-    public static final ConfigOption<String> FIELD_COLUMN = ConfigOptions
-            .key("field-column")
-            .stringType()
-            .noDefaultValue()
-            .withDescription("Optional field_column for insert to redis");
-
-
     public static final ConfigOption<Boolean> PUT_IF_ABSENT = ConfigOptions
             .key("put-if-absent")
             .booleanType()
@@ -130,4 +110,22 @@ public class RedisOptions {
             .intType()
             .noDefaultValue()
             .withDescription("Optional ttl for insert to redis");
+
+    public static final ConfigOption<Long> LOOKUP_CACHE_MAX_ROWS = ConfigOptions
+            .key("lookup.cache.max-rows")
+            .longType()
+            .defaultValue(-1L)
+            .withDescription("Optional cache max rows from redis");
+
+    public static final ConfigOption<Long> LOOKUP_CHCHE_TTL = ConfigOptions
+            .key("lookup.cache.ttl")
+            .longType()
+            .defaultValue(-1L)
+            .withDescription("Optional ttl for cache from redis");
+
+    public static final ConfigOption<Integer> LOOKUP_MAX_RETRIES = ConfigOptions
+            .key("lookup.max-retries")
+            .intType()
+            .defaultValue(1)
+            .withDescription("Optional max retries for query redis");
 }

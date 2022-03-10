@@ -1,34 +1,41 @@
 package org.apache.flink.streaming.connectors.redis.datastream;
 
+import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisClusterConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisLookupOptions;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
-import org.apache.flink.streaming.connectors.redis.table.RedisSink;
+import org.apache.flink.streaming.connectors.redis.table.RedisSinkFunction;
+import org.apache.flink.streaming.connectors.redis.table.RedisLookupFunction;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.GenericRowData;
+import org.apache.flink.table.types.DataType;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.*;
+import static org.apache.flink.streaming.connectors.redis.table.SQLTest.PASSWORD;
 
 /**
  * Created by jeff.zou on 2021/2/26.
  */
-public class DataStreamInsertTest {
+public class DataStreamTest {
 
 
     public static FlinkJedisClusterConfig getLocalRedisClusterConfig(){
@@ -47,7 +54,7 @@ public class DataStreamInsertTest {
         set.add(host3);
         set.add(host4);
         set.add(host5);
-        FlinkJedisClusterConfig config = new FlinkJedisClusterConfig.Builder().setNodes(set).setPassword("******")
+        FlinkJedisClusterConfig config = new FlinkJedisClusterConfig.Builder().setNodes(set).setPassword(PASSWORD)
                 .build();
         return config;
     }
@@ -60,13 +67,10 @@ public class DataStreamInsertTest {
     public void testDateStreamInsert() throws  Exception {
 
         Configuration configuration = new Configuration();
-        configuration.setString(RedisOptions.KEY_COLUMN, "name");
-        configuration.setString(RedisOptions.FIELD_COLUMN, "subject");
-        configuration.setString(RedisOptions.VALUE_COLUMN, "score");
         configuration.setString(REDIS_MODE, REDIS_CLUSTER);
         configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
 
-        RedisMapper redisMapper = RedisHandlerServices
+        RedisSinkMapper redisMapper = (RedisSinkMapper)RedisHandlerServices
                 .findRedisHandler(RedisMapperHandler.class, configuration.toMap())
                 .createRedisMapper(configuration);
 
@@ -75,15 +79,17 @@ public class DataStreamInsertTest {
         GenericRowData genericRowData = new GenericRowData(3);
         genericRowData.setField(0, "tom");
         genericRowData.setField(1, "math");
-        genericRowData.setField(2, "150");
+        genericRowData.setField(2, "151");
         DataStream<GenericRowData> dataStream = env.fromElements(genericRowData);
 
-        TableSchema tableSchema =  new TableSchema.Builder() .field("name", DataTypes.STRING().notNull()).field("subject", DataTypes.STRING()).field("score", DataTypes.INT()).build();
-
+       ResolvedSchema resolvedSchema = ResolvedSchema.physical(new String[]{"name", "subject", "score"}, new DataType[]{DataTypes.STRING().notNull(), DataTypes.STRING().notNull(), DataTypes.INT().notNull()});
         FlinkJedisConfigBase conf = getLocalRedisClusterConfig();
-        RedisSink redisSink = new RedisSink<>(conf, redisMapper, tableSchema);
+        RedisSinkFunction redisSinkFunction = new RedisSinkFunction<>(conf, redisMapper, resolvedSchema);
 
-        dataStream.addSink(redisSink);
+        dataStream.addSink(redisSinkFunction);
         env.execute("RedisSinkTest");
     }
+
+
+
 }

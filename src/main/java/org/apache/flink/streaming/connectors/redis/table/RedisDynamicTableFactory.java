@@ -4,7 +4,10 @@ import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.table.connector.sink.DynamicTableSink;
+import org.apache.flink.table.connector.source.DynamicTableSource;
+import org.apache.flink.table.factories.DynamicTableFactory;
 import org.apache.flink.table.factories.DynamicTableSinkFactory;
+import org.apache.flink.table.factories.DynamicTableSourceFactory;
 import org.apache.flink.table.factories.FactoryUtil;
 
 import java.util.HashSet;
@@ -15,9 +18,21 @@ import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValida
 /**
  * Created by jeff.zou on 2020/9/10.
  */
-public class RedisDynamicTableFactory implements DynamicTableSinkFactory {
+public class RedisDynamicTableFactory implements DynamicTableSinkFactory, DynamicTableSourceFactory {
 
     public static final String IDENTIFIER = "redis";
+
+    @Override
+    public DynamicTableSource createDynamicTableSource(Context context) {
+        if(context.getCatalogTable().getOptions().containsKey(REDIS_COMMAND)){
+            context.getCatalogTable().getOptions().put(REDIS_COMMAND, context.getCatalogTable().getOptions().get(REDIS_COMMAND).toUpperCase());
+        }
+        FactoryUtil.TableFactoryHelper helper = FactoryUtil.createTableFactoryHelper(this, context);
+        ReadableConfig config = helper.getOptions();
+        helper.validate();
+        validateConfigOptions(config);
+        return new RedisDynamicTableSource(context.getCatalogTable().getOptions(), context.getCatalogTable().getResolvedSchema(), config);
+    }
 
     @Override
     public DynamicTableSink createDynamicTableSink(Context context) {
@@ -28,7 +43,7 @@ public class RedisDynamicTableFactory implements DynamicTableSinkFactory {
         ReadableConfig config = helper.getOptions();
         helper.validate();
         validateConfigOptions(config);
-        return new RedisDynamicTableSink(context.getCatalogTable().getOptions(), context.getCatalogTable().getSchema(), config);
+        return new RedisDynamicTableSink(context.getCatalogTable().getOptions(), context.getCatalogTable().getResolvedSchema(), config);
     }
 
     @Override
@@ -56,11 +71,11 @@ public class RedisDynamicTableFactory implements DynamicTableSinkFactory {
         options.add(RedisOptions.MINIDLE);
         options.add(RedisOptions.COMMAND);
         options.add(RedisOptions.REDISMODE);
-        options.add(RedisOptions.KEY_COLUMN);
-        options.add(RedisOptions.VALUE_COLUMN);
-        options.add(RedisOptions.FIELD_COLUMN);
         options.add(RedisOptions.PUT_IF_ABSENT);
         options.add(RedisOptions.TTL);
+        options.add(RedisOptions.LOOKUP_CACHE_MAX_ROWS);
+        options.add(RedisOptions.LOOKUP_CHCHE_TTL);
+        options.add(RedisOptions.LOOKUP_MAX_RETRIES);
         return options;
     }
 

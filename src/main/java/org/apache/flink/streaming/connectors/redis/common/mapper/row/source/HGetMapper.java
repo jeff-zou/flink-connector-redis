@@ -15,23 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.common.mapper.row;
+package org.apache.flink.streaming.connectors.redis.common.mapper.row.source;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-import java.util.Map;
-
 /**
- * SET with expire key operation redis mapper.
+ * HGET operation redis mapper.
  */
-public class SetExMapper extends RowRedisMapper {
+public class HGetMapper extends RowRedisMapper {
 
-    public SetExMapper() {
-        super(RedisCommand.SETEX);
+    public HGetMapper() {
+        super(RedisCommand.HGET);
     }
 
-    public SetExMapper(ReadableConfig config) {
-        super(RedisCommand.SETEX, config);
+    public HGetMapper(ReadableConfig readableConfig) {
+        super(RedisCommand.HGET);
     }
+
 }

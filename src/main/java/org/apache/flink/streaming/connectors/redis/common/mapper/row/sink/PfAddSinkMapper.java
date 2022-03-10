@@ -14,12 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.flink.streaming.connectors.redis.common;
 
-public class Util {
-    public static void checkArgument(boolean condition, String message) {
-        if(!condition) {
-            throw new IllegalArgumentException(message);
-        }
+package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
+
+import org.apache.flink.configuration.ReadableConfig;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+
+/**
+ * PFADD operation redis mapper.
+ */
+public class PfAddSinkMapper extends RowRedisSinkMapper {
+
+
+    public PfAddSinkMapper() {
+        super(RedisCommand.PFADD);
+    }
+
+    public PfAddSinkMapper(ReadableConfig config) {
+        super(RedisCommand.PFADD, config);
     }
 }

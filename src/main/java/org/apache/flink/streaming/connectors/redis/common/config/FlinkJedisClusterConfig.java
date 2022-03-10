@@ -18,7 +18,7 @@
 package org.apache.flink.streaming.connectors.redis.common.config;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.flink.streaming.connectors.redis.common.Util;
+import org.apache.flink.streaming.connectors.redis.common.util.CheckUtil;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 
@@ -56,7 +56,7 @@ public class FlinkJedisClusterConfig extends FlinkJedisConfigBase {
         super(connectionTimeout, maxTotal, maxIdle, minIdle, password);
 
         Objects.requireNonNull(nodes, "Node information should be presented");
-        Util.checkArgument(!nodes.isEmpty(), "Redis cluster hosts should not be empty");
+        CheckUtil.checkArgument(!nodes.isEmpty(), "Redis cluster hosts should not be empty");
         this.nodes = new HashSet<>(nodes);
         this.maxRedirections = maxRedirections;
     }

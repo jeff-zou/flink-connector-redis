@@ -481,6 +481,26 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
 
 
     @Override
+    public String get(String key) {
+        Jedis jedis = null;
+        String result = null;
+        try {
+            jedis = getInstance();
+            result = jedis.get(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Cannot send Redis message with command get to key {} error message {}",
+                        key, e.getMessage());
+            }
+            throw e;
+        } finally {
+            releaseInstance(jedis);
+        }
+        return result;
+    }
+
+
+    @Override
     public void hdel(String key, String field) {
         Jedis jedis = null;
 
@@ -611,6 +631,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
         }
     }
 
+    @Override
     public long incrByLong(String key, long value) {
         Jedis jedis = null;
         long result = 0;

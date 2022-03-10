@@ -15,23 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.common.mapper.row;
+package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-import java.util.Map;
-
 /**
  * RPUSH  operation redis mapper.
  */
-public class RPushMapper extends RowRedisMapper {
+public class RPushSinkMapper extends RowRedisSinkMapper {
 
-    public RPushMapper() {
+    public RPushSinkMapper() {
         super(RedisCommand.RPUSH);
     }
 
-    public RPushMapper(ReadableConfig config) {
+    public RPushSinkMapper(ReadableConfig config) {
         super(RedisCommand.RPUSH, config);
     }
 

@@ -184,6 +184,8 @@ public interface RedisCommandsContainer extends Serializable {
 
     String hget(String key, String field);
 
+    String get(String key);
+
     void hdel(String key, String field);
 
     boolean exists(String key);

@@ -350,6 +350,20 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     }
 
     @Override
+    public String get(String key) {
+        try {
+            return jedisCluster.get(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Cannot send Redis message with command hget to key {} error message {}",
+                        key, e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+
+    @Override
     public void hdel(String key, String field) {
         try {
             jedisCluster.hdel(key, field);

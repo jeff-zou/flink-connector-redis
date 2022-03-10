@@ -15,24 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.common.mapper.row;
+package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-import java.util.Map;
-
 /**
- * SADD  operation redis mapper.
+ * Delta plus with expire key operation redis mapper.
  */
-public class SAddMapper extends RowRedisMapper {
+public class IncrByExSinkMapper extends RowRedisSinkMapper {
 
-    public SAddMapper() {
-        super(RedisCommand.SADD);
+
+    public IncrByExSinkMapper() {
+        super(RedisCommand.INCRBY_EX);
     }
 
-    public SAddMapper(ReadableConfig config) {
-        super(RedisCommand.SADD, config);
+    public IncrByExSinkMapper(ReadableConfig config) {
+        super(RedisCommand.INCRBY_EX, config);
     }
 
 }

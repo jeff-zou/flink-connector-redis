@@ -15,25 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.common.mapper.row;
-
+package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-import java.util.Map;
-
 /**
- * ZINCRBY operation redis mapper.
+ * SET with expire key operation redis mapper.
  */
-public class ZIncrByMapper extends RowRedisMapper {
+public class SetExSinkMapper extends RowRedisSinkMapper {
 
-
-    public ZIncrByMapper() {
-        super(RedisCommand.ZINCRBY);
+    public SetExSinkMapper() {
+        super(RedisCommand.SETEX);
     }
 
-    public ZIncrByMapper(ReadableConfig config) {
-        super(RedisCommand.ZINCRBY, config);
+    public SetExSinkMapper(ReadableConfig config) {
+        super(RedisCommand.SETEX, config);
     }
 }

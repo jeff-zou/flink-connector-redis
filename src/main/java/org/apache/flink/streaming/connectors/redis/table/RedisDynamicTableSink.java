@@ -5,8 +5,9 @@ import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfi
 import org.apache.flink.streaming.connectors.redis.common.hanlder.FlinkJedisConfigHandler;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
 import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.sink.DynamicTableSink;
 import org.apache.flink.table.connector.sink.SinkFunctionProvider;
@@ -23,19 +24,19 @@ import static org.apache.flink.util.Preconditions.checkState;
 public class RedisDynamicTableSink implements DynamicTableSink {
 
     private FlinkJedisConfigBase flinkJedisConfigBase;
-    private RedisMapper redisMapper;
+    private RedisSinkMapper redisMapper;
     private Map<String, String> properties = null;
-    private TableSchema tableSchema;
+    private ResolvedSchema resolvedSchema;
     private ReadableConfig config;
 
-    public RedisDynamicTableSink(Map<String, String> properties,  TableSchema tableSchema, ReadableConfig config) {
+    public RedisDynamicTableSink(Map<String, String> properties,  ResolvedSchema resolvedSchema, ReadableConfig config) {
         this.properties = properties;
         Preconditions.checkNotNull(properties, "properties should not be null");
-        this.tableSchema = tableSchema;
-        Preconditions.checkNotNull(tableSchema, "tableSchema should not be null");
+        this.resolvedSchema = resolvedSchema;
+        Preconditions.checkNotNull(resolvedSchema, "resolvedSchema should not be null");
         this.config = config;
 
-        redisMapper = RedisHandlerServices
+        redisMapper = (RedisSinkMapper) RedisHandlerServices
                 .findRedisHandler(RedisMapperHandler.class, properties)
                 .createRedisMapper(config);
         flinkJedisConfigBase = RedisHandlerServices
@@ -54,12 +55,12 @@ public class RedisDynamicTableSink implements DynamicTableSink {
 
     @Override
     public SinkRuntimeProvider getSinkRuntimeProvider(Context context) {
-        return SinkFunctionProvider.of(new RedisSink(flinkJedisConfigBase, redisMapper, tableSchema));
+        return SinkFunctionProvider.of(new RedisSinkFunction(flinkJedisConfigBase, redisMapper, resolvedSchema));
     }
 
     @Override
     public DynamicTableSink copy() {
-        return new RedisDynamicTableSink(properties, tableSchema, config);
+        return new RedisDynamicTableSink(properties, resolvedSchema, config);
     }
 
     @Override

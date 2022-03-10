@@ -17,7 +17,7 @@
 package org.apache.flink.streaming.connectors.redis.common.config;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.flink.streaming.connectors.redis.common.Util;
+import org.apache.flink.streaming.connectors.redis.common.util.CheckUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Protocol;
@@ -63,7 +63,7 @@ public class FlinkJedisSentinelConfig extends FlinkJedisConfigBase {
         super(connectionTimeout, maxTotal, maxIdle, minIdle, password);
         Objects.requireNonNull(masterName, "Master name should be presented");
         Objects.requireNonNull(sentinels, "Sentinels information should be presented");
-        Util.checkArgument(!sentinels.isEmpty(), "Sentinel hosts should not be empty");
+        CheckUtil.checkArgument(!sentinels.isEmpty(), "Sentinel hosts should not be empty");
 
         this.masterName = masterName;
         this.sentinels = new HashSet<>(sentinels);
