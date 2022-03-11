@@ -99,12 +99,6 @@ public class RedisOptions {
             .noDefaultValue()
             .withDescription("Optional sentinels.password for connect to redis sentinels");
 
-    public static final ConfigOption<Boolean> PUT_IF_ABSENT = ConfigOptions
-            .key("put-if-absent")
-            .booleanType()
-            .defaultValue(false)
-            .withDescription("Optional put_if_absent for insert to redis");
-
     public static final ConfigOption<Integer> TTL = ConfigOptions
             .key("ttl")
             .intType()
@@ -115,17 +109,41 @@ public class RedisOptions {
             .key("lookup.cache.max-rows")
             .longType()
             .defaultValue(-1L)
-            .withDescription("Optional cache max rows from redis");
+            .withDescription("Optional  max rows of cache for query redis");
 
     public static final ConfigOption<Long> LOOKUP_CHCHE_TTL = ConfigOptions
             .key("lookup.cache.ttl")
             .longType()
             .defaultValue(-1L)
-            .withDescription("Optional ttl for cache from redis");
+            .withDescription("Optional ttl of cache for query redis");
 
     public static final ConfigOption<Integer> LOOKUP_MAX_RETRIES = ConfigOptions
             .key("lookup.max-retries")
             .intType()
             .defaultValue(1)
-            .withDescription("Optional max retries for query redis");
+            .withDescription("Optional max retries of cache for query redis");
+
+    public static final ConfigOption<Long> SINK_CACHE_MAX_ROWS = ConfigOptions
+            .key("sink.cache.max-rows")
+            .longType()
+            .defaultValue(-1L)
+            .withDescription("Optional cache max rows of cache for sink redis");
+
+    public static final ConfigOption<Long> SINK_CHCHE_TTL = ConfigOptions
+            .key("sink.cache.ttl")
+            .longType()
+            .defaultValue(-1L)
+            .withDescription("Optional ttl of cache for sink redis");
+
+    public static final ConfigOption<Integer> SINK_MAX_RETRIES = ConfigOptions
+            .key("sink.max-retries")
+            .intType()
+            .defaultValue(1)
+            .withDescription("Optional max retries of cache sink redis");
+
+    public static final ConfigOption<Integer> SINK_PARALLELISM = ConfigOptions
+            .key("sink.parallelism")
+            .intType()
+            .noDefaultValue()
+            .withDescription("Optional parrallelism for sink redis");
 }

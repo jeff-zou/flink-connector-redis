@@ -7,9 +7,11 @@
 
 ### 项目介绍
 
-基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir增加的内容有：Table API, 维表查询。参考了腾讯云与阿里云两家主流云产商的流计算产品，取两家之长，并增加了更丰富的功能。
+基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir调整的内容有：删除过期Flink API、增加Table/SQL API、 增加维表查询支持、增加写入与查询缓存、统一使用过期策略、写入并发数等。
 
-支持功能对应redis操作命令有：
+因bahir使用的flink版本较老，很多api已经过期，并长期没更新，所以改动较大。开发过程中参考了腾讯云与阿里云两家产商的流计算产品，取两家之长，并增加了更丰富的功能，包括更多的redis操作命令和更多的redis服务类型，如：simple sentinel cluster。
+
+支持功能对应redis的操作命令有：
 
 | 插入                           | 维表查询 |
 | ------------------------------ | -------- |
@@ -18,8 +20,13 @@
 | rpush lpush                    |          |
 | incrBy decrBy hincrBy  zincrby |          |
 | sadd zadd pfadd(hyperloglog)   |          |
+| publish                        |          |
+| zrem decrby                    |          |
+
+
 
 ### 使用方法: 
+
 命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis_2.12-1.13.2.jar引入flink lib中即可，无需其它设置。
 
 
@@ -51,14 +58,26 @@ with参数说明：
 | maxIdle               | 2      | Integer | 最大保持连接数                                               |
 | minIdle               | 1      | Integer | 最小保持连接数                                               |
 | timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                               |
-| cluster-nodes         | (none) | String  | 集群类型 ，当redis-mode为cluster时不为空，支持类型有：sentinels cluster |
+| cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000 |
 | command               | (none) | String  | 对应上文中的redis命令                                        |
-| redis-mode            | (none) | Integer | redis类型： single cluster                                   |
-| lookup.cache.max-rows | -1     | Integer | lookup 缓存大小                                              |
-| lookup.cache.ttl      | -1     | Integer | 缓存过期时间                                                 |
-| lookup.max-retries    | 3      | Integer | lookup 失败重试次数                                          |
+| redis-mode            | (none) | Integer | mode类型： single cluster                                    |
+| lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                        |
+| lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1 |
+| lookup.max-retries    | 1      | Integer | 查询失败重试次数                                             |
+| sink.cache.max-rows   | -1     | Integer | 写入缓存大小，减少对redis重复写入相同的key与value            |
+| sink.cache.ttl        | -1     | Integer | 写入缓存过期时间，单位为秒， 开启缓存条件是max-rows与ttl都不能为-1 |
+| sink.max-retries      | 1      | Integer | 写入失败重试次数                                             |
+| sink.parallelism      | (none) | Integer | 写入并发数                                                   |
 
-其它参数请参考bahir
+
+
+集群类型为sentinel时额外连接参数:
+
+| 字段               | 默认值 | 类型   | 说明 |
+| ------------------ | ------ | ------ | ---- |
+| master.name        | (none) | String | 主名 |
+| sentinels.info     | (none) | String |      |
+| sentinels.password | none)  | String |      |
 
 
 
@@ -89,7 +108,7 @@ from
 left join dim_table for system_time as of s.proctime as d on
 	d.name = s.username
 	and d.level = s.level;
--- username为3那一行会关联到redisw值，输出为： 3,3,100	
+-- username为3那一行会关联到redis内的值，输出为： 3,3,100	
 ```
 
 
@@ -113,20 +132,20 @@ left join dim_table for system_time as of s.proctime as d on
         GenericRowData genericRowData = new GenericRowData(3);
         genericRowData.setField(0, "tom");
         genericRowData.setField(1, "math");
-        genericRowData.setField(2, "151");
-        DataStream<GenericRowData> dataStream = env.fromElements(genericRowData);
+        genericRowData.setField(2, "152");
+        DataStream<GenericRowData> dataStream = env.fromElements(genericRowData, genericRowData);
 
-       ResolvedSchema resolvedSchema = ResolvedSchema.physical(new String[]{"name", "subject", "score"}, new DataType[]{DataTypes.STRING().notNull(), DataTypes.STRING().notNull(), DataTypes.INT().notNull()});
+        RedisCacheOptions redisCacheOptions = new RedisCacheOptions.Builder().setCacheMaxSize(100).setCacheTTL(10L).build();
         FlinkJedisConfigBase conf = getLocalRedisClusterConfig();
-        RedisSinkFunction redisSinkFunction = new RedisSinkFunction<>(conf, redisMapper, resolvedSchema);
+        RedisSinkFunction redisSinkFunction = new RedisSinkFunction<>(conf, redisMapper, redisCacheOptions);
 
-        dataStream.addSink(redisSinkFunction);
+        dataStream.addSink(redisSinkFunction).setParallelism(1);
         env.execute("RedisSinkTest");
 ```
 
 
 
-- ##### 其它写入示例 <br>
+- ##### redis-cluster写入示例 <br>
 
   示例代码路径:  src/test/java/org.apache.flink.streaming.connectors.redis.table.SQLTest.java<br>
   set示例，相当于redis命令： *set test test11*
@@ -137,7 +156,7 @@ left join dim_table for system_time as of s.proctime as d on
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
         String ddl = "create table sink_redis(username VARCHAR, passport VARCHAR) with ( 'connector'='redis', " +
-                "'host'='10.11.80.147','port'='7001', 'redis-mode'='single','password'='******','command'='set')" ;
+                "'cluster-nodes'='10.11.80.147:7000,10.11.80.147:7001','redis-mode'='cluster','password'='******','command'='set')" ;
 
         tEnv.executeSql(ddl);
         String sql = " insert into sink_redis select * from (values ('test', 'test11'))";
@@ -147,3 +166,4 @@ left join dim_table for system_time as of s.proctime as d on
                 .get();
 ```
 
+### 开发与测试环境

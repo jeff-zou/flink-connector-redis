@@ -22,29 +22,15 @@ public abstract class RowRedisSinkMapper implements RedisSinkMapper<GenericRowDa
 
     private RedisCommand redisCommand;
 
-    private String fieldColumn;
 
-    private String keyColumn;
-
-    private String valueColumn;
-
-    private boolean putIfAbsent;
-
-    public RowRedisSinkMapper(int ttl, RedisCommand redisCommand, String keyColumn, String valueColumn, boolean putIfAbsent) {
+    public RowRedisSinkMapper(int ttl, RedisCommand redisCommand) {
         this.ttl = ttl;
         this.redisCommand = redisCommand;
-        this.keyColumn = keyColumn;
-        this.valueColumn = valueColumn;
-        this.putIfAbsent = putIfAbsent;
     }
 
-    public RowRedisSinkMapper(RedisCommand redisCommand, String keyColumn, String fieldColumn, String valueColumn, boolean putIfAbsent, int ttl){
+    public RowRedisSinkMapper(RedisCommand redisCommand,int ttl){
         this.ttl = ttl;
         this.redisCommand = redisCommand;
-        this.keyColumn = keyColumn;
-        this.fieldColumn = fieldColumn;
-        this.valueColumn = valueColumn;
-        this.putIfAbsent = putIfAbsent;
     }
 
     public RowRedisSinkMapper(RedisCommand redisCommand){
@@ -58,12 +44,11 @@ public abstract class RowRedisSinkMapper implements RedisSinkMapper<GenericRowDa
     public RowRedisSinkMapper(RedisCommand redisCommand, ReadableConfig config){
         this.redisCommand = redisCommand;
         this.ttl = config.get(RedisOptions.TTL);
-        this.putIfAbsent = config.get(RedisOptions.PUT_IF_ABSENT);
     }
 
     @Override
     public RedisCommandDescription getCommandDescription() {
-        return new RedisCommandDescription(redisCommand, ttl, putIfAbsent);
+        return new RedisCommandDescription(redisCommand, ttl);
     }
 
     @Override

@@ -4,13 +4,13 @@ package org.apache.flink.streaming.connectors.redis.common.config;
  * @author jeff.zou
  * @date 2022/3/9.14:37
  */
-public class RedisLookupOptions {
+public class RedisCacheOptions {
 
     private final long cacheMaxSize;
     private final long cacheTtl;
     private final int maxRetryTimes;
 
-    public RedisLookupOptions(long cacheMaxSize, long cacheTtl, int maxRetryTimes) {
+    public RedisCacheOptions(long cacheMaxSize, long cacheTtl, int maxRetryTimes) {
         this.cacheMaxSize = cacheMaxSize;
         this.cacheTtl = cacheTtl;
         this.maxRetryTimes = maxRetryTimes;
@@ -30,7 +30,7 @@ public class RedisLookupOptions {
 
     @Override
     public String toString() {
-        return "RedisLookupOptions{" +
+        return "RedisCacheOptions{" +
                 "cacheMaxSize=" + cacheMaxSize +
                 ", cacheTtl=" + cacheTtl +
                 ", maxRetryTimes=" + maxRetryTimes +
@@ -46,7 +46,7 @@ public class RedisLookupOptions {
             return false;
         }
 
-        RedisLookupOptions that = (RedisLookupOptions) o;
+        RedisCacheOptions that = (RedisCacheOptions) o;
 
         if (cacheMaxSize != that.cacheMaxSize) {
             return false;
@@ -85,8 +85,8 @@ public class RedisLookupOptions {
             return this;
         }
 
-        public RedisLookupOptions build() {
-            return  new RedisLookupOptions(cacheMaxSize, cacheTtl, maxRetryTimes);
+        public RedisCacheOptions build() {
+            return  new RedisCacheOptions(cacheMaxSize, cacheTtl, maxRetryTimes);
         }
     }
 }

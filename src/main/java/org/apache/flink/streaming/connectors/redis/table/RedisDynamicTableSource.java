@@ -2,7 +2,7 @@ package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisLookupOptions;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.FlinkJedisConfigHandler;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
@@ -28,11 +28,11 @@ public class RedisDynamicTableSource implements LookupTableSource {
     private ResolvedSchema resolvedSchema;
     private ReadableConfig config;
     private RedisMapper redisMapper;
-    private RedisLookupOptions redisLookupOptions;
+    private RedisCacheOptions redisCacheOptions;
 
     @Override
     public LookupRuntimeProvider getLookupRuntimeProvider(LookupContext context) {
-        return TableFunctionProvider.of(new RedisLookupFunction(flinkJedisConfigBase, redisMapper, redisLookupOptions, resolvedSchema));
+        return TableFunctionProvider.of(new RedisLookupFunction(flinkJedisConfigBase, redisMapper, redisCacheOptions, resolvedSchema));
     }
 
     public RedisDynamicTableSource(Map<String, String> properties, ResolvedSchema resolvedSchema, ReadableConfig config) {
@@ -50,7 +50,7 @@ public class RedisDynamicTableSource implements LookupTableSource {
         this.config = config;
         flinkJedisConfigBase = RedisHandlerServices
                 .findRedisHandler(FlinkJedisConfigHandler.class, properties).createFlinkJedisConfig(config);
-        redisLookupOptions = new RedisLookupOptions.Builder()
+        redisCacheOptions = new RedisCacheOptions.Builder()
                 .setCacheTTL(config.get(RedisOptions.LOOKUP_CHCHE_TTL))
                 .setCacheMaxSize(config.get(RedisOptions.LOOKUP_CACHE_MAX_ROWS))
                 .setMaxRetryTimes(config.get(RedisOptions.LOOKUP_MAX_RETRIES)).build();

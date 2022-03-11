@@ -40,13 +40,12 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key Hash name
      * @param hashField Hash field
      * @param value Hash value
-     * @param ttl Hash expire time
      */
-    void hset(String key, String hashField, String value, Integer ttl);
+    void hset(String key, String hashField, String value);
 
-    long hincrBy(String key, String hashField, Long value, Integer ttl);
+    long hincrBy(String key, String hashField, Long value);
 
-    Double hincrByFloat(final String key, final String hashField, final Double value, final Integer ttl);
+    Double hincrByFloat(final String key, final String hashField, final Double value);
 
     /**
      * Insert the specified value at the tail of the list stored at key.
@@ -95,17 +94,6 @@ public interface RedisCommandsContainer extends Serializable {
     void set(String key, String value);
 
     /**
-     * Set key to hold the string value, with a time to live (TTL). If key already holds a value,
-     * it is overwritten, regardless of its type. Any previous time to live associated with the key is
-     * reset on successful SETEX operation.
-     *
-     * @param key the key name in which value to be set
-     * @param value the value
-     * @param ttl time to live (TTL)
-     */
-    void setex(String key, String value, Integer ttl);
-
-    /**
      * Adds all the element arguments to the HyperLogLog data structure
      * stored at the variable name specified as first argument.
      *
@@ -140,23 +128,6 @@ public interface RedisCommandsContainer extends Serializable {
      */
     void zrem(String key, String element);
 
-
-    /**
-     *  increase value to specified key and expire the key with fixed time.
-     * @param key the key name in which value to be set
-     * @param value the value
-     * @param ttl time to live (TTL)
-     */
-    Long incrByEx(String key, Long value, Integer ttl);
-
-    /**
-     * decrease value from specified key and expire the key.
-     * @param key the key name in which value to be set
-     * @param value value the value
-     * @param ttl time to live (TTL)
-     */
-    void decrByEx(String key, Long value, Integer ttl);
-
     /**
      *  increase value to specified key.
      * @param key the key name in which value to be set
@@ -172,25 +143,38 @@ public interface RedisCommandsContainer extends Serializable {
     void decrBy(String key, Long value);
 
     /**
+     *  get value by key and field
+     * @param key
+     * @param field
+     * @return
+     */
+    String hget(String key, String field);
+
+    /**
+     * get value by key
+     * @param key
+     * @return
+     */
+    String get(String key);
+
+    /**
      * Close the Jedis container.
      *
      * @throws IOException if the instance can not be closed properly
      */
     void close() throws IOException;
 
-    void setbit(String key, long offset, boolean value);
-
-    boolean getbit(String key, long offset);
-
-    String hget(String key, String field);
-
-    String get(String key);
+    /**
+     * expire key with seconds
+     * @param key
+     * @param seconds
+     * @return
+     */
+    Long expire(String key, int seconds);
 
     void hdel(String key, String field);
 
     boolean exists(String key);
-
-    Long expire(String key, int seconds);
 
     boolean sismember(String key, String member);
 
@@ -201,4 +185,8 @@ public interface RedisCommandsContainer extends Serializable {
     void srem(String setName, String value);
 
     long incrByLong(String key, long value);
+
+    void setbit(String key, long offset, boolean value);
+
+    boolean getbit(String key, long offset);
 }

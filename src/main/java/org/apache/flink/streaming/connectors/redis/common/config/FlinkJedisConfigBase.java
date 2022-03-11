@@ -99,4 +99,15 @@ public abstract class FlinkJedisConfigBase implements Serializable {
     public String getPassword() {
         return password;
     }
+
+    @Override
+    public String toString() {
+        return "FlinkJedisConfigBase{" +
+                "maxTotal=" + maxTotal +
+                ", maxIdle=" + maxIdle +
+                ", minIdle=" + minIdle +
+                ", connectionTimeout=" + connectionTimeout +
+                ", password='" + password + '\'' +
+                '}';
+    }
 }

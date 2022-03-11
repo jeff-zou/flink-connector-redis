@@ -1,8 +1,11 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.shaded.guava18.com.google.common.cache.Cache;
+import org.apache.flink.shaded.guava18.com.google.common.cache.CacheBuilder;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainerBuilder;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
@@ -18,12 +21,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisSinkFunction.class);
-
-    private boolean putIfAbsent;
 
     private Integer ttl;
 
@@ -33,6 +35,10 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private FlinkJedisConfigBase flinkJedisConfigBase;
     private RedisCommandsContainer redisCommandsContainer;
 
+    private final long cacheMaxSize;
+    private final long cacheTtl;
+    private final int maxRetryTimes;
+    private Cache<String, String> cache;
 
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
@@ -40,22 +46,21 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      * @param flinkJedisConfigBase The configuration of {@link FlinkJedisConfigBase}
      * @param redisSinkMapper This is used to generate Redis command and key value from incoming elements.
      */
-    public RedisSinkFunction(FlinkJedisConfigBase flinkJedisConfigBase, RedisSinkMapper<IN> redisSinkMapper, ResolvedSchema resolvedSchema) {
+    public RedisSinkFunction(FlinkJedisConfigBase flinkJedisConfigBase, RedisSinkMapper<IN> redisSinkMapper, RedisCacheOptions redisCacheOptions) {
         Objects.requireNonNull(flinkJedisConfigBase, "Redis connection pool config should not be null");
         Objects.requireNonNull(redisSinkMapper, "Redis Mapper can not be null");
         Objects.requireNonNull(redisSinkMapper.getCommandDescription(), "Redis Mapper data type description can not be null");
 
         this.flinkJedisConfigBase = flinkJedisConfigBase;
-
+        this.cacheTtl = redisCacheOptions.getCacheTtl();
+        this.cacheMaxSize = redisCacheOptions.getCacheMaxSize();
+        this.maxRetryTimes = redisCacheOptions.getMaxRetryTimes();
         this.redisSinkMapper = redisSinkMapper;
         RedisCommandDescription redisCommandDescription = (RedisCommandDescription)redisSinkMapper.getCommandDescription();
 
         this.redisCommand = redisCommandDescription.getRedisCommand();
-        this.putIfAbsent = redisCommandDescription.isPutIfAbsent();
-
         this.ttl = redisCommandDescription.getTTL();
     }
-
 
 
     /**
@@ -76,6 +81,39 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             value = redisSinkMapper.getValueFromData(input, 2);
         }
 
+        String cacheKey = key;
+        if(cache!=null){
+            if(redisCommand.getRedisDataType() == RedisDataType.HASH || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET){
+                cacheKey = new StringBuilder(key).append("/01").append(field).toString();
+            }
+            String cacheValue = cache.getIfPresent(cacheKey);
+            if(cacheValue != null && cacheValue.equals(value)){
+                return;
+            }
+        }
+
+        for(int i=0;i<=this.maxRetryTimes;i++){
+            try {
+                sink(key, field, value);
+                if(ttl != null){
+                    this.redisCommandsContainer.expire(key, ttl);
+                }
+                if(cache!=null){
+                    cache.put(cacheKey, value);
+                }
+                break;
+            }catch (UnsupportedOperationException e){
+                throw e;
+            }catch (Exception e1){
+                LOG.error("sink redis error, retry times:{}", i, e1);
+                if(i>=this.maxRetryTimes){
+                    throw new RuntimeException("sink redis error ", e1);
+                }
+            }
+        }
+    }
+
+    private void sink(String key, String field, String value) throws Exception{
         switch (redisCommand) {
             case RPUSH:
                 this.redisCommandsContainer.rpush(key, value);
@@ -88,9 +126,6 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 break;
             case SET:
                 this.redisCommandsContainer.set(key, value);
-                break;
-            case SETEX:
-                this.redisCommandsContainer.setex(key, value, this.ttl);
                 break;
             case PFADD:
                 this.redisCommandsContainer.pfadd(key, value);
@@ -108,29 +143,19 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 this.redisCommandsContainer.zrem(key, field);
                 break;
             case HSET:
-                if(!putIfAbsent){
-                    this.redisCommandsContainer.hset(key, field, value,this.ttl);
-                } else if(!this.redisCommandsContainer.hexists(key, field)){
-                    this.redisCommandsContainer.hset(key, field, value,this.ttl);
-                }
+                this.redisCommandsContainer.hset(key, field, value);
                 break;
             case HINCRBY:
-                this.redisCommandsContainer.hincrBy(key, field, Long.valueOf(value), this.ttl);
+                this.redisCommandsContainer.hincrBy(key, field, Long.valueOf(value));
                 break;
             case INCRBY:
                 this.redisCommandsContainer.incrBy(key, Long.valueOf(value));
                 break;
-            case INCRBY_EX:
-                this.redisCommandsContainer.incrByEx(key, Long.valueOf(value), this.ttl);
-                break;
             case DECRBY:
                 this.redisCommandsContainer.decrBy(key, Long.valueOf(value));
                 break;
-            case DESCRBY_EX:
-                this.redisCommandsContainer.decrByEx(key, Long.valueOf(value), this.ttl);
-                break;
             default:
-                throw new IllegalArgumentException("Cannot process such data type: " + redisCommand);
+                throw new UnsupportedOperationException("Cannot process such data type: " + redisCommand);
         }
     }
 
@@ -144,10 +169,14 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         try {
             this.redisCommandsContainer = RedisCommandsContainerBuilder.build(this.flinkJedisConfigBase);
             this.redisCommandsContainer.open();
+            LOG.info("success to create redis container:{}", this.flinkJedisConfigBase.toString());
         } catch (Exception e) {
             LOG.error("Redis has not been properly initialized: ", e);
             throw e;
         }
+
+        this.cache = this.cacheMaxSize == -1 || this.cacheTtl == -1 ? null :
+                CacheBuilder.newBuilder().maximumSize(this.cacheMaxSize).expireAfterAccess(this.cacheTtl, TimeUnit.SECONDS).build();
     }
 
     /**

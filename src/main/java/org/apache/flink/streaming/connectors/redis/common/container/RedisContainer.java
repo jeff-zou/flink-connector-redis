@@ -86,14 +86,11 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public void hset(final String key, final String hashField, final String value, final Integer ttl) {
+    public void hset(final String key, final String hashField, final String value) {
         Jedis jedis = null;
         try {
             jedis = getInstance();
             jedis.hset(key, hashField, value);
-            if (ttl != null) {
-                jedis.expire(key, ttl);
-            }
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Cannot send Redis message with command HSET to key {} and hashField {} error message {}",
@@ -106,15 +103,12 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public long hincrBy(final String key, final String hashField, final Long value, final Integer ttl) {
+    public long hincrBy(final String key, final String hashField, final Long value) {
         Jedis jedis = null;
         Long result;
         try {
             jedis = getInstance();
             result = jedis.hincrBy(key, hashField, value);
-            if (ttl != null) {
-                jedis.expire(key, ttl);
-            }
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Cannot send Redis message with command HINCRBY to key {} and hashField {} error message {}",
@@ -128,15 +122,12 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public Double hincrByFloat(final String key, final String hashField, final Double value, final Integer ttl) {
+    public Double hincrByFloat(final String key, final String hashField, final Double value) {
         Jedis jedis = null;
         Double result;
         try {
             jedis = getInstance();
             result = jedis.hincrByFloat(key, hashField, value);
-            if (ttl != null) {
-                jedis.expire(key, ttl);
-            }
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Cannot send Redis message with command HINCRBY to key {} and hashField {} error message {}",
@@ -227,23 +218,6 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Cannot send Redis message with command SET to key {} error message {}",
                     key, e.getMessage());
-            }
-            throw e;
-        } finally {
-            releaseInstance(jedis);
-        }
-    }
-
-    @Override
-    public void setex(final String key, final String value, final Integer ttl) {
-        Jedis jedis = null;
-        try {
-            jedis = getInstance();
-            jedis.setex(key, ttl, value);
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command SETEX to key {} error message {}",
-                        key, e.getMessage());
             }
             throw e;
         } finally {
@@ -345,48 +319,6 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.close();
         } catch (Exception e) {
             LOG.error("Failed to close (return) instance to pool", e);
-        }
-    }
-
-    @Override
-    public Long incrByEx(String key, Long value, Integer ttl) {
-        Jedis jedis = null;
-        Long result;
-        try {
-            jedis = getInstance();
-            result = jedis.incrBy(key, value);
-            if (ttl != null) {
-                jedis.expire(key, ttl);
-            }
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis with incrby command with increment {}  with ttl {} error message {}",
-                        key, value, ttl, e.getMessage());
-            }
-            throw e;
-        } finally {
-            releaseInstance(jedis);
-        }
-        return result;
-    }
-
-    @Override
-    public void decrByEx(String key, Long value, Integer ttl) {
-        Jedis jedis = null;
-        try {
-            jedis = getInstance();
-            jedis.decrBy(key, value);
-            if (ttl != null) {
-                jedis.expire(key, ttl);
-            }
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis with decrBy command with decrement {}  with ttl {} error message {}",
-                        key, value, ttl, e.getMessage());
-            }
-            throw e;
-        } finally {
-            releaseInstance(jedis);
         }
     }
 

@@ -43,7 +43,7 @@ public class RedisDynamicTableFactory implements DynamicTableSinkFactory, Dynami
         ReadableConfig config = helper.getOptions();
         helper.validate();
         validateConfigOptions(config);
-        return new RedisDynamicTableSink(context.getCatalogTable().getOptions(), context.getCatalogTable().getResolvedSchema(), config);
+        return new RedisDynamicTableSink(context.getCatalogTable().getOptions(), config);
     }
 
     @Override
@@ -71,11 +71,13 @@ public class RedisDynamicTableFactory implements DynamicTableSinkFactory, Dynami
         options.add(RedisOptions.MINIDLE);
         options.add(RedisOptions.COMMAND);
         options.add(RedisOptions.REDISMODE);
-        options.add(RedisOptions.PUT_IF_ABSENT);
         options.add(RedisOptions.TTL);
         options.add(RedisOptions.LOOKUP_CACHE_MAX_ROWS);
         options.add(RedisOptions.LOOKUP_CHCHE_TTL);
         options.add(RedisOptions.LOOKUP_MAX_RETRIES);
+        options.add(RedisOptions.SINK_CACHE_MAX_ROWS);
+        options.add(RedisOptions.SINK_CHCHE_TTL);
+        options.add(RedisOptions.SINK_MAX_RETRIES);
         return options;
     }
 

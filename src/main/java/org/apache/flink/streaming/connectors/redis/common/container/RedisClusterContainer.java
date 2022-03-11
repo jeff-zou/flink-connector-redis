@@ -58,12 +58,9 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     }
 
     @Override
-    public void hset(final String key, final String hashField, final String value, final Integer ttl) {
+    public void hset(final String key, final String hashField, final String value) {
         try {
             jedisCluster.hset(key, hashField, value);
-            if (ttl != null) {
-                jedisCluster.expire(key, ttl);
-            }
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Cannot send Redis message with command HSET to hash {} of key {} error message {}",
@@ -74,13 +71,10 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     }
 
     @Override
-    public long hincrBy(final String key, final String hashField, final Long value, final Integer ttl) {
+    public long hincrBy(final String key, final String hashField, final Long value) {
         Long result;
         try {
             result = jedisCluster.hincrBy(key, hashField, value);
-            if (ttl != null) {
-                jedisCluster.expire(key, ttl);
-            }
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Cannot send Redis message with command HINCRBY to hash {} of key {} error message {}",
@@ -93,13 +87,10 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
 
 
     @Override
-    public Double hincrByFloat(final String key, final String hashField, final Double value, final Integer ttl) {
+    public Double hincrByFloat(final String key, final String hashField, final Double value) {
         Double result;
         try {
             result = jedisCluster.hincrByFloat(key.getBytes(), hashField.getBytes(), value);
-            if (ttl != null) {
-                jedisCluster.expire(key, ttl);
-            }
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Cannot send Redis message with command HINCRBY to hash {} of key {} error message {}",
@@ -176,19 +167,6 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     }
 
     @Override
-    public void setex(final String key, final String value, final Integer ttl) {
-        try {
-            jedisCluster.setex(key, ttl, value);
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command SETEX to key {} error message {}",
-                        key, e.getMessage());
-            }
-            throw e;
-        }
-    }
-
-    @Override
     public void pfadd(final String key, final String element) {
         try {
             jedisCluster.pfadd(key, element);
@@ -239,41 +217,6 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
             }
         }
     }
-
-    @Override
-    public Long incrByEx(String key, Long value, Integer ttl) {
-        Long result;
-        try {
-            result = jedisCluster.incrBy(key, value);
-            if (ttl != null) {
-                jedisCluster.expire(key, ttl);
-            }
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command incrby and ttl to key {} with increment {} and tll {} error message {}",
-                        key, value, ttl, e.getMessage());
-            }
-            throw e;
-        }
-        return result;
-    }
-
-    @Override
-    public void decrByEx(String key, Long value, Integer ttl) {
-        try {
-            jedisCluster.decrBy(key, value);
-            if (ttl != null) {
-                jedisCluster.expire(key, ttl);
-            }
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command descry and ttl to key {} with increment {} and tll {} error message {}",
-                        key, value, ttl, e.getMessage());
-            }
-            throw e;
-        }
-    }
-
 
     @Override
     public void incrBy(String key, Long value) {
