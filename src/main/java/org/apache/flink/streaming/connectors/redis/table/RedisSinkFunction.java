@@ -12,14 +12,10 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisDataType;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.catalog.ResolvedSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -187,6 +183,11 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     public void close() throws IOException {
         if (redisCommandsContainer != null) {
             redisCommandsContainer.close();
+        }
+
+        if (cache != null) {
+            cache.cleanUp();
+            cache = null;
         }
     }
 }
