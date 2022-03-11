@@ -23,11 +23,15 @@ import org.apache.flink.util.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.*;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_CLUSTER;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MASTER_NAME;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_NODES;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SENTINEL;
 
-/**
- * redis descriptor for create redis connector.
- */
+/** redis descriptor for create redis connector. */
 public class Redis extends ConnectorDescriptor {
 
     Map<String, String> properties = new HashMap<>();
@@ -46,19 +50,20 @@ public class Redis extends ConnectorDescriptor {
 
     /**
      * redis operation type.
+     *
      * @param redisCommand redis operation type
      * @return this descriptor.
      */
     public Redis command(String redisCommand) {
         this.redisCommand = redisCommand;
-            properties.put(REDIS_COMMAND, redisCommand);
+        properties.put(REDIS_COMMAND, redisCommand);
         return this;
     }
 
     /**
-     * redis mode to connect a specified redis cluster
-     * @param mode redis mode
-     * @return this descriptor
+     * redis mode to connect a specified redis cluster.
+     * @param mode
+     * @return
      */
     public Redis mode(String mode) {
         this.mode = mode;
@@ -68,6 +73,7 @@ public class Redis extends ConnectorDescriptor {
 
     /**
      * add properties used to connect to redis.
+     *
      * @param k specified key
      * @param v value for specified key
      * @return this descriptor
@@ -83,16 +89,18 @@ public class Redis extends ConnectorDescriptor {
         return properties;
     }
 
-    /**
-     * validate the necessary properties for redis descriptor.
-     */
+    /** validate the necessary properties for redis descriptor. */
     public void validate() {
-        Preconditions.checkArgument(properties.containsKey(REDIS_COMMAND), "need specified redis command");
+        Preconditions.checkArgument(
+                properties.containsKey(REDIS_COMMAND), "need specified redis command");
         if (mode.equalsIgnoreCase(REDIS_CLUSTER)) {
-            Preconditions.checkArgument(properties.containsKey(REDIS_NODES), "cluster mode need cluster-nodes info");
+            Preconditions.checkArgument(
+                    properties.containsKey(REDIS_NODES), "cluster mode need cluster-nodes info");
         } else if (mode.equalsIgnoreCase(REDIS_SENTINEL)) {
-            Preconditions.checkArgument(properties.containsKey(REDIS_MASTER_NAME), "sentinel mode need master name");
-            Preconditions.checkArgument(properties.containsKey(REDIS_SENTINEL), "sentinel mode need sentinel infos");
+            Preconditions.checkArgument(
+                    properties.containsKey(REDIS_MASTER_NAME), "sentinel mode need master name");
+            Preconditions.checkArgument(
+                    properties.containsKey(REDIS_SENTINEL), "sentinel mode need sentinel infos");
         }
     }
 }

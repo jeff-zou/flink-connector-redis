@@ -20,9 +20,7 @@ package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/**
- * SET with expire key operation redis mapper.
- */
+/** SET with expire key operation redis mapper. */
 public class SetExSinkMapper extends RowRedisSinkMapper {
 
     public SetExSinkMapper() {

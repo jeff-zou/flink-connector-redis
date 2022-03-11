@@ -1,19 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.apache.flink.streaming.connectors.redis.common.config;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -21,9 +5,7 @@ import redis.clients.jedis.Protocol;
 
 import java.util.Objects;
 
-/**
- * Configuration for Jedis pool.
- */
+/** Configuration for Jedis pool. */
 public class FlinkJedisPoolConfig extends FlinkJedisConfigBase {
 
     private static final long serialVersionUID = 1L;
@@ -32,23 +14,30 @@ public class FlinkJedisPoolConfig extends FlinkJedisConfigBase {
     private final int port;
     private final int database;
 
-
     /**
-     * Jedis pool configuration.
-     * The host is mandatory, and when host is not set, it throws NullPointerException.
+     * Jedis pool configuration. The host is mandatory, and when host is not set, it throws
+     * NullPointerException.
      *
      * @param host hostname or IP
      * @param port port, default value is 6379
      * @param connectionTimeout socket / connection timeout, default value is 2000 milli second
      * @param password password, if any
      * @param database database index
-     * @param maxTotal the maximum number of objects that can be allocated by the pool, default value is 8
+     * @param maxTotal the maximum number of objects that can be allocated by the pool, default
+     *     value is 8
      * @param maxIdle the cap on the number of "idle" instances in the pool, default value is 8
      * @param minIdle the minimum number of idle objects to maintain in the pool, default value is 0
      * @throws NullPointerException if parameter {@code host} is {@code null}
      */
-    private FlinkJedisPoolConfig(String host, int port, int connectionTimeout, String password, int database,
-                                int maxTotal, int maxIdle, int minIdle) {
+    private FlinkJedisPoolConfig(
+            String host,
+            int port,
+            int connectionTimeout,
+            String password,
+            int database,
+            int maxTotal,
+            int maxIdle,
+            int minIdle) {
         super(connectionTimeout, maxTotal, maxIdle, minIdle, password);
         Objects.requireNonNull(host, "Host information should be presented");
         this.host = host;
@@ -74,7 +63,6 @@ public class FlinkJedisPoolConfig extends FlinkJedisConfigBase {
         return port;
     }
 
-
     /**
      * Returns database index.
      *
@@ -84,9 +72,7 @@ public class FlinkJedisPoolConfig extends FlinkJedisConfigBase {
         return database;
     }
 
-    /**
-     * Builder for initializing  {@link FlinkJedisPoolConfig}.
-     */
+    /** Builder for initializing {@link FlinkJedisPoolConfig}. */
     public static class Builder {
         private String host;
         private int port = Protocol.DEFAULT_PORT;
@@ -98,10 +84,11 @@ public class FlinkJedisPoolConfig extends FlinkJedisConfigBase {
         private int minIdle = GenericObjectPoolConfig.DEFAULT_MIN_IDLE;
 
         /**
-         * Sets value for the {@code maxTotal} configuration attribute
-         * for pools to be created with this configuration instance.
+         * Sets value for the {@code maxTotal} configuration attribute for pools to be created with
+         * this configuration instance.
          *
-         * @param maxTotal maxTotal the maximum number of objects that can be allocated by the pool, default value is 8
+         * @param maxTotal maxTotal the maximum number of objects that can be allocated by the pool,
+         *     default value is 8
          * @return Builder itself
          */
         public Builder setMaxTotal(int maxTotal) {
@@ -110,8 +97,8 @@ public class FlinkJedisPoolConfig extends FlinkJedisConfigBase {
         }
 
         /**
-         * Sets value for the {@code maxIdle} configuration attribute
-         * for pools to be created with this configuration instance.
+         * Sets value for the {@code maxIdle} configuration attribute for pools to be created with
+         * this configuration instance.
          *
          * @param maxIdle the cap on the number of "idle" instances in the pool, default value is 8
          * @return Builder itself
@@ -122,10 +109,11 @@ public class FlinkJedisPoolConfig extends FlinkJedisConfigBase {
         }
 
         /**
-         * Sets value for the {@code minIdle} configuration attribute
-         * for pools to be created with this configuration instance.
+         * Sets value for the {@code minIdle} configuration attribute for pools to be created with
+         * this configuration instance.
          *
-         * @param minIdle the minimum number of idle objects to maintain in the pool, default value is 0
+         * @param minIdle the minimum number of idle objects to maintain in the pool, default value
+         *     is 0
          * @return Builder itself
          */
         public Builder setMinIdle(int minIdle) {
@@ -188,27 +176,35 @@ public class FlinkJedisPoolConfig extends FlinkJedisConfigBase {
             return this;
         }
 
-
         /**
          * Builds JedisPoolConfig.
          *
          * @return JedisPoolConfig
          */
         public FlinkJedisPoolConfig build() {
-            return new FlinkJedisPoolConfig(host, port, timeout, password, database, maxTotal, maxIdle, minIdle);
+            return new FlinkJedisPoolConfig(
+                    host, port, timeout, password, database, maxTotal, maxIdle, minIdle);
         }
     }
 
     @Override
     public String toString() {
-        return "JedisPoolConfig{" +
-            "host='" + host + '\'' +
-            ", port=" + port +
-            ", timeout=" + connectionTimeout +
-            ", database=" + database +
-            ", maxTotal=" + maxTotal +
-            ", maxIdle=" + maxIdle +
-            ", minIdle=" + minIdle +
-            '}';
+        return "JedisPoolConfig{"
+                + "host='"
+                + host
+                + '\''
+                + ", port="
+                + port
+                + ", timeout="
+                + connectionTimeout
+                + ", database="
+                + database
+                + ", maxTotal="
+                + maxTotal
+                + ", maxIdle="
+                + maxIdle
+                + ", minIdle="
+                + minIdle
+                + '}';
     }
 }

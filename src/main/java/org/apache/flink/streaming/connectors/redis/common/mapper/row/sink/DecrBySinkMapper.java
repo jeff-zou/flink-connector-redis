@@ -20,9 +20,7 @@ package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/**
- * decrease operation redis mapper.
- */
+/** decrease operation redis mapper. */
 public class DecrBySinkMapper extends RowRedisSinkMapper {
 
     public DecrBySinkMapper() {

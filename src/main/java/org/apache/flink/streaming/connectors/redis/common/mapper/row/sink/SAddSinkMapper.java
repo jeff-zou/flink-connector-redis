@@ -20,9 +20,7 @@ package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/**
- * SADD  operation redis mapper.
- */
+/** SADD operation redis mapper. */
 public class SAddSinkMapper extends RowRedisSinkMapper {
 
     public SAddSinkMapper() {
@@ -32,5 +30,4 @@ public class SAddSinkMapper extends RowRedisSinkMapper {
     public SAddSinkMapper(ReadableConfig config) {
         super(RedisCommand.SADD, config);
     }
-
 }

@@ -21,10 +21,9 @@ import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
 /**
- * Delta plus operation
+ *
  */
 public class IncrBySinkMapper extends RowRedisSinkMapper {
-
 
     public IncrBySinkMapper() {
         super(RedisCommand.INCRBY);
@@ -33,5 +32,4 @@ public class IncrBySinkMapper extends RowRedisSinkMapper {
     public IncrBySinkMapper(ReadableConfig config) {
         super(RedisCommand.INCRBY, config);
     }
-
 }

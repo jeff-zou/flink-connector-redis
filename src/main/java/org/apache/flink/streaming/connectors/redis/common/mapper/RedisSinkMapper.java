@@ -1,9 +1,9 @@
 package org.apache.flink.streaming.connectors.redis.common.mapper;
 
-import org.apache.flink.api.common.functions.Function;
-
-import java.io.Serializable;
-
+/**
+ *
+ * @param <T>
+ */
 public interface RedisSinkMapper<T> extends RedisMapper<T> {
 
     /**
@@ -23,11 +23,9 @@ public interface RedisSinkMapper<T> extends RedisMapper<T> {
     String getValueFromData(T data, Integer valueIndex);
 
     /**
-     *
      * @param data
      * @param fieldIndex
      * @return
      */
     String getFieldFromData(T data, Integer fieldIndex);
-
 }

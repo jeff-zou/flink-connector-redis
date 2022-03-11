@@ -20,9 +20,7 @@ package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/**
- * RPUSH  operation redis mapper.
- */
+/** RPUSH operation redis mapper. */
 public class RPushSinkMapper extends RowRedisSinkMapper {
 
     public RPushSinkMapper() {
@@ -32,5 +30,4 @@ public class RPushSinkMapper extends RowRedisSinkMapper {
     public RPushSinkMapper(ReadableConfig config) {
         super(RedisCommand.RPUSH, config);
     }
-
 }

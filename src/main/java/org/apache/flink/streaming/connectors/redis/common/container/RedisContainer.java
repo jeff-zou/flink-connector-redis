@@ -1,19 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.apache.flink.streaming.connectors.redis.common.container;
 
 import org.slf4j.Logger;
@@ -27,9 +11,10 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * Redis command container if we want to connect to a single Redis server or to Redis sentinels
- * If want to connect to a single Redis server, please use the first constructor {@link #RedisContainer(JedisPool)}.
- * If want to connect to a Redis sentinels, please use the second constructor {@link #RedisContainer(JedisSentinelPool)}
+ * Redis command container if we want to connect to a single Redis server or to Redis sentinels If
+ * want to connect to a single Redis server, please use the first constructor {@link
+ * #RedisContainer(JedisPool)}. If want to connect to a Redis sentinels, please use the second
+ * constructor {@link #RedisContainer(JedisSentinelPool)}
  */
 public class RedisContainer implements RedisCommandsContainer, Closeable {
 
@@ -62,9 +47,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
         this.jedisSentinelPool = sentinelPool;
     }
 
-    /**
-     * Closes the Jedis instances.
-     */
+    /** Closes the Jedis instances. */
     @Override
     public void close() throws IOException {
         if (this.jedisPool != null) {
@@ -93,8 +76,11 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.hset(key, hashField, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command HSET to key {} and hashField {} error message {}",
-                    key, hashField, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command HSET to key {} and hashField {} error message {}",
+                        key,
+                        hashField,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -111,14 +97,17 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             result = jedis.hincrBy(key, hashField, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command HINCRBY to key {} and hashField {} error message {}",
-                        key, hashField, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command HINCRBY to key {} and hashField {} error message {}",
+                        key,
+                        hashField,
+                        e.getMessage());
             }
             throw e;
         } finally {
             releaseInstance(jedis);
         }
-        return  result;
+        return result;
     }
 
     @Override
@@ -130,14 +119,17 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             result = jedis.hincrByFloat(key, hashField, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command HINCRBY to key {} and hashField {} error message {}",
-                        key, hashField, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command HINCRBY to key {} and hashField {} error message {}",
+                        key,
+                        hashField,
+                        e.getMessage());
             }
             throw e;
         } finally {
             releaseInstance(jedis);
         }
-        return  result;
+        return result;
     }
 
     @Override
@@ -148,8 +140,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.rpush(listName, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command RPUSH to list {} error message {}",
-                    listName, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command RPUSH to list {} error message {}",
+                        listName,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -165,8 +159,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.lpush(listName, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command LUSH to list {} error message {}",
-                    listName, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command LUSH to list {} error message {}",
+                        listName,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -182,8 +178,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.sadd(setName, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command RPUSH to set {} error message {}",
-                    setName, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command RPUSH to set {} error message {}",
+                        setName,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -199,8 +197,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.publish(channelName, message);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command PUBLISH to channel {} error message {}",
-                    channelName, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command PUBLISH to channel {} error message {}",
+                        channelName,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -216,8 +216,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.set(key, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command SET to key {} error message {}",
-                    key, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command SET to key {} error message {}",
+                        key,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -233,8 +235,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.pfadd(key, element);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command PFADD to key {} error message {}",
-                    key, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command PFADD to key {} error message {}",
+                        key,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -250,8 +254,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.zadd(key, Double.valueOf(score), element);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command ZADD to set {} error message {}",
-                    key, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command ZADD to set {} error message {}",
+                        key,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -267,8 +273,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.zincrby(key, Double.valueOf(score), element);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command ZINCRBY to set {} error message {}",
-                        key, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command ZINCRBY to set {} error message {}",
+                        key,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -284,8 +292,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.zrem(key, element);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command ZREM to set {} error message {}",
-                        key, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command ZREM to set {} error message {}",
+                        key,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -330,8 +340,11 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.incrBy(key, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis with incrby command with increment {}  error message {}",
-                        key, value, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis with incrby command with increment {}  error message {}",
+                        key,
+                        value,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -347,8 +360,11 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.decrBy(key, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis with decrBy command with increment {}  error message {}",
-                        key, value, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis with decrBy command with increment {}  error message {}",
+                        key,
+                        value,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -364,8 +380,12 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.setbit(key, value, offset);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command setbit to key {} with value {} and offset {} error message {}",
-                        key, value, offset, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command setbit to key {} with value {} and offset {} error message {}",
+                        key,
+                        value,
+                        offset,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -382,8 +402,11 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             result = jedis.getbit(key, offset);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command getbit to key {} with offset {} error message {}",
-                        key, offset, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command getbit to key {} with offset {} error message {}",
+                        key,
+                        offset,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -401,8 +424,11 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             result = jedis.hget(key, field);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command hget to key {} with field {} error message {}",
-                        key, field, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command hget to key {} with field {} error message {}",
+                        key,
+                        field,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -410,7 +436,6 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
         }
         return result;
     }
-
 
     @Override
     public String get(String key) {
@@ -421,8 +446,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             result = jedis.get(key);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command get to key {} error message {}",
-                        key, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command get to key {} error message {}",
+                        key,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -430,7 +457,6 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
         }
         return result;
     }
-
 
     @Override
     public void hdel(String key, String field) {
@@ -441,8 +467,11 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.hdel(key, field);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command hget to key {} with field {} error message {}",
-                        key, field, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command hget to key {} with field {} error message {}",
+                        key,
+                        field,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -459,8 +488,11 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             result = jedis.hexists(key, field);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command hexists to key {} with field {} error message {}",
-                        key, field, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command hexists to key {} with field {} error message {}",
+                        key,
+                        field,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -478,14 +510,16 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             result = jedis.exists(key);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command exists to key {} error message {}",
-                        key, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command exists to key {} error message {}",
+                        key,
+                        e.getMessage());
             }
             throw e;
         } finally {
             releaseInstance(jedis);
         }
-        return  result;
+        return result;
     }
 
     @Override
@@ -497,14 +531,17 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             result = jedis.expire(key, seconds);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command exists to key {}  seconds {} error message {}",
-                        key, seconds, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command exists to key {}  seconds {} error message {}",
+                        key,
+                        seconds,
+                        e.getMessage());
             }
             throw e;
         } finally {
             releaseInstance(jedis);
         }
-        return  null;
+        return null;
     }
 
     @Override
@@ -516,8 +553,11 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             result = jedis.sismember(key, member);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command exists to key {}  member {} error message {}",
-                        key, member, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command exists to key {}  member {} error message {}",
+                        key,
+                        member,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -525,7 +565,6 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
         }
         return result;
     }
-
 
     @Override
     public long scard(String key) {
@@ -536,8 +575,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             result = jedis.scard(key);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command scard to key {} error message {}",
-                        key, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command scard to key {} error message {}",
+                        key,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -554,8 +595,11 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis.srem(setName, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command srem to setName {} value : {} error message {}",
-                        setName, value, e.getMessage());
+                LOG.error(
+                        "Cannot send Redis message with command srem to setName {} value : {} error message {}",
+                        setName,
+                        value,
+                        e.getMessage());
             }
             throw e;
         } finally {
@@ -571,8 +615,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             jedis = this.getInstance();
             result = jedis.incrBy(key, value);
         } catch (Exception e) {
-            if(LOG.isErrorEnabled()) {
-                LOG.error("Cannot send Redis message with command incrBy to key {} and value {} error message {}", new Object[]{key, value, e.getMessage()});
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command incrBy to key {} and value {} error message {}",
+                        new Object[] {key, value, e.getMessage()});
             }
             throw e;
         } finally {

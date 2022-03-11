@@ -20,9 +20,7 @@ package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/**
- * decrease with expire operation redis mapper.
- */
+/** decrease with expire operation redis mapper. */
 public class DecrByExSinkMapper extends RowRedisSinkMapper {
 
     public DecrByExSinkMapper() {
@@ -32,5 +30,4 @@ public class DecrByExSinkMapper extends RowRedisSinkMapper {
     public DecrByExSinkMapper(ReadableConfig config) {
         super(RedisCommand.DESCRBY_EX, config);
     }
-
 }

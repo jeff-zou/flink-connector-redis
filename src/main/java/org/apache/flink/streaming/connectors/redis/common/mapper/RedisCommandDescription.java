@@ -1,8 +1,10 @@
 package org.apache.flink.streaming.connectors.redis.common.mapper;
 
 import java.io.Serializable;
-import java.util.Objects;
 
+/**
+ *
+ */
 public class RedisCommandDescription extends RedisCommandBaseDescription implements Serializable {
 
     private static final long serialVersionUID = 1L;

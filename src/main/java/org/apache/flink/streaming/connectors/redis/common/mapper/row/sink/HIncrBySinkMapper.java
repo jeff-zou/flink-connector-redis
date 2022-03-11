@@ -20,18 +20,14 @@ package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/**
- * HSET operation redis mapper.
- */
+/** HSET operation redis mapper. */
 public class HIncrBySinkMapper extends RowRedisSinkMapper {
 
     public HIncrBySinkMapper() {
         super(RedisCommand.HINCRBY);
     }
 
-
     public HIncrBySinkMapper(ReadableConfig config) {
-        super(RedisCommand.HINCRBY,config );
+        super(RedisCommand.HINCRBY, config);
     }
-
 }

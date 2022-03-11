@@ -9,14 +9,15 @@ import java.math.BigDecimal;
 import java.util.Base64;
 
 /**
- * @author jeff.zou
- * @date 2022/3/10.13:17
+ * redis serialize .
+ * @Author: jeff.zou
+ * @Date: 2022/3/10.13:17
  */
 public class RedisSerializeUtil {
 
     public static Object dataTypeFromString(LogicalType fieldType, String result) {
 
-        switch (fieldType.getTypeRoot()){
+        switch (fieldType.getTypeRoot()) {
             case BIGINT:
             case INTERVAL_DAY_TIME:
                 return Long.valueOf(result);

@@ -4,6 +4,10 @@ import org.apache.flink.api.common.functions.Function;
 
 import java.io.Serializable;
 
+/**
+ *
+ * @param <T>
+ */
 public interface RedisMapper<T> extends Function, Serializable {
 
     /**
@@ -12,6 +16,4 @@ public interface RedisMapper<T> extends Function, Serializable {
      * @return data type descriptor
      */
     RedisCommandBaseDescription getCommandDescription();
-
-
 }

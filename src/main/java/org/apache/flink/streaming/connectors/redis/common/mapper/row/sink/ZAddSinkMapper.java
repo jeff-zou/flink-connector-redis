@@ -17,13 +17,10 @@
 
 package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 
-
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/**
- * ZADD operation redis mapper.
- */
+/** ZADD operation redis mapper. */
 public class ZAddSinkMapper extends RowRedisSinkMapper {
 
     public ZAddSinkMapper() {
@@ -33,5 +30,4 @@ public class ZAddSinkMapper extends RowRedisSinkMapper {
     public ZAddSinkMapper(ReadableConfig config) {
         super(RedisCommand.ZADD, config);
     }
-
 }

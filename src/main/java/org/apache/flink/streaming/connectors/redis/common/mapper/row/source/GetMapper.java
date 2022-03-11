@@ -20,9 +20,7 @@ package org.apache.flink.streaming.connectors.redis.common.mapper.row.source;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/**
- * GET operation redis mapper.
- */
+/** GET operation redis mapper. */
 public class GetMapper extends RowRedisMapper {
 
     public GetMapper() {
@@ -32,5 +30,4 @@ public class GetMapper extends RowRedisMapper {
     public GetMapper(ReadableConfig readableConfig) {
         super(RedisCommand.GET);
     }
-
 }

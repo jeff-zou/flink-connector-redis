@@ -21,15 +21,18 @@ import org.apache.flink.calcite.shaded.com.google.common.base.Preconditions;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisSentinelConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.FlinkJedisConfigHandler;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.*;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
 
+/**
+ *
+ */
 public class FlinkJedisSingleConfigHandler implements FlinkJedisConfigHandler {
 
     @Override
@@ -40,9 +43,13 @@ public class FlinkJedisSingleConfigHandler implements FlinkJedisConfigHandler {
 
         String password = config.get(RedisOptions.PASSWORD);
 
-        FlinkJedisPoolConfig.Builder builder =  new FlinkJedisPoolConfig.Builder().setHost(host).setPassword(password);
+        FlinkJedisPoolConfig.Builder builder =
+                new FlinkJedisPoolConfig.Builder().setHost(host).setPassword(password);
         builder.setPort(config.get(RedisOptions.PORT));
-        builder.setMaxIdle(config.get(RedisOptions.MAXIDLE)).setMinIdle(config.get(RedisOptions.MINIDLE)).setMaxTotal(config.get(RedisOptions.MAXTOTAL)).setTimeout(config.get(RedisOptions.TIMEOUT));
+        builder.setMaxIdle(config.get(RedisOptions.MAXIDLE))
+                .setMinIdle(config.get(RedisOptions.MINIDLE))
+                .setMaxTotal(config.get(RedisOptions.MAXTOTAL))
+                .setTimeout(config.get(RedisOptions.TIMEOUT));
 
         return builder.build();
     }
@@ -54,7 +61,5 @@ public class FlinkJedisSingleConfigHandler implements FlinkJedisConfigHandler {
         return require;
     }
 
-    public FlinkJedisSingleConfigHandler() {
-
-    }
+    public FlinkJedisSingleConfigHandler() {}
 }

@@ -13,35 +13,33 @@ import java.util.Map;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 
-/**
- * base row redis mapper implement.
- */
-public abstract class RowRedisSinkMapper implements RedisSinkMapper<GenericRowData>, RedisMapperHandler {
+/** base row redis mapper implement. */
+public abstract class RowRedisSinkMapper
+        implements RedisSinkMapper<GenericRowData>, RedisMapperHandler {
 
     private Integer ttl;
 
     private RedisCommand redisCommand;
-
 
     public RowRedisSinkMapper(int ttl, RedisCommand redisCommand) {
         this.ttl = ttl;
         this.redisCommand = redisCommand;
     }
 
-    public RowRedisSinkMapper(RedisCommand redisCommand,int ttl){
+    public RowRedisSinkMapper(RedisCommand redisCommand, int ttl) {
         this.ttl = ttl;
         this.redisCommand = redisCommand;
     }
 
-    public RowRedisSinkMapper(RedisCommand redisCommand){
+    public RowRedisSinkMapper(RedisCommand redisCommand) {
         this.redisCommand = redisCommand;
     }
 
-    public RowRedisSinkMapper(RedisCommand redisCommand, Map<String, String> config){
+    public RowRedisSinkMapper(RedisCommand redisCommand, Map<String, String> config) {
         this.redisCommand = redisCommand;
     }
 
-    public RowRedisSinkMapper(RedisCommand redisCommand, ReadableConfig config){
+    public RowRedisSinkMapper(RedisCommand redisCommand, ReadableConfig config) {
         this.redisCommand = redisCommand;
         this.ttl = config.get(RedisOptions.TTL);
     }
@@ -57,7 +55,7 @@ public abstract class RowRedisSinkMapper implements RedisSinkMapper<GenericRowDa
     }
 
     @Override
-    public String getValueFromData(GenericRowData row,  Integer valueIndex) {
+    public String getValueFromData(GenericRowData row, Integer valueIndex) {
         return String.valueOf(row.getField(valueIndex));
     }
 
@@ -82,5 +80,4 @@ public abstract class RowRedisSinkMapper implements RedisSinkMapper<GenericRowDa
         RedisCommand redisCommand = ((RowRedisSinkMapper) obj).redisCommand;
         return this.redisCommand == redisCommand;
     }
-
 }

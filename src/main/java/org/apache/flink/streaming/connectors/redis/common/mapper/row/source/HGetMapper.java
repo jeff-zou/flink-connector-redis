@@ -20,9 +20,7 @@ package org.apache.flink.streaming.connectors.redis.common.mapper.row.source;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/**
- * HGET operation redis mapper.
- */
+/** HGET operation redis mapper. */
 public class HGetMapper extends RowRedisMapper {
 
     public HGetMapper() {
@@ -32,5 +30,4 @@ public class HGetMapper extends RowRedisMapper {
     public HGetMapper(ReadableConfig readableConfig) {
         super(RedisCommand.HGET);
     }
-
 }

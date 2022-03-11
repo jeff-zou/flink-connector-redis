@@ -20,11 +20,8 @@ package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/**
- * PFADD operation redis mapper.
- */
+/** PFADD operation redis mapper. */
 public class PfAddSinkMapper extends RowRedisSinkMapper {
-
 
     public PfAddSinkMapper() {
         super(RedisCommand.PFADD);

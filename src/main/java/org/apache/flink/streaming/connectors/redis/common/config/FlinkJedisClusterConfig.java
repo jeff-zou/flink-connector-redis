@@ -17,8 +17,9 @@
 
 package org.apache.flink.streaming.connectors.redis.common.config;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.flink.streaming.connectors.redis.common.util.CheckUtil;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 
@@ -27,19 +28,16 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * Configuration for Jedis cluster.
- */
+/** Configuration for Jedis cluster. */
 public class FlinkJedisClusterConfig extends FlinkJedisConfigBase {
     private static final long serialVersionUID = 1L;
 
     private final Set<InetSocketAddress> nodes;
     private final int maxRedirections;
 
-
     /**
-     * Jedis cluster configuration.
-     * The list of node is mandatory, and when nodes is not set, it throws NullPointerException.
+     * Jedis cluster configuration. The list of node is mandatory, and when nodes is not set, it
+     * throws NullPointerException.
      *
      * @param nodes list of node information for JedisCluster
      * @param connectionTimeout socket / connection timeout. The default is 2000
@@ -50,9 +48,14 @@ public class FlinkJedisClusterConfig extends FlinkJedisConfigBase {
      * @param password the password of redis cluster
      * @throws NullPointerException if parameter {@code nodes} is {@code null}
      */
-    private FlinkJedisClusterConfig(Set<InetSocketAddress> nodes, int connectionTimeout, int maxRedirections,
-                                    int maxTotal, int maxIdle, int minIdle,
-                                    String password) {
+    private FlinkJedisClusterConfig(
+            Set<InetSocketAddress> nodes,
+            int connectionTimeout,
+            int maxRedirections,
+            int maxTotal,
+            int maxIdle,
+            int minIdle,
+            String password) {
         super(connectionTimeout, maxTotal, maxIdle, minIdle, password);
 
         Objects.requireNonNull(nodes, "Node information should be presented");
@@ -60,8 +63,6 @@ public class FlinkJedisClusterConfig extends FlinkJedisConfigBase {
         this.nodes = new HashSet<>(nodes);
         this.maxRedirections = maxRedirections;
     }
-
-
 
     /**
      * Returns nodes.
@@ -85,10 +86,7 @@ public class FlinkJedisClusterConfig extends FlinkJedisConfigBase {
         return maxRedirections;
     }
 
-
-    /**
-     * Builder for initializing  {@link FlinkJedisClusterConfig}.
-     */
+    /** Builder for initializing {@link FlinkJedisClusterConfig}. */
     public static class Builder {
         private Set<InetSocketAddress> nodes;
         private int timeout = Protocol.DEFAULT_TIMEOUT;
@@ -132,10 +130,11 @@ public class FlinkJedisClusterConfig extends FlinkJedisConfigBase {
         }
 
         /**
-         * Sets value for the {@code maxTotal} configuration attribute
-         * for pools to be created with this configuration instance.
+         * Sets value for the {@code maxTotal} configuration attribute for pools to be created with
+         * this configuration instance.
          *
-         * @param maxTotal maxTotal the maximum number of objects that can be allocated by the pool, default value is 8
+         * @param maxTotal maxTotal the maximum number of objects that can be allocated by the pool,
+         *     default value is 8
          * @return Builder itself
          */
         public Builder setMaxTotal(int maxTotal) {
@@ -144,8 +143,8 @@ public class FlinkJedisClusterConfig extends FlinkJedisConfigBase {
         }
 
         /**
-         * Sets value for the {@code maxIdle} configuration attribute
-         * for pools to be created with this configuration instance.
+         * Sets value for the {@code maxIdle} configuration attribute for pools to be created with
+         * this configuration instance.
          *
          * @param maxIdle the cap on the number of "idle" instances in the pool, default value is 8
          * @return Builder itself
@@ -156,10 +155,11 @@ public class FlinkJedisClusterConfig extends FlinkJedisConfigBase {
         }
 
         /**
-         * Sets value for the {@code minIdle} configuration attribute
-         * for pools to be created with this configuration instance.
+         * Sets value for the {@code minIdle} configuration attribute for pools to be created with
+         * this configuration instance.
          *
-         * @param minIdle the minimum number of idle objects to maintain in the pool, default value is 0
+         * @param minIdle the minimum number of idle objects to maintain in the pool, default value
+         *     is 0
          * @return Builder itself
          */
         public Builder setMinIdle(int minIdle) {
@@ -168,8 +168,8 @@ public class FlinkJedisClusterConfig extends FlinkJedisConfigBase {
         }
 
         /**
-         * Sets value for the {@code password} configuration attribute
-         * for pools to be created with this configuration instance.
+         * Sets value for the {@code password} configuration attribute for pools to be created with
+         * this configuration instance.
          *
          * @param password the password for accessing redis cluster
          * @return Builder itself
@@ -185,19 +185,26 @@ public class FlinkJedisClusterConfig extends FlinkJedisConfigBase {
          * @return JedisClusterConfig
          */
         public FlinkJedisClusterConfig build() {
-            return new FlinkJedisClusterConfig(nodes, timeout, maxRedirections, maxTotal, maxIdle, minIdle, password);
+            return new FlinkJedisClusterConfig(
+                    nodes, timeout, maxRedirections, maxTotal, maxIdle, minIdle, password);
         }
     }
 
     @Override
     public String toString() {
-        return "JedisClusterConfig{" +
-            "nodes=" + nodes +
-            ", timeout=" + connectionTimeout +
-            ", maxRedirections=" + maxRedirections +
-            ", maxTotal=" + maxTotal +
-            ", maxIdle=" + maxIdle +
-            ", minIdle=" + minIdle +
-            '}';
+        return "JedisClusterConfig{"
+                + "nodes="
+                + nodes
+                + ", timeout="
+                + connectionTimeout
+                + ", maxRedirections="
+                + maxRedirections
+                + ", maxTotal="
+                + maxTotal
+                + ", maxIdle="
+                + maxIdle
+                + ", minIdle="
+                + minIdle
+                + '}';
     }
 }

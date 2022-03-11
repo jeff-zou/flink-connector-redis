@@ -8,8 +8,6 @@ import org.apache.flink.streaming.connectors.redis.common.hanlder.FlinkJedisConf
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.sink.DynamicTableSink;
 import org.apache.flink.table.connector.sink.SinkFunctionProvider;
@@ -20,9 +18,7 @@ import java.util.Map;
 
 import static org.apache.flink.util.Preconditions.checkState;
 
-/**
- * Created by jeff.zou on 2020/9/10.
- */
+/** Created by jeff.zou on 2020/9/10. */
 public class RedisDynamicTableSink implements DynamicTableSink {
 
     private FlinkJedisConfigBase flinkJedisConfigBase;
@@ -37,15 +33,19 @@ public class RedisDynamicTableSink implements DynamicTableSink {
         Preconditions.checkNotNull(properties, "properties should not be null");
         this.config = config;
         this.sinkParallelism = config.get(RedisOptions.SINK_PARALLELISM);
-        redisMapper = (RedisSinkMapper) RedisHandlerServices
-                .findRedisHandler(RedisMapperHandler.class, properties)
-                .createRedisMapper(config);
-        flinkJedisConfigBase = RedisHandlerServices
-                .findRedisHandler(FlinkJedisConfigHandler.class, properties).createFlinkJedisConfig(config);
-        redisCacheOptions = new RedisCacheOptions.Builder()
-                .setCacheTTL(config.get(RedisOptions.SINK_CHCHE_TTL))
-                .setCacheMaxSize(config.get(RedisOptions.SINK_CACHE_MAX_ROWS))
-                .setMaxRetryTimes(config.get(RedisOptions.SINK_MAX_RETRIES)).build();
+        redisMapper =
+                (RedisSinkMapper)
+                        RedisHandlerServices.findRedisHandler(RedisMapperHandler.class, properties)
+                                .createRedisMapper(config);
+        flinkJedisConfigBase =
+                RedisHandlerServices.findRedisHandler(FlinkJedisConfigHandler.class, properties)
+                        .createFlinkJedisConfig(config);
+        redisCacheOptions =
+                new RedisCacheOptions.Builder()
+                        .setCacheTTL(config.get(RedisOptions.SINK_CHCHE_TTL))
+                        .setCacheMaxSize(config.get(RedisOptions.SINK_CACHE_MAX_ROWS))
+                        .setMaxRetryTimes(config.get(RedisOptions.SINK_MAX_RETRIES))
+                        .build();
     }
 
     @Override
@@ -60,7 +60,9 @@ public class RedisDynamicTableSink implements DynamicTableSink {
 
     @Override
     public SinkRuntimeProvider getSinkRuntimeProvider(Context context) {
-        return SinkFunctionProvider.of(new RedisSinkFunction(flinkJedisConfigBase, redisMapper, redisCacheOptions), sinkParallelism);
+        return SinkFunctionProvider.of(
+                new RedisSinkFunction(flinkJedisConfigBase, redisMapper, redisCacheOptions),
+                sinkParallelism);
     }
 
     @Override
@@ -74,7 +76,8 @@ public class RedisDynamicTableSink implements DynamicTableSink {
     }
 
     private void validatePrimaryKey(ChangelogMode requestedMode) {
-        checkState(ChangelogMode.insertOnly().equals(requestedMode),
+        checkState(
+                ChangelogMode.insertOnly().equals(requestedMode),
                 "please declare primary key for sink table when query contains update/delete record.");
     }
 }
