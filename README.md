@@ -41,11 +41,11 @@ Development environment engineering direct reference:
 There is no need to map the key in redis through the primary key, the key is directly determined by the order of the fields in the ddl, such as:
 
 ```
+#Where username is the key and passport is the value.
 create table sink_redis(username VARCHAR, passport VARCHAR)  with ('command'='set') 
-其中username为key, passport为value.
 
+#The name is the key of the map structure, the subject is the field, and the score is the value.
 create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('command'='hset') 
-其中name为map结构的key, subject为field, score为value.
 ```
 
 
