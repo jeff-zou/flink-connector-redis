@@ -3,8 +3,8 @@ package org.apache.flink.streaming.connectors.redis.datastream;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisClusterConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
+import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
@@ -13,37 +13,25 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper
 import org.apache.flink.streaming.connectors.redis.table.RedisSinkFunction;
 import org.apache.flink.table.data.GenericRowData;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import redis.embedded.RedisServer;
+import redis.embedded.RedisServerBuilder;
 
-import java.net.InetSocketAddress;
-import java.util.HashSet;
-
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_CLUSTER;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
-import static org.apache.flink.streaming.connectors.redis.table.SQLTest.PASSWORD;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
 
 /** Created by jeff.zou on 2021/2/26. */
 public class DataStreamTest {
 
-    public static FlinkJedisClusterConfig getLocalRedisClusterConfig() {
-        InetSocketAddress host0 = new InetSocketAddress("10.11.80.147", 7000);
-        InetSocketAddress host1 = new InetSocketAddress("10.11.80.147", 7001);
-        InetSocketAddress host2 = new InetSocketAddress("10.11.80.147", 8000);
-        InetSocketAddress host3 = new InetSocketAddress("10.11.80.147", 8001);
-        InetSocketAddress host4 = new InetSocketAddress("10.11.80.147", 9000);
-        InetSocketAddress host5 = new InetSocketAddress("10.11.80.147", 9001);
+    private RedisServer redisServer;
 
-        HashSet<InetSocketAddress> set = new HashSet<>();
-        set.add(host0);
-        set.add(host1);
-        set.add(host2);
-        set.add(host3);
-        set.add(host4);
-        set.add(host5);
-        FlinkJedisClusterConfig config =
-                new FlinkJedisClusterConfig.Builder().setNodes(set).setPassword(PASSWORD).build();
-        return config;
+    @Before
+    public void before() {
+       redisServer = RedisServer.builder().setting("maxheap 512000").build();
+        redisServer.start();
     }
 
     /*
@@ -54,7 +42,7 @@ public class DataStreamTest {
     public void testDateStreamInsert() throws Exception {
 
         Configuration configuration = new Configuration();
-        configuration.setString(REDIS_MODE, REDIS_CLUSTER);
+        configuration.setString(REDIS_MODE, REDIS_SINGLE);
         configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
 
         RedisSinkMapper redisMapper =
@@ -73,11 +61,16 @@ public class DataStreamTest {
 
         RedisCacheOptions redisCacheOptions =
                 new RedisCacheOptions.Builder().setCacheMaxSize(100).setCacheTTL(10L).build();
-        FlinkJedisConfigBase conf = getLocalRedisClusterConfig();
+        FlinkJedisConfigBase conf = new FlinkJedisPoolConfig.Builder().setHost("localhost").setPort(6379).build();
         RedisSinkFunction redisSinkFunction =
                 new RedisSinkFunction<>(conf, redisMapper, redisCacheOptions);
 
         dataStream.addSink(redisSinkFunction).setParallelism(1);
         env.execute("RedisSinkTest");
+    }
+
+    @After
+    public void stopRedis() {
+        redisServer.stop();
     }
 }
