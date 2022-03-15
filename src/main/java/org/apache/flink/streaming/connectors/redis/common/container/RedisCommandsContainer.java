@@ -94,6 +94,7 @@ public interface RedisCommandsContainer extends Serializable {
 
     /**
      * increase the specified member with the specified scores to the sorted set stored at key.
+     *
      * @param key
      * @param score
      * @param element
@@ -110,6 +111,7 @@ public interface RedisCommandsContainer extends Serializable {
 
     /**
      * increase value to specified key.
+     *
      * @param key
      * @param value
      */
@@ -142,12 +144,14 @@ public interface RedisCommandsContainer extends Serializable {
 
     /**
      * Close the Jedis container.
+     *
      * @throws IOException
      */
     void close() throws IOException;
 
     /**
      * expire key with seconds.
+     *
      * @param key
      * @param seconds
      * @return

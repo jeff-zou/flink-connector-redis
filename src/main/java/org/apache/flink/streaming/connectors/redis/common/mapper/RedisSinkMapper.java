@@ -3,10 +3,7 @@ package org.apache.flink.streaming.connectors.redis.common.mapper;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.logical.LogicalType;
 
-/**
- *
- * @param <T>
- */
+/** @param <T> */
 public interface RedisSinkMapper<T> extends RedisMapper<T> {
 
     /**
@@ -15,7 +12,7 @@ public interface RedisSinkMapper<T> extends RedisMapper<T> {
      * @param rowData source data
      * @return key
      */
-    String getKeyFromData(RowData rowData, LogicalType logicalType,  Integer keyIndex);
+    String getKeyFromData(RowData rowData, LogicalType logicalType, Integer keyIndex);
 
     /**
      * Extracts value from data.
@@ -26,8 +23,6 @@ public interface RedisSinkMapper<T> extends RedisMapper<T> {
     String getValueFromData(RowData rowData, LogicalType logicalType, Integer valueIndex);
 
     /**
-     *
-     *
      * @param rowData
      * @param fieldIndex
      * @return

@@ -62,6 +62,7 @@ public class Redis extends ConnectorDescriptor {
 
     /**
      * redis mode to connect a specified redis cluster.
+     *
      * @param mode
      * @return
      */

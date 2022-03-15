@@ -33,9 +33,7 @@ import java.util.stream.Collectors;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SENTINEL;
 
-/**
- *
- */
+/** */
 public class FlinkJedisSentinelConfigHandler implements FlinkJedisConfigHandler {
 
     @Override

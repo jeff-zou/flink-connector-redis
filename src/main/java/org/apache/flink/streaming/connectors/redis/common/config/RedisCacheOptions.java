@@ -1,10 +1,6 @@
 package org.apache.flink.streaming.connectors.redis.common.config;
 
-/**
- * cache options.
- * @Author:jeff.zou
- * @Date: 2022/3/9.14:37
- */
+/** cache options. @Author:jeff.zou @Date: 2022/3/9.14:37 */
 public class RedisCacheOptions {
 
     private final long cacheMaxSize;
@@ -69,9 +65,7 @@ public class RedisCacheOptions {
         return result;
     }
 
-    /**
-     *
-     */
+    /** */
     public static class Builder {
         private long cacheMaxSize = -1L;
         private long cacheTtl = -1L;

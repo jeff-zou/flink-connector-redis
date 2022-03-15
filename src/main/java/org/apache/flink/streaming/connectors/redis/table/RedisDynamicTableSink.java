@@ -17,8 +17,6 @@ import org.apache.flink.util.Preconditions;
 
 import java.util.Map;
 
-import static org.apache.flink.util.Preconditions.checkState;
-
 /** Created by jeff.zou on 2020/9/10. */
 public class RedisDynamicTableSink implements DynamicTableSink {
 
@@ -30,7 +28,8 @@ public class RedisDynamicTableSink implements DynamicTableSink {
     private Integer sinkParallelism;
     private ResolvedSchema resolvedSchema;
 
-    public RedisDynamicTableSink(Map<String, String> properties, ResolvedSchema resolvedSchema, ReadableConfig config) {
+    public RedisDynamicTableSink(
+            Map<String, String> properties, ResolvedSchema resolvedSchema, ReadableConfig config) {
         this.properties = properties;
         Preconditions.checkNotNull(properties, "properties should not be null");
         this.config = config;
@@ -63,7 +62,8 @@ public class RedisDynamicTableSink implements DynamicTableSink {
     @Override
     public SinkRuntimeProvider getSinkRuntimeProvider(Context context) {
         return SinkFunctionProvider.of(
-                new RedisSinkFunction(flinkJedisConfigBase, redisMapper, redisCacheOptions, resolvedSchema),
+                new RedisSinkFunction(
+                        flinkJedisConfigBase, redisMapper, redisCacheOptions, resolvedSchema),
                 sinkParallelism);
     }
 

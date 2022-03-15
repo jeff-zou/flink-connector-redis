@@ -25,11 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/**
- * redis lookup function.
- * @Author: jeff.zou
- * @Date: 2022/3/7.14:33
- */
+/** redis lookup function. @Author: jeff.zou @Date: 2022/3/7.14:33 */
 public class RedisLookupFunction extends TableFunction<RowData> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisLookupFunction.class);

@@ -9,13 +9,7 @@ import org.apache.flink.table.types.logical.LogicalType;
 import java.math.BigDecimal;
 import java.util.Base64;
 
-import static org.apache.flink.table.types.logical.utils.LogicalTypeChecks.getPrecision;
-
-/**
- * redis serialize .
- * @Author: jeff.zou
- * @Date: 2022/3/10.13:17
- */
+/** redis serialize . @Author: jeff.zou @Date: 2022/3/10.13:17 */
 public class RedisSerializeUtil {
 
     public static Object dataTypeFromString(LogicalType fieldType, String result) {

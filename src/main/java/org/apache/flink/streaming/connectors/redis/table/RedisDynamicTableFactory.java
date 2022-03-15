@@ -58,7 +58,10 @@ public class RedisDynamicTableFactory
         ReadableConfig config = helper.getOptions();
         helper.validate();
         validateConfigOptions(config);
-        return new RedisDynamicTableSink(context.getCatalogTable().getOptions(), context.getCatalogTable().getResolvedSchema(), config);
+        return new RedisDynamicTableSink(
+                context.getCatalogTable().getOptions(),
+                context.getCatalogTable().getResolvedSchema(),
+                config);
     }
 
     @Override

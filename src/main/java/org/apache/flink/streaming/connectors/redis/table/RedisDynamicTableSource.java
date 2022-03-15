@@ -16,11 +16,7 @@ import org.apache.flink.util.Preconditions;
 
 import java.util.Map;
 
-/**
- * redis dynamic table source.
- * @Author: jeff.zou
- * @Date: 2022/3/7.13:41
- */
+/** redis dynamic table source. @Author: jeff.zou @Date: 2022/3/7.13:41 */
 public class RedisDynamicTableSource implements LookupTableSource {
 
     private FlinkJedisConfigBase flinkJedisConfigBase;

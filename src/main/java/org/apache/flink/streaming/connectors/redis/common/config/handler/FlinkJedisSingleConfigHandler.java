@@ -30,9 +30,7 @@ import java.util.Map;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
 
-/**
- *
- */
+/** */
 public class FlinkJedisSingleConfigHandler implements FlinkJedisConfigHandler {
 
     @Override

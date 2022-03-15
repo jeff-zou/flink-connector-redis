@@ -11,11 +11,7 @@ import java.util.Map;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 
-/**
- * row redis mapper.
- * @Author: jeff.zou
- * @Date: 2022/3/7.14:59
- */
+/** row redis mapper. @Author: jeff.zou @Date: 2022/3/7.14:59 */
 public class RowRedisMapper<OUT> implements RedisMapper<OUT>, RedisMapperHandler {
 
     RedisCommand redisCommand;

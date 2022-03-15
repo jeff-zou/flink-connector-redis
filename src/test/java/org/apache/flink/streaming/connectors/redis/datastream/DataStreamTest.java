@@ -38,8 +38,8 @@ public class DataStreamTest {
 
     @Before
     public void before() throws Exception {
-       redisServer = RedisServer.builder().port(6379).setting("maxheap 51200").build();
-       redisServer.start();
+        redisServer = RedisServer.builder().port(6379).setting("maxheap 51200").build();
+        redisServer.start();
     }
 
     /*
@@ -69,13 +69,19 @@ public class DataStreamTest {
 
         DataStream<BinaryRowData> dataStream = env.fromElements(binaryRowData, binaryRowData);
 
-        List<String> columnNames = Arrays.asList("name","subject", "scope");
-        List<DataType> columnDataTypes = Arrays.asList(DataTypes.STRING(), DataTypes.STRING(), DataTypes.STRING());
+        List<String> columnNames = Arrays.asList("name", "subject", "scope");
+        List<DataType> columnDataTypes =
+                Arrays.asList(DataTypes.STRING(), DataTypes.STRING(), DataTypes.STRING());
         ResolvedSchema resolvedSchema = ResolvedSchema.physical(columnNames, columnDataTypes);
 
         RedisCacheOptions redisCacheOptions =
                 new RedisCacheOptions.Builder().setCacheMaxSize(100).setCacheTTL(10L).build();
-        FlinkJedisConfigBase conf = new FlinkJedisPoolConfig.Builder().setHost("10.11.80.147").setPort(7001).setPassword(PASSWORD).build();
+        FlinkJedisConfigBase conf =
+                new FlinkJedisPoolConfig.Builder()
+                        .setHost("10.11.80.147")
+                        .setPort(7001)
+                        .setPassword(PASSWORD)
+                        .build();
 
         RedisSinkFunction redisSinkFunction =
                 new RedisSinkFunction<>(conf, redisMapper, redisCacheOptions, resolvedSchema);

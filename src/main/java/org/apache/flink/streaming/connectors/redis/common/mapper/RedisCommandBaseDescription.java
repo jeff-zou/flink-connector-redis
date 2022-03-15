@@ -4,11 +4,7 @@ import org.apache.flink.calcite.shaded.com.google.common.base.Preconditions;
 
 import java.io.Serializable;
 
-/**
- * base description.
- * @Author: jeff.zou
- * @Date: 2022/3/9.14:55
- */
+/** base description. @Author: jeff.zou @Date: 2022/3/9.14:55 */
 public class RedisCommandBaseDescription implements Serializable {
     private static final long serialVersionUID = 1L;
 

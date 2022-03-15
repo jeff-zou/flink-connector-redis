@@ -26,10 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-/**
- *
- * @param <IN>
- */
+/** @param <IN> */
 public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisSinkFunction.class);
@@ -58,7 +55,8 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     public RedisSinkFunction(
             FlinkJedisConfigBase flinkJedisConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
-            RedisCacheOptions redisCacheOptions, ResolvedSchema resolvedSchema) {
+            RedisCacheOptions redisCacheOptions,
+            ResolvedSchema resolvedSchema) {
         Objects.requireNonNull(
                 flinkJedisConfigBase, "Redis connection pool config should not be null");
         Objects.requireNonNull(redisSinkMapper, "Redis Mapper can not be null");
@@ -88,19 +86,26 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      */
     @Override
     public void invoke(IN input, Context context) throws Exception {
-        RowData rowData = (RowData)input;
+        RowData rowData = (RowData) input;
         RowKind kind = rowData.getRowKind();
-        if(kind != RowKind.INSERT && kind != RowKind.UPDATE_AFTER){
+        if (kind != RowKind.INSERT && kind != RowKind.UPDATE_AFTER) {
             return;
         }
 
-        String key = redisSinkMapper.getKeyFromData(rowData, columnDataTypes.get(0).getLogicalType(), 0);
-        String value = redisSinkMapper.getValueFromData(rowData, columnDataTypes.get(1).getLogicalType(), 1);
+        String key =
+                redisSinkMapper.getKeyFromData(rowData, columnDataTypes.get(0).getLogicalType(), 0);
+        String value =
+                redisSinkMapper.getValueFromData(
+                        rowData, columnDataTypes.get(1).getLogicalType(), 1);
         String field = null;
         if (redisCommand.getRedisDataType() == RedisDataType.HASH
                 || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
-            field = redisSinkMapper.getFieldFromData(rowData, columnDataTypes.get(1).getLogicalType(), 1);
-            value = redisSinkMapper.getValueFromData(rowData, columnDataTypes.get(2).getLogicalType(), 2);
+            field =
+                    redisSinkMapper.getFieldFromData(
+                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
+            value =
+                    redisSinkMapper.getValueFromData(
+                            rowData, columnDataTypes.get(2).getLogicalType(), 2);
         }
 
         String cacheKey = key;

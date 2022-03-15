@@ -9,7 +9,6 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper
 import org.apache.flink.streaming.connectors.redis.common.util.RedisSerializeUtil;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
-import org.apache.flink.table.data.binary.BinaryRowData;
 import org.apache.flink.table.types.logical.LogicalType;
 
 import java.util.HashMap;
