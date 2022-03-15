@@ -1,12 +1,15 @@
 package org.apache.flink.streaming.connectors.redis.common.util;
 
 import org.apache.flink.table.data.DecimalData;
+import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.binary.BinaryStringData;
 import org.apache.flink.table.types.logical.DecimalType;
 import org.apache.flink.table.types.logical.LogicalType;
 
 import java.math.BigDecimal;
 import java.util.Base64;
+
+import static org.apache.flink.table.types.logical.utils.LogicalTypeChecks.getPrecision;
 
 /**
  * redis serialize .
@@ -16,7 +19,6 @@ import java.util.Base64;
 public class RedisSerializeUtil {
 
     public static Object dataTypeFromString(LogicalType fieldType, String result) {
-
         switch (fieldType.getTypeRoot()) {
             case BIGINT:
             case INTERVAL_DAY_TIME:
@@ -48,7 +50,42 @@ public class RedisSerializeUtil {
             case INTERVAL_YEAR_MONTH:
                 return Integer.valueOf(result);
             default:
-                throw new RuntimeException("unsupport file type: " + fieldType);
+                throw new RuntimeException("Unsupported field type: " + fieldType);
+        }
+    }
+
+    public static String rowDataToString(LogicalType fieldType, RowData rowData, Integer index) {
+        switch (fieldType.getTypeRoot()) {
+            case CHAR:
+            case VARCHAR:
+                return rowData.getString(index).toString();
+            case BOOLEAN:
+                return String.valueOf(rowData.getBoolean(index));
+            case BINARY:
+            case VARBINARY:
+                return Base64.getEncoder().encodeToString(rowData.getBinary(index));
+            case DECIMAL:
+                DecimalType decimalType = (DecimalType) fieldType;
+                final int precision = decimalType.getPrecision();
+                final int scale = decimalType.getScale();
+                BigDecimal decimal = rowData.getDecimal(index, precision, scale).toBigDecimal();
+                return decimal.toString();
+            case TINYINT:
+                return String.valueOf(rowData.getByte(index));
+            case SMALLINT:
+                return String.valueOf(rowData.getString(index));
+            case INTEGER:
+            case DATE:
+                return String.valueOf(rowData.getInt(index));
+            case BIGINT:
+            case INTERVAL_DAY_TIME:
+                return String.valueOf(rowData.getLong(index));
+            case FLOAT:
+                return String.valueOf(rowData.getFloat(index));
+            case DOUBLE:
+                return String.valueOf(rowData.getDouble(index));
+            default:
+                throw new UnsupportedOperationException("Unsupported field type: " + fieldType);
         }
     }
 }

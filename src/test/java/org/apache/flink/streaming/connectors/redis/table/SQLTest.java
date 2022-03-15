@@ -15,7 +15,7 @@ public class SQLTest {
 
     public static final String CLUSTERNODES =
             "10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000,10.11.80.147:8001,10.11.80.147:9000,10.11.80.147:9001";
-    public static final String PASSWORD = "******";
+    public static final String PASSWORD = "*****";
 
     @Test
     public void testNoPrimaryKeyInsertSQL() throws Exception {
@@ -153,6 +153,43 @@ public class SQLTest {
                         + " select s.username, s.level, concat_ws('_', d.name, d.level) from source_table s"
                         + "  left join dim_table for system_time as of s.proctime as d "
                         + " on d.name = s.username";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        System.out.println(sql);
+    }
+
+
+
+    @Test
+    public void testGoupSQL() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        EnvironmentSettings environmentSettings =
+                EnvironmentSettings.newInstance().useBlinkPlanner().inStreamingMode().build();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+
+        String source =
+                "create table source_table(username varchar, level varchar, proctime as procTime()) "
+                        + "with ('connector'='datagen',  'rows-per-second'='1', "
+                        + "'fields.username.kind'='sequence',  'fields.username.start'='20',  'fields.username.end'='25',"
+                        + "'fields.level.kind'='sequence',  'fields.level.start'='20',  'fields.level.end'='25'"
+                        + ")";
+
+        String ddl =
+                "create table sink_redis(username VARCHAR, username2 VARCHAR, primary key(username) not enforced ) with ( 'connector'='redis', "
+                        + "'cluster-nodes'='"
+                        + CLUSTERNODES
+                        + "','redis-mode'='cluster','password'='"
+                        + PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.SET
+                        + "')";
+        tEnv.executeSql(source);
+        tEnv.executeSql(ddl);
+        env.disableOperatorChaining();
+        String sql = " insert into sink_redis select username, username from source_table";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);

@@ -130,6 +130,7 @@ under the License.
             <version>${jedis.version}</version>
         </dependency>
 
+
         <dependency>
             <groupId>com.github.kstyrc</groupId>
             <artifactId>embedded-redis</artifactId>

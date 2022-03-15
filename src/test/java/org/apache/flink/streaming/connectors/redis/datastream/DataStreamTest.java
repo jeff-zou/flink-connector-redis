@@ -11,17 +11,25 @@ import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHan
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.table.RedisSinkFunction;
-import org.apache.flink.table.data.GenericRowData;
+import org.apache.flink.table.api.DataTypes;
+import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.data.StringData;
+import org.apache.flink.table.data.binary.BinaryRowData;
+import org.apache.flink.table.data.writer.BinaryRowWriter;
+import org.apache.flink.table.types.DataType;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.embedded.RedisServer;
-import redis.embedded.RedisServerBuilder;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
+import static org.apache.flink.streaming.connectors.redis.table.SQLTest.PASSWORD;
 
 /** Created by jeff.zou on 2021/2/26. */
 public class DataStreamTest {
@@ -29,9 +37,9 @@ public class DataStreamTest {
     private RedisServer redisServer;
 
     @Before
-    public void before() {
-       redisServer = RedisServer.builder().setting("maxheap 512000").build();
-        redisServer.start();
+    public void before() throws Exception {
+       redisServer = RedisServer.builder().port(6379).setting("maxheap 51200").build();
+       redisServer.start();
     }
 
     /*
@@ -53,17 +61,24 @@ public class DataStreamTest {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        GenericRowData genericRowData = new GenericRowData(3);
-        genericRowData.setField(0, "tom");
-        genericRowData.setField(1, "math");
-        genericRowData.setField(2, "152");
-        DataStream<GenericRowData> dataStream = env.fromElements(genericRowData, genericRowData);
+        BinaryRowData binaryRowData = new BinaryRowData(3);
+        BinaryRowWriter binaryRowWriter = new BinaryRowWriter(binaryRowData);
+        binaryRowWriter.writeString(0, StringData.fromString("tom"));
+        binaryRowWriter.writeString(1, StringData.fromString("math"));
+        binaryRowWriter.writeString(2, StringData.fromString("152"));
+
+        DataStream<BinaryRowData> dataStream = env.fromElements(binaryRowData, binaryRowData);
+
+        List<String> columnNames = Arrays.asList("name","subject", "scope");
+        List<DataType> columnDataTypes = Arrays.asList(DataTypes.STRING(), DataTypes.STRING(), DataTypes.STRING());
+        ResolvedSchema resolvedSchema = ResolvedSchema.physical(columnNames, columnDataTypes);
 
         RedisCacheOptions redisCacheOptions =
                 new RedisCacheOptions.Builder().setCacheMaxSize(100).setCacheTTL(10L).build();
-        FlinkJedisConfigBase conf = new FlinkJedisPoolConfig.Builder().setHost("localhost").setPort(6379).build();
+        FlinkJedisConfigBase conf = new FlinkJedisPoolConfig.Builder().setHost("10.11.80.147").setPort(7001).setPassword(PASSWORD).build();
+
         RedisSinkFunction redisSinkFunction =
-                new RedisSinkFunction<>(conf, redisMapper, redisCacheOptions);
+                new RedisSinkFunction<>(conf, redisMapper, redisCacheOptions, resolvedSchema);
 
         dataStream.addSink(redisSinkFunction).setParallelism(1);
         env.execute("RedisSinkTest");
