@@ -10,7 +10,7 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisDataType;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.RowKind;
@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +42,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private final long cacheTtl;
     private final int maxRetryTimes;
     private Cache<String, String> cache;
-    private List<DataType> columnDataTypes;
+    private DataType[] columnDataTypes;
 
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
@@ -56,7 +55,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             FlinkJedisConfigBase flinkJedisConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
             RedisCacheOptions redisCacheOptions,
-            ResolvedSchema resolvedSchema) {
+            TableSchema tableSchema) {
         Objects.requireNonNull(
                 flinkJedisConfigBase, "Redis connection pool config should not be null");
         Objects.requireNonNull(redisSinkMapper, "Redis Mapper can not be null");
@@ -74,7 +73,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         this.redisCommand = redisCommandDescription.getRedisCommand();
         this.ttl = redisCommandDescription.getTTL();
-        this.columnDataTypes = resolvedSchema.getColumnDataTypes();
+        this.columnDataTypes = tableSchema.getFieldDataTypes();
     }
 
     /**
@@ -93,19 +92,19 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         }
 
         String key =
-                redisSinkMapper.getKeyFromData(rowData, columnDataTypes.get(0).getLogicalType(), 0);
+                redisSinkMapper.getKeyFromData(rowData, columnDataTypes[0].getLogicalType(), 0);
         String value =
                 redisSinkMapper.getValueFromData(
-                        rowData, columnDataTypes.get(1).getLogicalType(), 1);
+                        rowData, columnDataTypes[1].getLogicalType(), 1);
         String field = null;
         if (redisCommand.getRedisDataType() == RedisDataType.HASH
                 || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
             field =
                     redisSinkMapper.getFieldFromData(
-                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
+                            rowData, columnDataTypes[1].getLogicalType(), 1);
             value =
                     redisSinkMapper.getValueFromData(
-                            rowData, columnDataTypes.get(2).getLogicalType(), 2);
+                            rowData, columnDataTypes[2].getLogicalType(), 2);
         }
 
         String cacheKey = key;

@@ -38,7 +38,7 @@ public class RedisDynamicTableFactory
         validateConfigOptions(config);
         return new RedisDynamicTableSource(
                 context.getCatalogTable().getOptions(),
-                context.getCatalogTable().getResolvedSchema(),
+                context.getCatalogTable().getSchema(),
                 config);
     }
 
@@ -60,7 +60,7 @@ public class RedisDynamicTableFactory
         validateConfigOptions(config);
         return new RedisDynamicTableSink(
                 context.getCatalogTable().getOptions(),
-                context.getCatalogTable().getResolvedSchema(),
+                context.getCatalogTable().getSchema(),
                 config);
     }
 

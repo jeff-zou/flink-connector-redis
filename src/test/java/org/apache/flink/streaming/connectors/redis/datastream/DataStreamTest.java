@@ -12,7 +12,7 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.table.RedisSinkFunction;
 import org.apache.flink.table.api.DataTypes;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.binary.BinaryRowData;
 import org.apache.flink.table.data.writer.BinaryRowWriter;
@@ -22,9 +22,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.embedded.RedisServer;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
@@ -69,10 +66,10 @@ public class DataStreamTest {
 
         DataStream<BinaryRowData> dataStream = env.fromElements(binaryRowData, binaryRowData);
 
-        List<String> columnNames = Arrays.asList("name", "subject", "scope");
-        List<DataType> columnDataTypes =
-                Arrays.asList(DataTypes.STRING(), DataTypes.STRING(), DataTypes.STRING());
-        ResolvedSchema resolvedSchema = ResolvedSchema.physical(columnNames, columnDataTypes);
+        String[] columnNames = new String[]{"name", "subject", "scope"};
+        DataType[] columnDataTypes =
+                new DataType[]{DataTypes.STRING(), DataTypes.STRING(), DataTypes.STRING()};
+        TableSchema resolvedSchema = TableSchema.builder().fields(columnNames, columnDataTypes).build();
 
         RedisCacheOptions redisCacheOptions =
                 new RedisCacheOptions.Builder().setCacheMaxSize(100).setCacheTTL(10L).build();

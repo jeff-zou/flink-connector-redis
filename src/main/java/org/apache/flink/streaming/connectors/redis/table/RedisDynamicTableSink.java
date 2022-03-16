@@ -8,7 +8,7 @@ import org.apache.flink.streaming.connectors.redis.common.hanlder.FlinkJedisConf
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.sink.DynamicTableSink;
 import org.apache.flink.table.connector.sink.SinkFunctionProvider;
@@ -26,10 +26,10 @@ public class RedisDynamicTableSink implements DynamicTableSink {
     private ReadableConfig config;
     private RedisCacheOptions redisCacheOptions;
     private Integer sinkParallelism;
-    private ResolvedSchema resolvedSchema;
+    private TableSchema tableSchema;
 
     public RedisDynamicTableSink(
-            Map<String, String> properties, ResolvedSchema resolvedSchema, ReadableConfig config) {
+            Map<String, String> properties, TableSchema tableSchema, ReadableConfig config) {
         this.properties = properties;
         Preconditions.checkNotNull(properties, "properties should not be null");
         this.config = config;
@@ -47,7 +47,7 @@ public class RedisDynamicTableSink implements DynamicTableSink {
                         .setCacheMaxSize(config.get(RedisOptions.SINK_CACHE_MAX_ROWS))
                         .setMaxRetryTimes(config.get(RedisOptions.SINK_MAX_RETRIES))
                         .build();
-        this.resolvedSchema = resolvedSchema;
+        this.tableSchema = tableSchema;
     }
 
     @Override
@@ -63,13 +63,13 @@ public class RedisDynamicTableSink implements DynamicTableSink {
     public SinkRuntimeProvider getSinkRuntimeProvider(Context context) {
         return SinkFunctionProvider.of(
                 new RedisSinkFunction(
-                        flinkJedisConfigBase, redisMapper, redisCacheOptions, resolvedSchema),
+                        flinkJedisConfigBase, redisMapper, redisCacheOptions, tableSchema),
                 sinkParallelism);
     }
 
     @Override
     public DynamicTableSink copy() {
-        return new RedisDynamicTableSink(properties, resolvedSchema, config);
+        return new RedisDynamicTableSink(properties, tableSchema, config);
     }
 
     @Override

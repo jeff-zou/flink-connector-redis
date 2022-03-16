@@ -8,7 +8,7 @@ import org.apache.flink.streaming.connectors.redis.common.hanlder.FlinkJedisConf
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.LookupTableSource;
 import org.apache.flink.table.connector.source.TableFunctionProvider;
@@ -21,7 +21,7 @@ public class RedisDynamicTableSource implements LookupTableSource {
 
     private FlinkJedisConfigBase flinkJedisConfigBase;
     private Map<String, String> properties;
-    private ResolvedSchema resolvedSchema;
+    private TableSchema tableSchema;
     private ReadableConfig config;
     private RedisMapper redisMapper;
     private RedisCacheOptions redisCacheOptions;
@@ -30,22 +30,22 @@ public class RedisDynamicTableSource implements LookupTableSource {
     public LookupRuntimeProvider getLookupRuntimeProvider(LookupContext context) {
         return TableFunctionProvider.of(
                 new RedisLookupFunction(
-                        flinkJedisConfigBase, redisMapper, redisCacheOptions, resolvedSchema));
+                        flinkJedisConfigBase, redisMapper, redisCacheOptions, tableSchema));
     }
 
     public RedisDynamicTableSource(
-            Map<String, String> properties, ResolvedSchema resolvedSchema, ReadableConfig config) {
+            Map<String, String> properties, TableSchema tableSchema, ReadableConfig config) {
         this.properties = properties;
         Preconditions.checkNotNull(properties, "properties should not be null");
-        this.resolvedSchema = resolvedSchema;
-        Preconditions.checkNotNull(resolvedSchema, "resolvedSchema should not be null");
+        this.tableSchema = tableSchema;
+        Preconditions.checkNotNull(tableSchema, "resolvedSchema should not be null");
         this.config = config;
 
         redisMapper =
                 RedisHandlerServices.findRedisHandler(RedisMapperHandler.class, properties)
                         .createRedisMapper(config);
         this.properties = properties;
-        this.resolvedSchema = resolvedSchema;
+        this.tableSchema = tableSchema;
         this.config = config;
         flinkJedisConfigBase =
                 RedisHandlerServices.findRedisHandler(FlinkJedisConfigHandler.class, properties)
@@ -60,7 +60,7 @@ public class RedisDynamicTableSource implements LookupTableSource {
 
     @Override
     public DynamicTableSource copy() {
-        return new RedisDynamicTableSource(properties, resolvedSchema, config);
+        return new RedisDynamicTableSource(properties, tableSchema, config);
     }
 
     @Override

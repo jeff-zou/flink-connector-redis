@@ -9,7 +9,7 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandBaseDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 import org.apache.flink.streaming.connectors.redis.common.util.RedisSerializeUtil;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.functions.FunctionContext;
@@ -22,7 +22,6 @@ import org.apache.flink.shaded.guava18.com.google.common.cache.CacheBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /** redis lookup function. @Author: jeff.zou @Date: 2022/3/7.14:33 */
@@ -37,7 +36,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
     private final long cacheMaxSize;
     private final long cacheTtl;
     private final int maxRetryTimes;
-    private final List<DataType> dataTypes;
+    private final DataType[] dataTypes;
 
     private Cache<String, GenericRowData> cache;
 
@@ -45,7 +44,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
             FlinkJedisConfigBase flinkJedisConfigBase,
             RedisMapper redisMapper,
             RedisCacheOptions redisCacheOptions,
-            ResolvedSchema resolvedSchema) {
+            TableSchema tableSchema) {
         Preconditions.checkNotNull(
                 flinkJedisConfigBase, "Redis connection pool config should not be null");
         Preconditions.checkNotNull(redisMapper, "Redis Mapper can not be null");
@@ -63,7 +62,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
                 redisCommand == RedisCommand.HGET || redisCommand == RedisCommand.GET,
                 "unsupport command for query redis: %s",
                 redisCommand.name());
-        this.dataTypes = resolvedSchema.getColumnDataTypes();
+        this.dataTypes = tableSchema.getFieldDataTypes();
     }
 
     public void eval(Object... keys) throws Exception {
@@ -114,7 +113,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
                 rowData.setField(
                         1,
                         RedisSerializeUtil.dataTypeFromString(
-                                dataTypes.get(1).getLogicalType(), result));
+                                dataTypes[1].getLogicalType(), result));
                 collect(rowData);
                 if (cache != null && result != null) {
                     cache.put(String.valueOf(keys[0]), rowData);
@@ -130,7 +129,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
                 rowData.setField(
                         2,
                         RedisSerializeUtil.dataTypeFromString(
-                                dataTypes.get(2).getLogicalType(), result));
+                                dataTypes[2].getLogicalType(), result));
                 collect(rowData);
                 if (cache != null && result != null) {
                     String key =
