@@ -186,3 +186,8 @@ code format: google-java-format + Save Actions
 
 code check: CheckStyle
 
+flink 1.13
+
+jdk1.8
+
+如果需要1.12版本支持，请切换到分支flink1.12

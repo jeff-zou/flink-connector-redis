@@ -181,3 +181,9 @@ code format: google-java-format + Save Actions
 
 code check: CheckStyle
 
+flink 1.13
+
+jdk1.8
+
+Switch to branch flink1.12 if you need flink11.12 support
+
