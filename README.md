@@ -185,5 +185,5 @@ flink 1.13
 
 jdk1.8
 
-Switch to branch flink1.12 if you need flink11.12 support
+Switch to branch flink-1.12 if you need flink1.12 support
 
