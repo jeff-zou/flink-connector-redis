@@ -24,9 +24,13 @@ public interface RedisCommandsContainer extends Serializable {
      */
     void hset(String key, String hashField, String value);
 
+    /**
+     * @param key
+     * @param hashField
+     * @param value
+     * @return
+     */
     long hincrBy(String key, String hashField, Long value);
-
-    Double hincrByFloat(final String key, final String hashField, final Double value);
 
     /**
      * Insert the specified value at the tail of the list stored at key. If key does not exist, it
@@ -175,4 +179,10 @@ public interface RedisCommandsContainer extends Serializable {
     void setbit(String key, long offset, boolean value);
 
     boolean getbit(String key, long offset);
+
+    Double hincrByFloat(final String key, final String hashField, final Double value);
+
+    long hincrBy(String key, String hashField, Long value, Integer expireTime);
+
+    void hset(String key, String hashField, String value, Integer expireTime);
 }

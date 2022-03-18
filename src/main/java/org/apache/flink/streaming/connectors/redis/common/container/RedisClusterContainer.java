@@ -453,4 +453,44 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
         }
         return result;
     }
+
+    @Override
+    public long hincrBy(String key, String hashField, Long value, Integer expireTime) {
+        Long result;
+        try {
+            result = jedisCluster.hincrBy(key, hashField, value);
+            if (expireTime != null) {
+                jedisCluster.expire(key, expireTime);
+            }
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command HINCRBY to hash {} of key {} error message {}",
+                        hashField,
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+        return result;
+    }
+
+    @Override
+    public void hset(String key, String hashField, String value, Integer expireTime) {
+        try {
+            jedisCluster.hset(key, hashField, value);
+            if (expireTime != null) {
+                jedisCluster.expire(key, expireTime);
+            }
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command HSET to hash {} of key {} error message {}",
+                        hashField,
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
 }
