@@ -17,7 +17,7 @@
 
 package org.apache.flink.streaming.connectors.redis.common.config.handler;
 
-import org.apache.flink.calcite.shaded.com.google.common.base.Preconditions;
+import org.apache.flink.util.Preconditions;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
