@@ -1,6 +1,6 @@
 package org.apache.flink.streaming.connectors.redis.common.mapper;
 
-import org.apache.flink.calcite.shaded.com.google.common.base.Preconditions;
+import org.apache.flink.util.Preconditions;
 
 import java.io.Serializable;
 
