@@ -334,9 +334,24 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
-                        "Cannot send Redis message with command hget to key {} with field {} error message {}",
+                        "Cannot send Redis message with command hdel to key {} with field {} error message {}",
                         key,
                         field,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public void del(String key) {
+        try {
+            jedisCluster.del(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command del to key {} error message {}",
+                        key,
                         e.getMessage());
             }
             throw e;

@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
+
 /** @param <IN> */
 public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
@@ -94,6 +96,11 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         String key =
                 redisSinkMapper.getKeyFromData(rowData, columnDataTypes.get(0).getLogicalType(), 0);
+        if (redisCommand == RedisCommand.DEL || redisCommand == RedisCommand.HDEL) {
+            deleteInvoke(key, rowData);
+            return;
+        }
+
         String value =
                 redisSinkMapper.getValueFromData(
                         rowData, columnDataTypes.get(1).getLogicalType(), 1);
@@ -112,7 +119,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         if (cache != null) {
             if (redisCommand.getRedisDataType() == RedisDataType.HASH
                     || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
-                cacheKey = new StringBuilder(key).append("/01").append(field).toString();
+                cacheKey = new StringBuilder(key).append(CACHE_SEPERATOR).append(field).toString();
             }
             String cacheValue = cache.getIfPresent(cacheKey);
             if (cacheValue != null && cacheValue.equals(value)) {
@@ -137,6 +144,36 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 if (i >= this.maxRetryTimes) {
                     throw new RuntimeException("sink redis error ", e1);
                 }
+                Thread.sleep(500 * i);
+            }
+        }
+    }
+
+    private void deleteInvoke(String key, RowData rowData) throws Exception {
+        String field = null;
+        String cacheKey = key;
+        if (redisCommand == RedisCommand.HDEL) {
+            field =
+                    redisSinkMapper.getFieldFromData(
+                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
+            cacheKey = new StringBuilder(key).append(CACHE_SEPERATOR).append(field).toString();
+        }
+
+        for (int i = 0; i <= maxRetryTimes; i++) {
+            try {
+                sink(key, field, null);
+                if (cache != null) {
+                    cache.invalidate(cacheKey);
+                }
+                break;
+            } catch (UnsupportedOperationException e) {
+                throw e;
+            } catch (Exception e1) {
+                LOG.error("sink redis error, retry times:{}", i, e1);
+                if (i >= this.maxRetryTimes) {
+                    throw new RuntimeException("sink redis error ", e1);
+                }
+                Thread.sleep(500 * i);
             }
         }
     }
@@ -181,6 +218,12 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 break;
             case DECRBY:
                 this.redisCommandsContainer.decrBy(key, Long.valueOf(value));
+                break;
+            case DEL:
+                this.redisCommandsContainer.del(key);
+                break;
+            case HDEL:
+                this.redisCommandsContainer.hdel(key, field);
                 break;
             default:
                 throw new UnsupportedOperationException(

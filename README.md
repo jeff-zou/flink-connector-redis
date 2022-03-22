@@ -17,7 +17,7 @@ The operation commands corresponding to the supported functions of redis are:
 | sadd zadd pfadd(hyperloglog)   |                       |
 | publish                        |                       |
 | zrem decrby                    |                       |
-
+| del hdel                       |                       |
 
 
 ### Instructions: 
@@ -30,7 +30,7 @@ Development environment engineering direct reference:
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.6</version>
 </dependency>
 ```
 

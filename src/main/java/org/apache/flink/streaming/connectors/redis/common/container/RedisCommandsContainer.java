@@ -162,7 +162,30 @@ public interface RedisCommandsContainer extends Serializable {
      */
     Long expire(String key, int seconds);
 
+    /**
+     * set value in map.
+     *
+     * @param key
+     * @param hashField
+     * @param value
+     * @param expireTime
+     */
+    void hset(String key, String hashField, String value, Integer expireTime);
+
+    /**
+     * delete key in map.
+     *
+     * @param key
+     * @param field
+     */
     void hdel(String key, String field);
+
+    /**
+     * delete key.
+     *
+     * @param key
+     */
+    void del(String key);
 
     boolean exists(String key);
 
@@ -183,6 +206,4 @@ public interface RedisCommandsContainer extends Serializable {
     Double hincrByFloat(final String key, final String hashField, final Double value);
 
     long hincrBy(String key, String hashField, Long value, Integer expireTime);
-
-    void hset(String key, String hashField, String value, Integer expireTime);
 }

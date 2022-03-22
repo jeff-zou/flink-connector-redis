@@ -6,6 +6,8 @@ import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.junit.Test;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
@@ -15,7 +17,7 @@ public class SQLTest {
 
     public static final String CLUSTERNODES =
             "10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000,10.11.80.147:8001,10.11.80.147:9000,10.11.80.147:9001";
-    public static final String PASSWORD = "*****";
+    public static final String PASSWORD = "******";
 
     @Test
     public void testNoPrimaryKeyInsertSQL() throws Exception {
@@ -93,8 +95,8 @@ public class SQLTest {
         String source =
                 "create table source_table(username varchar, level varchar, proctime as procTime()) "
                         + "with ('connector'='datagen',  'rows-per-second'='1', "
-                        + "'fields.username.kind'='sequence',  'fields.username.start'='1',  'fields.username.end'='10',"
-                        + "'fields.level.kind'='sequence',  'fields.level.start'='1',  'fields.level.end'='10'"
+                        + "'fields.username.kind'='sequence',  'fields.username.start'='1',  'fields.username.end'='9',"
+                        + "'fields.level.kind'='sequence',  'fields.level.start'='1',  'fields.level.end'='9'"
                         + ")";
 
         String sink =
@@ -193,5 +195,43 @@ public class SQLTest {
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
+    }
+
+    @Test
+    public void testHDel() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+        String ddl = "create table redis_sink(redis_key varchar, redis_field varchar) with('connector'='redis',"
+                + "'cluster-nodes'='"
+                + CLUSTERNODES
+                + "','redis-mode'='cluster','password'='"
+                + PASSWORD
+                + "','"
+                + REDIS_COMMAND
+                + "'='"
+                + RedisCommand.HDEL
+                + "') ";
+        tEnv.executeSql(ddl);
+        TableResult tableResult = tEnv.executeSql("insert into redis_sink select * from (values('1', '1'))");
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+    }
+
+    @Test
+    public void testDel() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+        String ddl = "create table redis_sink(redis_key varchar) with('connector'='redis',"
+                + "'cluster-nodes'='"
+                + CLUSTERNODES
+                + "','redis-mode'='cluster','password'='"
+                + PASSWORD
+                + "','"
+                + REDIS_COMMAND
+                + "'='"
+                + RedisCommand.DEL
+                + "') ";
+        tEnv.executeSql(ddl);
+        TableResult tableResult = tEnv.executeSql("insert into redis_sink select * from (values('1'))");
+        tableResult.getJobClient().get().getJobExecutionResult().get();
     }
 }
