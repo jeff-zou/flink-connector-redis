@@ -50,9 +50,7 @@ public enum RedisCommand {
     /** Removes the specified members from the sorted set stored at key. */
     ZREM(RedisDataType.SORTED_SET, RedisOperationType.DEL),
 
-    /**
-     * Removes the specified members from set at key.
-     */
+    /** Removes the specified members from set at key. */
     SREM(RedisDataType.SET, RedisOperationType.DEL),
 
     /**

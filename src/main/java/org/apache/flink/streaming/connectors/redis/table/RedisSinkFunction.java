@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
-
 /** @param <IN> */
 public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 

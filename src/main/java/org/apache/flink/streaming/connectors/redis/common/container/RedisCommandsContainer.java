@@ -189,6 +189,7 @@ public interface RedisCommandsContainer extends Serializable {
 
     /**
      * delete key value from set
+     *
      * @param setName
      * @param value
      */
