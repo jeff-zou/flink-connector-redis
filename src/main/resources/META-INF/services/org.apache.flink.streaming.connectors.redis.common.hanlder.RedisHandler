@@ -27,6 +27,8 @@ org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.RPushSinkMapp
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.SAddSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.SetSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.ZAddSinkMapper
+org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.DelSinkMapper
+org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.HDelSinkMapper
 org.apache.flink.streaming.connectors.redis.common.config.handler.FlinkJedisClusterConfigHandler
 org.apache.flink.streaming.connectors.redis.common.config.handler.FlinkJedisSentinelConfigHandler
 org.apache.flink.streaming.connectors.redis.common.config.handler.FlinkJedisSingleConfigHandler

@@ -1,6 +1,5 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
-import org.apache.flink.calcite.shaded.com.google.common.base.Preconditions;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
@@ -15,6 +14,7 @@ import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.table.types.DataType;
+import org.apache.flink.util.Preconditions;
 
 import org.apache.flink.shaded.guava18.com.google.common.cache.Cache;
 import org.apache.flink.shaded.guava18.com.google.common.cache.CacheBuilder;
@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
 
 /** redis lookup function. @Author: jeff.zou @Date: 2022/3/7.14:33 */
 public class RedisLookupFunction extends TableFunction<RowData> {
@@ -75,7 +77,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
                 case HGET:
                     String key =
                             new StringBuilder(String.valueOf(keys[0]))
-                                    .append("\01")
+                                    .append(CACHE_SEPERATOR)
                                     .append(String.valueOf(keys[1]))
                                     .toString();
                     genericRowData = cache.getIfPresent(key);
@@ -134,7 +136,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
                 if (cache != null && result != null) {
                     String key =
                             new StringBuilder(String.valueOf(keys[0]))
-                                    .append("\01")
+                                    .append(CACHE_SEPERATOR)
                                     .append(String.valueOf(keys[1]))
                                     .toString();
                     cache.put(key, rowData);

@@ -17,12 +17,12 @@ The operation commands corresponding to the supported functions of redis are:
 | sadd zadd pfadd(hyperloglog)   |                       |
 | publish                        |                       |
 | zrem decrby                    |                       |
-
+| del hdel                       |                       |
 
 
 ### Instructions: 
 
-After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.0.2.jar into flink lib, no other settings are required.
+After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.0.7.jar into flink lib, no other settings are required.
 
 Development environment engineering direct reference:
 
@@ -30,7 +30,7 @@ Development environment engineering direct reference:
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.7</version>
 </dependency>
 ```
 
@@ -180,4 +180,10 @@ ide: IntelliJ IDEA
 code format: google-java-format + Save Actions
 
 code check: CheckStyle
+
+flink 1.13
+
+jdk1.8
+
+Switch to branch flink-1.12 if you need flink1.12 support
 

@@ -70,9 +70,17 @@ public enum RedisCommand {
     /** decrease with fixed num for specified key and expire the key with fixed time. */
     DESCRBY_EX(RedisDataType.STRING),
 
+    /** get val from map. */
     HGET(RedisDataType.HASH),
 
-    GET(RedisDataType.SET);
+    /** del val in map. */
+    HDEL(RedisDataType.HASH),
+
+    /** del key. */
+    DEL(RedisDataType.SET),
+
+    /** get val from string. */
+    GET(RedisDataType.STRING);
 
     /** The {@link RedisDataType} this command belongs to. */
     private RedisDataType redisDataType;

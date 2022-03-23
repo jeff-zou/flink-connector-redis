@@ -334,9 +334,24 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
-                        "Cannot send Redis message with command hget to key {} with field {} error message {}",
+                        "Cannot send Redis message with command hdel to key {} with field {} error message {}",
                         key,
                         field,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public void del(String key) {
+        try {
+            jedisCluster.del(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command del to key {} error message {}",
+                        key,
                         e.getMessage());
             }
             throw e;
@@ -452,5 +467,45 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
             throw e;
         }
         return result;
+    }
+
+    @Override
+    public long hincrBy(String key, String hashField, Long value, Integer expireTime) {
+        Long result;
+        try {
+            result = jedisCluster.hincrBy(key, hashField, value);
+            if (expireTime != null) {
+                jedisCluster.expire(key, expireTime);
+            }
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command HINCRBY to hash {} of key {} error message {}",
+                        hashField,
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+        return result;
+    }
+
+    @Override
+    public void hset(String key, String hashField, String value, Integer expireTime) {
+        try {
+            jedisCluster.hset(key, hashField, value);
+            if (expireTime != null) {
+                jedisCluster.expire(key, expireTime);
+            }
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command HSET to hash {} of key {} error message {}",
+                        hashField,
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
     }
 }

@@ -22,12 +22,13 @@
 | sadd zadd pfadd(hyperloglog)   |          |
 | publish                        |          |
 | zrem decrby                    |          |
+| del hdel                       |          |
 
 
 
 ### 使用方法: 
 
-命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.0.2.jar引入flink lib中即可，无需其它设置。
+命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.0.7.jar引入flink lib中即可，无需其它设置。
 
 开发环境工程直接引用：
 
@@ -35,7 +36,7 @@
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.7</version>
 </dependency>
 ```
 
@@ -186,3 +187,8 @@ code format: google-java-format + Save Actions
 
 code check: CheckStyle
 
+flink 1.13
+
+jdk1.8
+
+如果需要flink 1.12版本支持，请切换到分支flink-1.12

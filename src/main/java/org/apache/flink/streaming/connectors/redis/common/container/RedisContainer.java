@@ -480,6 +480,26 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
+    public void del(String key) {
+        Jedis jedis = null;
+
+        try {
+            jedis = getInstance();
+            jedis.hdel(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command del to key {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        } finally {
+            releaseInstance(jedis);
+        }
+    }
+
+    @Override
     public boolean hexists(String key, String field) {
         Jedis jedis = null;
         boolean result = false;
@@ -625,5 +645,53 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             this.releaseInstance(jedis);
         }
         return result;
+    }
+
+    @Override
+    public long hincrBy(String key, String hashField, Long value, Integer expireTime) {
+        Jedis jedis = null;
+        Long result;
+        try {
+            jedis = getInstance();
+            result = jedis.hincrBy(key, hashField, value);
+            if (expireTime != null) {
+                jedis.expire(key, expireTime);
+            }
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command HINCRBY to key {} and hashField {} error message {}",
+                        key,
+                        hashField,
+                        e.getMessage());
+            }
+            throw e;
+        } finally {
+            releaseInstance(jedis);
+        }
+        return result;
+    }
+
+    @Override
+    public void hset(String key, String hashField, String value, Integer expireTime) {
+        Jedis jedis = null;
+        try {
+            jedis = getInstance();
+            jedis.hset(key, hashField, value);
+            if (expireTime != null) {
+                jedis.expire(key, expireTime);
+            }
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command HSET to key {} and hashField {} error message {}",
+                        key,
+                        hashField,
+                        e.getMessage());
+            }
+            throw e;
+        } finally {
+            releaseInstance(jedis);
+        }
     }
 }

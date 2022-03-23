@@ -20,6 +20,8 @@ public class RedisDynamicTableFactory
 
     public static final String IDENTIFIER = "redis";
 
+    public static final String CACHE_SEPERATOR = "\01";
+
     @Override
     public DynamicTableSource createDynamicTableSource(Context context) {
         if (context.getCatalogTable().getOptions().containsKey(REDIS_COMMAND)) {
