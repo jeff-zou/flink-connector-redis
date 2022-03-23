@@ -116,18 +116,6 @@ public class RedisOptions {
                     .defaultValue(1)
                     .withDescription("Optional max retries of cache for query redis");
 
-    public static final ConfigOption<Long> SINK_CACHE_MAX_ROWS =
-            ConfigOptions.key("sink.cache.max-rows")
-                    .longType()
-                    .defaultValue(-1L)
-                    .withDescription("Optional cache max rows of cache for sink redis");
-
-    public static final ConfigOption<Long> SINK_CHCHE_TTL =
-            ConfigOptions.key("sink.cache.ttl")
-                    .longType()
-                    .defaultValue(-1L)
-                    .withDescription("Optional ttl of cache for sink redis");
-
     public static final ConfigOption<Integer> SINK_MAX_RETRIES =
             ConfigOptions.key("sink.max-retries")
                     .intType()

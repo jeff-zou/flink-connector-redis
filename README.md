@@ -2,7 +2,7 @@
 
 ### Introduction
 
-Based on the  [bahir-flink](https://github.com/apache/bahir-flink.git)，the contents adjusted relative to bahir include: deleting expired Flink API, adding Table/SQL API, adding dimension table query support, adding write and query cache, unified use of expiration policy, number of concurrent writes, etc.
+Based on the  [bahir-flink](https://github.com/apache/bahir-flink.git)，the contents adjusted relative to bahir include: deleting expired Flink API, adding Table/SQL API, adding dimension table query support, adding query cache, unified use of expiration policy, number of concurrent writes, etc.
 
 Due to the older version of the flink interface used by bahir, the changes were relatively large. During the development process, the stream computing products of Tencent Cloud and Alibaba Cloud were referenced, taking the advantages of the two, and adding richer functions, including more Redis operation commands and more redis service types, such as: simple、 sentinel、 cluster.
 
@@ -16,13 +16,13 @@ The operation commands corresponding to the supported functions of redis are:
 | incrBy decrBy hincrBy  zincrby |                       |
 | sadd zadd pfadd(hyperloglog)   |                       |
 | publish                        |                       |
-| zrem decrby                    |                       |
+| zrem decrby srem               |                       |
 | del hdel                       |                       |
 
 
 ### Instructions: 
 
-After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.0.7.jar into flink lib, no other settings are required.
+After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.0.8.jar into flink lib, no other settings are required.
 
 Development environment engineering direct reference:
 
@@ -30,7 +30,7 @@ Development environment engineering direct reference:
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
 </dependency>
 ```
 
@@ -69,8 +69,6 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | lookup.cache.max-rows | -1      | Integer | Query cache size, reduce the query for redis duplicate keys  |
 | lookup.cache.ttl      | -1      | Integer | Query cache expiration time, in seconds. The condition for enabling query cache is that neither max-rows nor ttl can be -1 |
 | lookup.max-retries    | 1       | Integer | Number of retries on failed query                            |
-| sink.cache.max-rows   | -1      | Integer | Write cache size, reduce repeated writing of the same key and value to redis |
-| sink.cache.ttl        | -1      | Integer | Write cache expiration time, in seconds, the condition for enabling the cache is that neither max-rows nor ttl can be -1 |
 | sink.max-retries      | 1       | Integer | Number of retries for write failures                         |
 | sink.parallelism      | (none)  | Integer | Number of concurrent writes                                  |
 

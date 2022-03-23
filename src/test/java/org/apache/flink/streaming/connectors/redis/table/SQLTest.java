@@ -231,7 +231,26 @@ public class SQLTest {
                 + RedisCommand.DEL
                 + "') ";
         tEnv.executeSql(ddl);
-        TableResult tableResult = tEnv.executeSql("insert into redis_sink select * from (values('1'))");
+        TableResult tableResult = tEnv.executeSql("insert into redis_sink select * from (values('20'))");
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+    }
+
+    @Test
+    public void testSRem() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+        String ddl = "create table redis_sink(redis_key varchar, redis_member varchar) with('connector'='redis',"
+                + "'cluster-nodes'='"
+                + CLUSTERNODES
+                + "','redis-mode'='cluster','password'='"
+                + PASSWORD
+                + "','"
+                + REDIS_COMMAND
+                + "'='"
+                + RedisCommand.SREM
+                + "') ";
+        tEnv.executeSql(ddl);
+        TableResult tableResult = tEnv.executeSql("insert into redis_sink select * from (values('s', 's'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
     }
 }

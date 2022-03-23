@@ -9,14 +9,12 @@ import org.apache.flink.streaming.connectors.redis.common.container.RedisCommand
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisDataType;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisOperationType;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.RowKind;
-
-import org.apache.flink.shaded.guava18.com.google.common.cache.Cache;
-import org.apache.flink.shaded.guava18.com.google.common.cache.CacheBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
 
@@ -41,10 +38,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private FlinkJedisConfigBase flinkJedisConfigBase;
     private RedisCommandsContainer redisCommandsContainer;
 
-    private final long cacheMaxSize;
-    private final long cacheTtl;
     private final int maxRetryTimes;
-    private Cache<String, String> cache;
     private List<DataType> columnDataTypes;
 
     /**
@@ -67,8 +61,6 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 "Redis Mapper data type description can not be null");
 
         this.flinkJedisConfigBase = flinkJedisConfigBase;
-        this.cacheTtl = redisCacheOptions.getCacheTtl();
-        this.cacheMaxSize = redisCacheOptions.getCacheMaxSize();
         this.maxRetryTimes = redisCacheOptions.getMaxRetryTimes();
         this.redisSinkMapper = redisSinkMapper;
         RedisCommandDescription redisCommandDescription =
@@ -96,7 +88,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         String key =
                 redisSinkMapper.getKeyFromData(rowData, columnDataTypes.get(0).getLogicalType(), 0);
-        if (redisCommand == RedisCommand.DEL || redisCommand == RedisCommand.HDEL) {
+        if (redisCommand.getRedisOperationType() == RedisOperationType.DEL) {
             deleteInvoke(key, rowData);
             return;
         }
@@ -115,26 +107,11 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                             rowData, columnDataTypes.get(2).getLogicalType(), 2);
         }
 
-        String cacheKey = key;
-        if (cache != null) {
-            if (redisCommand.getRedisDataType() == RedisDataType.HASH
-                    || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
-                cacheKey = new StringBuilder(key).append(CACHE_SEPERATOR).append(field).toString();
-            }
-            String cacheValue = cache.getIfPresent(cacheKey);
-            if (cacheValue != null && cacheValue.equals(value)) {
-                return;
-            }
-        }
-
         for (int i = 0; i <= this.maxRetryTimes; i++) {
             try {
                 sink(key, field, value);
                 if (ttl != null) {
                     this.redisCommandsContainer.expire(key, ttl);
-                }
-                if (cache != null) {
-                    cache.put(cacheKey, value);
                 }
                 break;
             } catch (UnsupportedOperationException e) {
@@ -151,20 +128,15 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
     private void deleteInvoke(String key, RowData rowData) throws Exception {
         String field = null;
-        String cacheKey = key;
-        if (redisCommand == RedisCommand.HDEL) {
+        if (redisCommand != RedisCommand.DEL) {
             field =
                     redisSinkMapper.getFieldFromData(
                             rowData, columnDataTypes.get(1).getLogicalType(), 1);
-            cacheKey = new StringBuilder(key).append(CACHE_SEPERATOR).append(field).toString();
         }
 
         for (int i = 0; i <= maxRetryTimes; i++) {
             try {
                 sink(key, field, null);
-                if (cache != null) {
-                    cache.invalidate(cacheKey);
-                }
                 break;
             } catch (UnsupportedOperationException e) {
                 throw e;
@@ -207,6 +179,9 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             case ZREM:
                 this.redisCommandsContainer.zrem(key, field);
                 break;
+            case SREM:
+                this.redisCommandsContainer.srem(key, field);
+                break;
             case HSET:
                 this.redisCommandsContainer.hset(key, field, value);
                 break;
@@ -248,14 +223,6 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             LOG.error("Redis has not been properly initialized: ", e);
             throw e;
         }
-
-        this.cache =
-                this.cacheMaxSize == -1 || this.cacheTtl == -1
-                        ? null
-                        : CacheBuilder.newBuilder()
-                                .maximumSize(this.cacheMaxSize)
-                                .expireAfterAccess(this.cacheTtl, TimeUnit.SECONDS)
-                                .build();
     }
 
     /**
@@ -267,11 +234,6 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     public void close() throws IOException {
         if (redisCommandsContainer != null) {
             redisCommandsContainer.close();
-        }
-
-        if (cache != null) {
-            cache.cleanUp();
-            cache = null;
         }
     }
 }
