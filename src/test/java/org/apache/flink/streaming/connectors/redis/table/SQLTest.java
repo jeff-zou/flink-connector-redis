@@ -6,8 +6,6 @@ import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import org.junit.Test;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
@@ -160,8 +158,6 @@ public class SQLTest {
         System.out.println(sql);
     }
 
-
-
     @Test
     public void testGoupSQL() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -201,18 +197,20 @@ public class SQLTest {
     public void testHDel() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        String ddl = "create table redis_sink(redis_key varchar, redis_field varchar) with('connector'='redis',"
-                + "'cluster-nodes'='"
-                + CLUSTERNODES
-                + "','redis-mode'='cluster','password'='"
-                + PASSWORD
-                + "','"
-                + REDIS_COMMAND
-                + "'='"
-                + RedisCommand.HDEL
-                + "') ";
+        String ddl =
+                "create table redis_sink(redis_key varchar, redis_field varchar) with('connector'='redis',"
+                        + "'cluster-nodes'='"
+                        + CLUSTERNODES
+                        + "','redis-mode'='cluster','password'='"
+                        + PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HDEL
+                        + "') ";
         tEnv.executeSql(ddl);
-        TableResult tableResult = tEnv.executeSql("insert into redis_sink select * from (values('1', '1'))");
+        TableResult tableResult =
+                tEnv.executeSql("insert into redis_sink select * from (values('1', '1'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
     }
 
@@ -220,18 +218,20 @@ public class SQLTest {
     public void testDel() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        String ddl = "create table redis_sink(redis_key varchar) with('connector'='redis',"
-                + "'cluster-nodes'='"
-                + CLUSTERNODES
-                + "','redis-mode'='cluster','password'='"
-                + PASSWORD
-                + "','"
-                + REDIS_COMMAND
-                + "'='"
-                + RedisCommand.DEL
-                + "') ";
+        String ddl =
+                "create table redis_sink(redis_key varchar) with('connector'='redis',"
+                        + "'cluster-nodes'='"
+                        + CLUSTERNODES
+                        + "','redis-mode'='cluster','password'='"
+                        + PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.DEL
+                        + "') ";
         tEnv.executeSql(ddl);
-        TableResult tableResult = tEnv.executeSql("insert into redis_sink select * from (values('20'))");
+        TableResult tableResult =
+                tEnv.executeSql("insert into redis_sink select * from (values('20'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
     }
 
@@ -239,18 +239,21 @@ public class SQLTest {
     public void testSRem() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        String ddl = "create table redis_sink(redis_key varchar, redis_member varchar) with('connector'='redis',"
-                + "'cluster-nodes'='"
-                + CLUSTERNODES
-                + "','redis-mode'='cluster','password'='"
-                + PASSWORD
-                + "','"
-                + REDIS_COMMAND
-                + "'='"
-                + RedisCommand.SREM
-                + "') ";
+        String ddl =
+                "create table redis_sink(redis_key varchar, redis_member varchar) with('connector'='redis',"
+                        + "'cluster-nodes'='"
+                        + CLUSTERNODES
+                        + "','redis-mode'='cluster','password'='"
+                        + PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.SREM
+                        + "') ";
         tEnv.executeSql(ddl);
-        TableResult tableResult = tEnv.executeSql("insert into redis_sink select * from (values('s', 's'))");
+        TableResult tableResult =
+                tEnv.executeSql(
+                        "insert into redis_sink select * from (values('s', 'huawei__1056640000002420'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
     }
 }

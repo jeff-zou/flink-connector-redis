@@ -181,7 +181,6 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 break;
             case SREM:
                 this.redisCommandsContainer.srem(key, field);
-                LOG.info("delete {} {} ", key, field);
                 break;
             case HSET:
                 this.redisCommandsContainer.hset(key, field, value);
