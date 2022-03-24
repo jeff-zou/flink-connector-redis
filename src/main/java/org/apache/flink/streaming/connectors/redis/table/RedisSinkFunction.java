@@ -23,7 +23,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-/** @param <IN> */
+/**
+ * @param <IN>
+ */
 public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisSinkFunction.class);
@@ -179,6 +181,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 break;
             case SREM:
                 this.redisCommandsContainer.srem(key, field);
+                LOG.info("delete {} {} ", key, field);
                 break;
             case HSET:
                 this.redisCommandsContainer.hset(key, field, value);

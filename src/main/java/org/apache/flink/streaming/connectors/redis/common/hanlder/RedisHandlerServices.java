@@ -140,8 +140,7 @@ public class RedisHandlerServices<T> {
             Map<String, String> meta, List<T> redisList) {
 
         List<T> matchingredis =
-                redisList
-                        .stream()
+                redisList.stream()
                         .filter(
                                 factory -> {
                                     Map<String, String> requestedContext =
@@ -151,9 +150,7 @@ public class RedisHandlerServices<T> {
                                             new HashMap<>(requestedContext);
 
                                     // check if required context is met
-                                    return plainContext
-                                            .keySet()
-                                            .stream()
+                                    return plainContext.keySet().stream()
                                             .allMatch(
                                                     e ->
                                                             meta.containsKey(e)
@@ -181,9 +178,7 @@ public class RedisHandlerServices<T> {
                             "Required context of redis '%s' must not be null.",
                             redis.getClass().getName()));
         }
-        return requiredContext
-                .keySet()
-                .stream()
+        return requiredContext.keySet().stream()
                 .collect(Collectors.toMap(String::toLowerCase, requiredContext::get));
     }
 }
