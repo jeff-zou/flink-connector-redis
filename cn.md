@@ -13,15 +13,15 @@
 
 支持功能对应redis的操作命令有：
 
-| 插入                           | 维表查询 |
-| ------------------------------ | -------- |
+| 插入                             | 维表查询 |
+|--------------------------------| -------- |
 | set                            | get      |
 | hset                           | hget     |
 | rpush lpush                    |          |
 | incrBy decrBy hincrBy  zincrby |          |
 | sadd zadd pfadd(hyperloglog)   |          |
 | publish                        |          |
-| zrem srem decrby               |          |
+| zrem srem                      |          |
 | del hdel                       |          |
 
 
