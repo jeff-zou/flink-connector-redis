@@ -95,8 +95,6 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.LOOKUP_CACHE_MAX_ROWS);
         options.add(RedisOptions.LOOKUP_CHCHE_TTL);
         options.add(RedisOptions.LOOKUP_MAX_RETRIES);
-        options.add(RedisOptions.SINK_CACHE_MAX_ROWS);
-        options.add(RedisOptions.SINK_CHCHE_TTL);
         options.add(RedisOptions.SINK_MAX_RETRIES);
         return options;
     }

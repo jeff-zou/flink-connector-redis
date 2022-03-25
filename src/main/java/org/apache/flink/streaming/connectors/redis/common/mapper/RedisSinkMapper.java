@@ -3,7 +3,9 @@ package org.apache.flink.streaming.connectors.redis.common.mapper;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.logical.LogicalType;
 
-/** @param <T> */
+/**
+ * @param <T>
+ */
 public interface RedisSinkMapper<T> extends RedisMapper<T> {
 
     /**

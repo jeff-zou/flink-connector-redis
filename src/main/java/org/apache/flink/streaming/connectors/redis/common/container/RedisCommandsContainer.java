@@ -187,6 +187,14 @@ public interface RedisCommandsContainer extends Serializable {
      */
     void del(String key);
 
+    /**
+     * delete key value from set.
+     *
+     * @param setName
+     * @param value
+     */
+    void srem(String setName, String value);
+
     boolean exists(String key);
 
     boolean sismember(String key, String member);
@@ -194,8 +202,6 @@ public interface RedisCommandsContainer extends Serializable {
     long scard(String key);
 
     boolean hexists(String key, String field);
-
-    void srem(String setName, String value);
 
     long incrByLong(String key, long value);
 

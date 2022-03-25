@@ -25,8 +25,7 @@ public class FlinkJedisClusterConfigHandler implements FlinkJedisConfigHandler {
         String nodesInfo = config.get(RedisOptions.CLUSTERNODES);
         Preconditions.checkNotNull(nodesInfo, "nodes should not be null in cluster mode");
         Set<InetSocketAddress> nodes =
-                Arrays.asList(nodesInfo.split(","))
-                        .stream()
+                Arrays.asList(nodesInfo.split(",")).stream()
                         .map(
                                 r -> {
                                     String[] arr = r.split(":");

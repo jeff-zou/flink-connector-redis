@@ -7,7 +7,7 @@
 
 ### 项目介绍
 
-基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir调整的内容有：删除过期Flink API、增加Table/SQL API、 增加维表查询支持、增加写入与查询缓存、统一使用过期策略、写入并发数等。
+基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir调整的内容有：删除过期Flink API、增加Table/SQL API、 增加维表查询支持、增加查询缓存、统一使用过期策略、写入并发数等。
 
 因bahir使用的flink接口版本较老，所以改动较大，开发过程中参考了腾讯云与阿里云两家产商的流计算产品，取两家之长，并增加了更丰富的功能，包括更多的redis操作命令和更多的redis服务类型，如：simple sentinel cluster。
 
@@ -21,14 +21,14 @@
 | incrBy decrBy hincrBy  zincrby |          |
 | sadd zadd pfadd(hyperloglog)   |          |
 | publish                        |          |
-| zrem decrby                    |          |
+| zrem srem decrby               |          |
 | del hdel                       |          |
 
 
 
 ### 使用方法: 
 
-命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.0.7.jar引入flink lib中即可，无需其它设置。
+命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.0.8.jar引入flink lib中即可，无需其它设置。
 
 开发环境工程直接引用：
 
@@ -36,7 +36,7 @@
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
 </dependency>
 ```
 
@@ -75,8 +75,6 @@ with参数说明：
 | lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                        |
 | lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1 |
 | lookup.max-retries    | 1      | Integer | 查询失败重试次数                                             |
-| sink.cache.max-rows   | -1     | Integer | 写入缓存大小，减少对redis重复写入相同的key与value            |
-| sink.cache.ttl        | -1     | Integer | 写入缓存过期时间，单位为秒， 开启缓存条件是max-rows与ttl都不能为-1 |
 | sink.max-retries      | 1      | Integer | 写入失败重试次数                                             |
 | sink.parallelism      | (none) | Integer | 写入并发数                                                   |
 

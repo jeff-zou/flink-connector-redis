@@ -43,8 +43,6 @@ public class RedisDynamicTableSink implements DynamicTableSink {
                         .createFlinkJedisConfig(config);
         redisCacheOptions =
                 new RedisCacheOptions.Builder()
-                        .setCacheTTL(config.get(RedisOptions.SINK_CHCHE_TTL))
-                        .setCacheMaxSize(config.get(RedisOptions.SINK_CACHE_MAX_ROWS))
                         .setMaxRetryTimes(config.get(RedisOptions.SINK_MAX_RETRIES))
                         .build();
         this.tableSchema = tableSchema;

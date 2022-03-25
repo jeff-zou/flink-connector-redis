@@ -4,7 +4,9 @@ import org.apache.flink.api.common.functions.Function;
 
 import java.io.Serializable;
 
-/** @param <T> */
+/**
+ * @param <T>
+ */
 public interface RedisMapper<T> extends Function, Serializable {
 
     /**
