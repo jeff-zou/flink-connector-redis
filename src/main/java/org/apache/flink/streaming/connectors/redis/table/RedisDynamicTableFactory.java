@@ -96,6 +96,7 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.LOOKUP_CHCHE_TTL);
         options.add(RedisOptions.LOOKUP_MAX_RETRIES);
         options.add(RedisOptions.SINK_MAX_RETRIES);
+        options.add(RedisOptions.SINK_PARALLELISM);
         return options;
     }
 
