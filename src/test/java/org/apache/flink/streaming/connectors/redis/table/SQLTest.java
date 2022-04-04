@@ -15,7 +15,7 @@ public class SQLTest {
 
     public static final String CLUSTERNODES =
             "10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000,10.11.80.147:8001,10.11.80.147:9000,10.11.80.147:9001";
-    public static final String PASSWORD = "******";
+    public static final String PASSWORD = "*****";
 
     @Test
     public void testNoPrimaryKeyInsertSQL() throws Exception {
@@ -26,8 +26,8 @@ public class SQLTest {
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
         String ddl =
-                "create table sink_redis(username VARCHAR, passport VARCHAR) with ( 'connector'='redis', "
-                        + "'host'='10.11.80.147','port'='7001', 'redis-mode'='single','password'='"
+                "create table sink_redis(username VARCHAR, passport time(3)) with ( 'connector'='redis', "
+                        + "'host'='10.11.80.147','port'='7000', 'redis-mode'='single','password'='"
                         + PASSWORD
                         + "','"
                         + REDIS_COMMAND
@@ -36,7 +36,7 @@ public class SQLTest {
                         + "')";
 
         tEnv.executeSql(ddl);
-        String sql = " insert into sink_redis select * from (values ('test', 'test11'))";
+        String sql = " insert into sink_redis select * from (values ('10', time '04:04:00'))";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
@@ -123,7 +123,7 @@ public class SQLTest {
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
         String dim =
-                "create table dim_table(name varchar, level varchar) with ( 'connector'='redis', "
+                "create table dim_table(name varchar, login_time time(3) ) with ( 'connector'='redis', "
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster', 'password'='"
@@ -142,7 +142,7 @@ public class SQLTest {
                         + ")";
 
         String sink =
-                "create table sink_table(username varchar, level varchar,age varchar) with ('connector'='print')";
+                "create table sink_table(username varchar, level varchar,login_time time(3)) with ('connector'='print')";
 
         tEnv.executeSql(source);
         tEnv.executeSql(dim);
@@ -150,7 +150,7 @@ public class SQLTest {
 
         String sql =
                 " insert into sink_table "
-                        + " select s.username, s.level, concat_ws('_', d.name, d.level) from source_table s"
+                        + " select s.username, s.level,  d.login_time from source_table s"
                         + "  left join dim_table for system_time as of s.proctime as d "
                         + " on d.name = s.username";
         TableResult tableResult = tEnv.executeSql(sql);

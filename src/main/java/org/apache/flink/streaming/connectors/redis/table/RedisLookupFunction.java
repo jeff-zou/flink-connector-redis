@@ -4,10 +4,10 @@ import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfi
 import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainerBuilder;
+import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConverter;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandBaseDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
-import org.apache.flink.streaming.connectors.redis.common.util.RedisSerializeUtil;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
@@ -114,7 +114,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
                 rowData.setField(0, keys[0]);
                 rowData.setField(
                         1,
-                        RedisSerializeUtil.dataTypeFromString(
+                        RedisRowConverter.dataTypeFromString(
                                 dataTypes[1].getLogicalType(), result));
                 collect(rowData);
                 if (cache != null && result != null) {
@@ -130,7 +130,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
                 rowData.setField(1, keys[1]);
                 rowData.setField(
                         2,
-                        RedisSerializeUtil.dataTypeFromString(
+                        RedisRowConverter.dataTypeFromString(
                                 dataTypes[2].getLogicalType(), result));
                 collect(rowData);
                 if (cache != null && result != null) {
