@@ -116,6 +116,12 @@ public class RedisOptions {
                     .defaultValue(1)
                     .withDescription("Optional max retries of cache for query redis");
 
+    public static final ConfigOption<Boolean> LOOKUP_CACHE_LOAD_ALL =
+            ConfigOptions.key("lookup.cache.load-all")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("Optional if load all elements into cache for query");
+
     public static final ConfigOption<Integer> SINK_MAX_RETRIES =
             ConfigOptions.key("sink.max-retries")
                     .intType()

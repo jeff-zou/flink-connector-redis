@@ -6,6 +6,7 @@ import redis.clients.jedis.JedisCluster;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 
 /** Redis command container if we want to connect to a Redis cluster. */
@@ -502,6 +503,21 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
                 LOG.error(
                         "Cannot send Redis message with command HSET to hash {} of key {} error message {}",
                         hashField,
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public Map<String, String> hgetAll(String key) {
+        try {
+            return jedisCluster.hgetAll(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command hgetall to key {} error message {}",
                         key,
                         e.getMessage());
             }

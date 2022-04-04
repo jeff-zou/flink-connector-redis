@@ -22,7 +22,8 @@ public class FlinkJedisClusterConfigHandler implements FlinkJedisConfigHandler {
 
     @Override
     public FlinkJedisConfigBase createFlinkJedisConfig(ReadableConfig config) {
-        Preconditions.checkState(config.get(RedisOptions.DATABASE) == 0, "redis cluster just support db 0");
+        Preconditions.checkState(
+                config.get(RedisOptions.DATABASE) == 0, "redis cluster just support db 0");
         String nodesInfo = config.get(RedisOptions.CLUSTERNODES);
         Preconditions.checkNotNull(nodesInfo, "nodes should not be null in cluster mode");
         Set<InetSocketAddress> nodes =

@@ -9,7 +9,7 @@ Due to the older version of the flink interface used by bahir, the changes were 
 The operation commands corresponding to the supported functions of redis are:
 
 | insert                         | Dimension table query |
-| ------------------------------ | --------------------- |
+| ------------------------------ |-----------------------|
 | set                            | get                   |
 | hset                           | hget                  |
 | rpush lpush                    |                       |
@@ -22,7 +22,7 @@ The operation commands corresponding to the supported functions of redis are:
 
 ### Instructions: 
 
-After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.0.9.jar into flink lib, no other settings are required.
+After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.0.10.jar into flink lib, no other settings are required.
 
 Development environment engineering direct reference:
 
@@ -30,7 +30,7 @@ Development environment engineering direct reference:
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.9</version>
+    <version>1.0.10</version>
 </dependency>
 ```
 
@@ -69,6 +69,7 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | lookup.cache.max-rows | -1      | Integer | Query cache size, reduce the query for redis duplicate keys  |
 | lookup.cache.ttl      | -1      | Integer | Query cache expiration time, in seconds. The condition for enabling query cache is that neither max-rows nor ttl can be -1 |
 | lookup.max-retries    | 1       | Integer | Number of retries on failed query                            |
+| lookup.cache.load-all | false   | Boolean | when command is hget, query all elements from redis map to cache,help to resolve cache penetration issues |
 | sink.max-retries      | 1       | Integer | Number of retries for write failures                         |
 | sink.parallelism      | (none)  | Integer | Number of concurrent writes                                  |
 

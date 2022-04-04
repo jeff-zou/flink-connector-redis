@@ -36,7 +36,7 @@ public class FlinkJedisSingleConfigHandler implements FlinkJedisConfigHandler {
     @Override
     public FlinkJedisConfigBase createFlinkJedisConfig(ReadableConfig config) {
         String host = config.get(RedisOptions.HOST);
-        Preconditions.checkNotNull(host, "host should not be null in sentinel mode");
+        Preconditions.checkNotNull(host, "host should not be null in single mode");
 
         String password = config.get(RedisOptions.PASSWORD);
 

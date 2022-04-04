@@ -8,6 +8,7 @@ import redis.clients.jedis.JedisSentinelPool;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -428,6 +429,27 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
                         "Cannot send Redis message with command hget to key {} with field {} error message {}",
                         key,
                         field,
+                        e.getMessage());
+            }
+            throw e;
+        } finally {
+            releaseInstance(jedis);
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, String> hgetAll(String key) {
+        Jedis jedis = null;
+        Map<String, String> result = null;
+        try {
+            jedis = getInstance();
+            result = jedis.hgetAll(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command hget to key {} error message {}",
+                        key,
                         e.getMessage());
             }
             throw e;

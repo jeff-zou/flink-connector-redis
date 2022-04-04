@@ -6,11 +6,13 @@ public class RedisCacheOptions {
     private final long cacheMaxSize;
     private final long cacheTtl;
     private final int maxRetryTimes;
+    private final boolean loadAll;
 
-    public RedisCacheOptions(long cacheMaxSize, long cacheTtl, int maxRetryTimes) {
+    public RedisCacheOptions(long cacheMaxSize, long cacheTtl, int maxRetryTimes, boolean loadAll) {
         this.cacheMaxSize = cacheMaxSize;
         this.cacheTtl = cacheTtl;
         this.maxRetryTimes = maxRetryTimes;
+        this.loadAll = loadAll;
     }
 
     public long getCacheMaxSize() {
@@ -25,6 +27,10 @@ public class RedisCacheOptions {
         return maxRetryTimes;
     }
 
+    public boolean getLoadAll() {
+        return loadAll;
+    }
+
     @Override
     public String toString() {
         return "RedisCacheOptions{"
@@ -34,6 +40,8 @@ public class RedisCacheOptions {
                 + cacheTtl
                 + ", maxRetryTimes="
                 + maxRetryTimes
+                + ", loadAll="
+                + loadAll
                 + '}';
     }
 
@@ -70,6 +78,7 @@ public class RedisCacheOptions {
         private long cacheMaxSize = -1L;
         private long cacheTtl = -1L;
         private int maxRetryTimes = 1;
+        private boolean loadAll = false;
 
         public Builder setCacheMaxSize(long cacheMaxSize) {
             this.cacheMaxSize = cacheMaxSize;
@@ -86,8 +95,13 @@ public class RedisCacheOptions {
             return this;
         }
 
+        public Builder setLoadAll(boolean loadAll) {
+            this.loadAll = loadAll;
+            return this;
+        }
+
         public RedisCacheOptions build() {
-            return new RedisCacheOptions(cacheMaxSize, cacheTtl, maxRetryTimes);
+            return new RedisCacheOptions(cacheMaxSize, cacheTtl, maxRetryTimes, loadAll);
         }
     }
 }
