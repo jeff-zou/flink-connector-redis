@@ -55,6 +55,7 @@ public class RedisDynamicTableSource implements LookupTableSource {
                         .setCacheTTL(config.get(RedisOptions.LOOKUP_CHCHE_TTL))
                         .setCacheMaxSize(config.get(RedisOptions.LOOKUP_CACHE_MAX_ROWS))
                         .setMaxRetryTimes(config.get(RedisOptions.LOOKUP_MAX_RETRIES))
+                        .setLoadAll(config.get(RedisOptions.LOOKUP_CACHE_LOAD_ALL))
                         .build();
     }
 

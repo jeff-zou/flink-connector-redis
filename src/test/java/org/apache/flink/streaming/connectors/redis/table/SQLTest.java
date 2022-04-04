@@ -15,7 +15,7 @@ public class SQLTest {
 
     public static final String CLUSTERNODES =
             "10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000,10.11.80.147:8001,10.11.80.147:9000,10.11.80.147:9001";
-    public static final String PASSWORD = "*****";
+    public static final String PASSWORD = "KingSoft1239002nx624@a123";
 
     @Test
     public void testNoPrimaryKeyInsertSQL() throws Exception {

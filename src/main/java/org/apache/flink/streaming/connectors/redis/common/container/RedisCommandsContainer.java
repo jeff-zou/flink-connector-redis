@@ -2,6 +2,7 @@ package org.apache.flink.streaming.connectors.redis.common.container;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Map;
 
 /** The container for all available Redis commands. */
 public interface RedisCommandsContainer extends Serializable {
@@ -137,6 +138,14 @@ public interface RedisCommandsContainer extends Serializable {
      * @return
      */
     String hget(String key, String field);
+
+    /**
+     * get all value by key.
+     *
+     * @param key
+     * @return
+     */
+    public Map<String, String> hgetAll(String key);
 
     /**
      * get value by key.

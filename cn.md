@@ -14,21 +14,21 @@
 支持功能对应redis的操作命令有：
 
 | 插入                             | 维表查询 |
-|--------------------------------| -------- |
-| set                            | get      |
-| hset                           | hget     |
-| rpush lpush                    |          |
-| incrBy decrBy hincrBy  zincrby |          |
-| sadd zadd pfadd(hyperloglog)   |          |
-| publish                        |          |
-| zrem srem                      |          |
-| del hdel                       |          |
+|--------------------------------|------|
+| set                            | get  |
+| hset                           | hget |
+| rpush lpush                    |      |
+| incrBy decrBy hincrBy  zincrby |      |
+| sadd zadd pfadd(hyperloglog)   |      |
+| publish                        |      |
+| zrem srem                      |      |
+| del hdel                       |      |
 
 
 
 ### 使用方法: 
 
-命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.0.9.jar引入flink lib中即可，无需其它设置。
+命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.0.10.jar引入flink lib中即可，无需其它设置。
 
 开发环境工程直接引用：
 
@@ -36,7 +36,7 @@
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.9</version>
+    <version>1.0.10</version>
 </dependency>
 ```
 
@@ -75,6 +75,7 @@ with参数说明：
 | lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                        |
 | lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1 |
 | lookup.max-retries    | 1      | Integer | 查询失败重试次数                                             |
+| lookup.cache.load-all | false  | Boolean | 当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题 |
 | sink.max-retries      | 1      | Integer | 写入失败重试次数                                             |
 | sink.parallelism      | (none) | Integer | 写入并发数                                                   |
 

@@ -36,8 +36,7 @@ public class FlinkJedisSingleConfigHandler implements FlinkJedisConfigHandler {
     @Override
     public FlinkJedisConfigBase createFlinkJedisConfig(ReadableConfig config) {
         String host = config.get(RedisOptions.HOST);
-        int port = config.get(RedisOptions.PORT);
-        Preconditions.checkNotNull(host, "host should not be null in sentinel mode");
+        Preconditions.checkNotNull(host, "host should not be null in single mode");
 
         String password = config.get(RedisOptions.PASSWORD);
 
@@ -47,7 +46,8 @@ public class FlinkJedisSingleConfigHandler implements FlinkJedisConfigHandler {
         builder.setMaxIdle(config.get(RedisOptions.MAXIDLE))
                 .setMinIdle(config.get(RedisOptions.MINIDLE))
                 .setMaxTotal(config.get(RedisOptions.MAXTOTAL))
-                .setTimeout(config.get(RedisOptions.TIMEOUT));
+                .setTimeout(config.get(RedisOptions.TIMEOUT))
+                .setDatabase(config.get(RedisOptions.DATABASE));
 
         return builder.build();
     }
