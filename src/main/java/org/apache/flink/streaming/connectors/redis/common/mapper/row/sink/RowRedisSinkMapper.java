@@ -2,11 +2,11 @@ package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
+import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConverter;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
-import org.apache.flink.streaming.connectors.redis.common.util.RedisSerializeUtil;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.logical.LogicalType;
@@ -54,17 +54,17 @@ public abstract class RowRedisSinkMapper
 
     @Override
     public String getKeyFromData(RowData rowData, LogicalType logicalType, Integer keyIndex) {
-        return RedisSerializeUtil.rowDataToString(logicalType, rowData, keyIndex);
+        return RedisRowConverter.rowDataToString(logicalType, rowData, keyIndex);
     }
 
     @Override
     public String getValueFromData(RowData rowData, LogicalType logicalType, Integer valueIndex) {
-        return RedisSerializeUtil.rowDataToString(logicalType, rowData, valueIndex);
+        return RedisRowConverter.rowDataToString(logicalType, rowData, valueIndex);
     }
 
     @Override
     public String getFieldFromData(RowData rowData, LogicalType logicalType, Integer fieldIndex) {
-        return RedisSerializeUtil.rowDataToString(logicalType, rowData, fieldIndex);
+        return RedisRowConverter.rowDataToString(logicalType, rowData, fieldIndex);
     }
 
     public RedisCommand getRedisCommand() {

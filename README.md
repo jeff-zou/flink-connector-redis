@@ -22,7 +22,7 @@ The operation commands corresponding to the supported functions of redis are:
 
 ### Instructions: 
 
-After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.0.8.jar into flink lib, no other settings are required.
+After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.0.9.jar into flink lib, no other settings are required.
 
 Development environment engineering direct reference:
 
@@ -30,7 +30,7 @@ Development environment engineering direct reference:
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
 </dependency>
 ```
 
@@ -82,7 +82,29 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | sentinels.info     | (none)  | String |             |
 | sentinels.password | none)   | String |             |
 
+### Data Type Converter
 
+| flink type | redis row converter                                          |
+| ---------- | ------------------------------------------------------------ |
+| CHAR       | String                                                       |
+| VARCHAR    | String                                                       |
+| String     | String                                                       |
+| BOOLEAN    | String String.valueOf(boolean val) <br/>boolean Boolean.valueOf(String str) |
+| BINARY     | String Base64.getEncoder().encodeToString  <br/>byte[]   Base64.getDecoder().decode(String str) |
+| VARBINARY  | String Base64.getEncoder().encodeToString  <br/>byte[]   Base64.getDecoder().decode(String str) |
+| DECIMAL    | String  BigDecimal.toString <br/>DecimalData DecimalData.fromBigDecimal(new BigDecimal(String str),int precision, int scale) |
+| TINYINT    | String String.valueOf(byte val)  <br/>byte Byte.valueOf(String str) |
+| SMALLINT   | String String.valueOf(short val) <br/>short Short.valueOf(String str) |
+| INTEGER    | String String.valueOf(int val)  <br/>int Integer.valueOf(String str) |
+| DATE       | String the day from epoch as int <br/>date show as 2022-01-01 |
+| TIME       | String the millisecond from 0'clock as int <br/>time show as 04:04:01.023 |
+| BIGINT     | String String.valueOf(long val) <br/>long Long.valueOf(String str) |
+| FLOAT      | String String.valueOf(float val) <br/>float Float.valueOf(String str) |
+| DOUBLE     | String String.valueOf(double val) <br/>double Double.valueOf(String str) |
+| TIMESTAMP  | String the millisecond from epoch as long <br/>timestamp TimeStampData.fromEpochMillis(Long.valueOf(String str)) |
+
+
+### 
 
 ### Usage example:
 - ##### Dimension table query：
