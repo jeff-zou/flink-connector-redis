@@ -28,7 +28,7 @@
 
 ### 使用方法: 
 
-命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.0.10.jar引入flink lib中即可，无需其它设置。
+命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.0.11.jar引入flink lib中即可，无需其它设置。
 
 开发环境工程直接引用：
 
@@ -36,7 +36,7 @@
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.10</version>
+    <version>1.0.11</version>
 </dependency>
 ```
 
@@ -206,7 +206,7 @@ code format: google-java-format + Save Actions
 
 code check: CheckStyle
 
-flink 1.13
+flink 1.13/1.14/1.12
 
 jdk1.8
 

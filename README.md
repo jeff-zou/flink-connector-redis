@@ -22,7 +22,7 @@ The operation commands corresponding to the supported functions of redis are:
 
 ### Instructions: 
 
-After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.0.10.jar into flink lib, no other settings are required.
+After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.0.11.jar into flink lib, no other settings are required.
 
 Development environment engineering direct reference:
 
@@ -30,7 +30,7 @@ Development environment engineering direct reference:
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.10</version>
+    <version>1.0.11</version>
 </dependency>
 ```
 
@@ -202,7 +202,7 @@ code format: google-java-format + Save Actions
 
 code check: CheckStyle
 
-flink 1.13
+flink 1.13/1.14/1.12
 
 jdk1.8
 
