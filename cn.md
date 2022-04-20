@@ -7,7 +7,7 @@
 
 ### 项目介绍
 
-基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir调整的内容有：删除过期Flink API、增加Table/SQL API、 增加维表查询支持、增加查询缓存、统一使用过期策略、写入并发数等。
+基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir调整的内容有：增加支持Flink高版本（包括1.12,1.13,1.14等）、增加Table/SQL API、 增加维表查询支持、增加查询缓存(支持增量与全量)、统一过期策略、写入并发数等。
 
 因bahir使用的flink接口版本较老，所以改动较大，开发过程中参考了腾讯云与阿里云两家产商的流计算产品，取两家之长，并增加了更丰富的功能，包括更多的redis操作命令和更多的redis服务类型，如：simple sentinel cluster。
 
@@ -58,26 +58,26 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 
 with参数说明：
 
-| 字段                  | 默认值 | 类型    | 说明                                                         |
-| --------------------- | ------ | ------- | ------------------------------------------------------------ |
-| connector             | (none) | String  | `redis`                                                      |
-| host                  | (none) | String  | Redis IP                                                     |
-| port                  | 6379   | Integer | Redis 端口                                                   |
-| password              | null   | String  | 如果没有设置，则为 null                                      |
-| database              | 0      | Integer | 默认使用 db0                                                 |
-| maxTotal              | 2      | Integer | 最大连接数                                                   |
-| maxIdle               | 2      | Integer | 最大保持连接数                                               |
-| minIdle               | 1      | Integer | 最小保持连接数                                               |
-| timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                               |
+| 字段                  | 默认值 | 类型    | 说明                                                                                      |
+| --------------------- | ------ | ------- |-----------------------------------------------------------------------------------------|
+| connector             | (none) | String  | `redis`                                                                                 |
+| host                  | (none) | String  | Redis IP                                                                                |
+| port                  | 6379   | Integer | Redis 端口                                                                                |
+| password              | null   | String  | 如果没有设置，则为 null                                                                          |
+| database              | 0      | Integer | 默认使用 db0                                                                                |
+| maxTotal              | 2      | Integer | 最大连接数                                                                                   |
+| maxIdle               | 2      | Integer | 最大保持连接数                                                                                 |
+| minIdle               | 1      | Integer | 最小保持连接数                                                                                 |
+| timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                      |
 | cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000 |
-| command               | (none) | String  | 对应上文中的redis命令                                        |
-| redis-mode            | (none) | Integer | mode类型： single cluster                                    |
-| lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                        |
-| lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1 |
-| lookup.max-retries    | 1      | Integer | 查询失败重试次数                                             |
-| lookup.cache.load-all | false  | Boolean | 当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题 |
-| sink.max-retries      | 1      | Integer | 写入失败重试次数                                             |
-| sink.parallelism      | (none) | Integer | 写入并发数                                                   |
+| command               | (none) | String  | 对应上文中的redis命令                                                                           |
+| redis-mode            | (none) | Integer | mode类型： single cluster                                                                  |
+| lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                                                                 |
+| lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                              |
+| lookup.max-retries    | 1      | Integer | 查询失败重试次数                                                                                |
+| lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                |
+| sink.max-retries      | 1      | Integer | 写入失败重试次数                                                                                |
+| sink.parallelism      | (none) | Integer | 写入并发数                                                                                   |
 
 
 

@@ -2,7 +2,7 @@
 
 ### Introduction
 
-Based on the  [bahir-flink](https://github.com/apache/bahir-flink.git)，the contents adjusted relative to bahir include: deleting expired Flink API, adding Table/SQL API, adding dimension table query support, adding query cache, unified use of expiration policy, number of concurrent writes, etc.
+Based on the  [bahir-flink](https://github.com/apache/bahir-flink.git)，the contents adjusted relative to bahir include: dAdded support for higher versions of Flink (including 1.12,1.13,1.14, etc.), added Table/SQL API, added dimension Table query support, increased query cache (supporting incremental and full), unified expiration policy, write concurrency, etc.
 
 Due to the older version of the flink interface used by bahir, the changes were relatively large. During the development process, the stream computing products of Tencent Cloud and Alibaba Cloud were referenced, taking the advantages of the two, and adding richer functions, including more Redis operation commands and more redis service types, such as: simple、 sentinel、 cluster.
 
