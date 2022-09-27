@@ -13,9 +13,13 @@ import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValida
 /** Created by jeff.zou on 2020/9/10. */
 public class SQLTest {
 
+    public static final String REDIS_HOST = "10.11.69.176";
+    public static final int REDIS_PORT = 6379;
+    public static final String REDIS_PASSWORD = "***";
+
+    public static final String CLUSTER_PASSWORD = "***";
     public static final String CLUSTERNODES =
             "10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000,10.11.80.147:8001,10.11.80.147:9000,10.11.80.147:9001";
-    public static final String PASSWORD = "*****";
 
     @Test
     public void testNoPrimaryKeyInsertSQL() throws Exception {
@@ -27,8 +31,12 @@ public class SQLTest {
 
         String ddl =
                 "create table sink_redis(username VARCHAR, passport time(3)) with ( 'connector'='redis', "
-                        + "'host'='10.11.80.147','port'='7000', 'redis-mode'='single','password'='"
-                        + PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -56,7 +64,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster', 'password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -83,7 +91,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster', 'password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -127,7 +135,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster', 'password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -178,7 +186,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster','password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -202,7 +210,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster','password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -223,7 +231,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster','password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -244,7 +252,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster','password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"

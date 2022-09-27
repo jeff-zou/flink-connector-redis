@@ -59,10 +59,21 @@ public class RedisDynamicTableSink implements DynamicTableSink {
 
     @Override
     public SinkRuntimeProvider getSinkRuntimeProvider(Context context) {
-        return SinkFunctionProvider.of(
-                new RedisSinkFunction(
-                        flinkJedisConfigBase, redisMapper, redisCacheOptions, resolvedSchema),
-                sinkParallelism);
+        RedisSinkFunction redisSinkFunction =
+                config.get(RedisOptions.SINK_LIMIT)
+                        ? new RedisLimitedSinkFunction(
+                                flinkJedisConfigBase,
+                                redisMapper,
+                                redisCacheOptions,
+                                resolvedSchema,
+                                config)
+                        : new RedisSinkFunction(
+                                flinkJedisConfigBase,
+                                redisMapper,
+                                redisCacheOptions,
+                                resolvedSchema);
+
+        return SinkFunctionProvider.of(redisSinkFunction, sinkParallelism);
     }
 
     @Override

@@ -30,7 +30,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisSinkFunction.class);
 
-    private Integer ttl;
+    protected Integer ttl;
 
     private RedisSinkMapper<IN> redisSinkMapper;
     private RedisCommand redisCommand;

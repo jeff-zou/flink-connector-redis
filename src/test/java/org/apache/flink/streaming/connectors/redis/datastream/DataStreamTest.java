@@ -18,10 +18,7 @@ import org.apache.flink.table.data.binary.BinaryRowData;
 import org.apache.flink.table.data.writer.BinaryRowWriter;
 import org.apache.flink.table.types.DataType;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import redis.embedded.RedisServer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,23 +26,27 @@ import java.util.List;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
-import static org.apache.flink.streaming.connectors.redis.table.SQLTest.PASSWORD;
+import static org.apache.flink.streaming.connectors.redis.table.SQLTest.REDIS_HOST;
+import static org.apache.flink.streaming.connectors.redis.table.SQLTest.REDIS_PASSWORD;
+import static org.apache.flink.streaming.connectors.redis.table.SQLTest.REDIS_PORT;
 
 /** Created by jeff.zou on 2021/2/26. */
 public class DataStreamTest {
 
-    private RedisServer redisServer;
+    //    private RedisServer redisServer;
+    //
+    //    @Before
+    //    public void before() throws Exception {
+    //        redisServer = RedisServer.builder().port(6379).setting("maxheap 51200").build();
+    //        redisServer.start();
+    //    }
 
-    @Before
-    public void before() throws Exception {
-        redisServer = RedisServer.builder().port(6379).setting("maxheap 51200").build();
-        redisServer.start();
-    }
+    //
+    //    @After
+    //    public void stopRedis() {
+    //        redisServer.stop();
+    //    }
 
-    /*
-    hget tom math
-    return: 150
-     */
     @Test
     public void testDateStreamInsert() throws Exception {
 
@@ -78,9 +79,9 @@ public class DataStreamTest {
                 new RedisCacheOptions.Builder().setCacheMaxSize(100).setCacheTTL(10L).build();
         FlinkJedisConfigBase conf =
                 new FlinkJedisPoolConfig.Builder()
-                        .setHost("10.11.80.147")
-                        .setPort(7001)
-                        .setPassword(PASSWORD)
+                        .setHost(REDIS_HOST)
+                        .setPort(REDIS_PORT)
+                        .setPassword(REDIS_PASSWORD)
                         .build();
 
         RedisSinkFunction redisSinkFunction =
@@ -88,10 +89,5 @@ public class DataStreamTest {
 
         dataStream.addSink(redisSinkFunction).setParallelism(1);
         env.execute("RedisSinkTest");
-    }
-
-    @After
-    public void stopRedis() {
-        redisServer.stop();
     }
 }
