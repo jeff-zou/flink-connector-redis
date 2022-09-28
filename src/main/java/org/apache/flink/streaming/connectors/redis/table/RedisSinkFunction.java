@@ -89,62 +89,38 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         String key =
                 redisSinkMapper.getKeyFromData(rowData, columnDataTypes.get(0).getLogicalType(), 0);
+        String field = null;
+        if (redisCommand.getRedisDataType() == RedisDataType.HASH
+                || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
+            field =
+                    redisSinkMapper.getFieldFromData(
+                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
+        }
+
         if (redisCommand.getRedisOperationType() == RedisOperationType.DEL) {
-            deleteInvoke(key, rowData);
+            startSink(key, field, null, null);
             return;
         }
 
-        String value = null;
-        LogicalTypeRoot logicalTypeRoot = null;
-
-        String field = null;
+        int valueIndex = 1;
         if (redisCommand.getRedisDataType() == RedisDataType.HASH
                 || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
-            field =
-                    redisSinkMapper.getFieldFromData(
-                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
-            value =
-                    redisSinkMapper.getValueFromData(
-                            rowData, columnDataTypes.get(2).getLogicalType(), 2);
-            logicalTypeRoot = columnDataTypes.get(2).getLogicalType().getTypeRoot();
-        } else {
-            value =
-                    redisSinkMapper.getValueFromData(
-                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
-            logicalTypeRoot = columnDataTypes.get(1).getLogicalType().getTypeRoot();
+            valueIndex = 2;
         }
 
-        for (int i = 0; i <= this.maxRetryTimes; i++) {
-            try {
-                sink(key, field, value, logicalTypeRoot);
-                if (ttl != null) {
-                    this.redisCommandsContainer.expire(key, ttl);
-                }
-                break;
-            } catch (UnsupportedOperationException e) {
-                throw e;
-            } catch (Exception e1) {
-                LOG.error("sink redis error, retry times:{}", i, e1);
-                if (i >= this.maxRetryTimes) {
-                    throw new RuntimeException("sink redis error ", e1);
-                }
-                Thread.sleep(500 * i);
-            }
-        }
+        String value =
+                redisSinkMapper.getValueFromData(
+                        rowData, columnDataTypes.get(valueIndex).getLogicalType(), valueIndex);
+        LogicalTypeRoot valueType = columnDataTypes.get(valueIndex).getLogicalType().getTypeRoot();
+
+        startSink(key, field, value, valueType);
     }
 
-    private void deleteInvoke(String key, RowData rowData) throws Exception {
-        String field = null;
-        if (redisCommand.getRedisDataType() == RedisDataType.HASH
-                || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
-            field =
-                    redisSinkMapper.getFieldFromData(
-                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
-        }
-
+    private void startSink(String key, String field, String value, LogicalTypeRoot valueType)
+            throws Exception {
         for (int i = 0; i <= maxRetryTimes; i++) {
             try {
-                sink(key, field, null, null);
+                sink(key, field, value, valueType);
                 break;
             } catch (UnsupportedOperationException e) {
                 throw e;
@@ -158,8 +134,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         }
     }
 
-    private void sink(String key, String field, String value, LogicalTypeRoot logicalTypeRoot)
-            throws Exception {
+    private void sink(String key, String field, String value, LogicalTypeRoot valueType) {
         switch (redisCommand) {
             case RPUSH:
                 this.redisCommandsContainer.rpush(key, value);
@@ -198,7 +173,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 this.redisCommandsContainer.hincrBy(
                         key,
                         field,
-                        logicalTypeRoot == LogicalTypeRoot.DOUBLE
+                        valueType == LogicalTypeRoot.DOUBLE
                                 ? Double.valueOf(value)
                                 : Long.valueOf(value));
 
@@ -206,7 +181,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             case INCRBY:
                 this.redisCommandsContainer.incrBy(
                         key,
-                        logicalTypeRoot == LogicalTypeRoot.DOUBLE
+                        valueType == LogicalTypeRoot.DOUBLE
                                 ? Double.valueOf(value)
                                 : Long.valueOf(value));
                 break;

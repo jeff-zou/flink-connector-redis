@@ -156,6 +156,6 @@ public class RedisOptions {
     public static final ConfigOption<Long> SINK_LIMIT_MAX_ONLINE =
             ConfigOptions.key("sink.limit.max-online")
                     .longType()
-                    .defaultValue(60 * 60 * 1000L)
+                    .defaultValue(30 * 60 * 1000L)
                     .withDescription("Optional the max online milliseconds for limited sink");
 }

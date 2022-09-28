@@ -46,7 +46,7 @@ public enum RedisCommand {
     ZADD(RedisDataType.SORTED_SET, RedisOperationType.INSERT),
 
     /** */
-    ZINCRBY(RedisDataType.SORTED_SET, RedisOperationType.INSERT),
+    ZINCRBY(RedisDataType.SORTED_SET, RedisOperationType.ACC),
 
     /** Removes the specified members from the sorted set stored at key. */
     ZREM(RedisDataType.SORTED_SET, RedisOperationType.DEL),
