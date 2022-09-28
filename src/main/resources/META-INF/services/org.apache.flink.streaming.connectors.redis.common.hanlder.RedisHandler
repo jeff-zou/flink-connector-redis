@@ -20,6 +20,7 @@ org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.HSetSinkMappe
 org.apache.flink.streaming.connectors.redis.common.mapper.row.source.HGetMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.source.GetMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.IncrBySinkMapper
+org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.HIncrBySinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.IncrByExSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.LPushSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.PfAddSinkMapper

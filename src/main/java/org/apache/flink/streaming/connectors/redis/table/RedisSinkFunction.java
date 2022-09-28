@@ -14,6 +14,7 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
+import org.apache.flink.table.types.logical.LogicalTypeRoot;
 import org.apache.flink.types.RowKind;
 
 import org.slf4j.Logger;
@@ -93,9 +94,9 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             return;
         }
 
-        String value =
-                redisSinkMapper.getValueFromData(
-                        rowData, columnDataTypes.get(1).getLogicalType(), 1);
+        String value = null;
+        LogicalTypeRoot logicalTypeRoot = null;
+
         String field = null;
         if (redisCommand.getRedisDataType() == RedisDataType.HASH
                 || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
@@ -105,11 +106,17 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             value =
                     redisSinkMapper.getValueFromData(
                             rowData, columnDataTypes.get(2).getLogicalType(), 2);
+            logicalTypeRoot = columnDataTypes.get(2).getLogicalType().getTypeRoot();
+        } else {
+            value =
+                    redisSinkMapper.getValueFromData(
+                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
+            logicalTypeRoot = columnDataTypes.get(1).getLogicalType().getTypeRoot();
         }
 
         for (int i = 0; i <= this.maxRetryTimes; i++) {
             try {
-                sink(key, field, value);
+                sink(key, field, value, logicalTypeRoot);
                 if (ttl != null) {
                     this.redisCommandsContainer.expire(key, ttl);
                 }
@@ -128,7 +135,8 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
     private void deleteInvoke(String key, RowData rowData) throws Exception {
         String field = null;
-        if (redisCommand != RedisCommand.DEL) {
+        if (redisCommand.getRedisDataType() == RedisDataType.HASH
+                || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
             field =
                     redisSinkMapper.getFieldFromData(
                             rowData, columnDataTypes.get(1).getLogicalType(), 1);
@@ -136,7 +144,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         for (int i = 0; i <= maxRetryTimes; i++) {
             try {
-                sink(key, field, null);
+                sink(key, field, null, null);
                 break;
             } catch (UnsupportedOperationException e) {
                 throw e;
@@ -150,7 +158,8 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         }
     }
 
-    private void sink(String key, String field, String value) throws Exception {
+    private void sink(String key, String field, String value, LogicalTypeRoot logicalTypeRoot)
+            throws Exception {
         switch (redisCommand) {
             case RPUSH:
                 this.redisCommandsContainer.rpush(key, value);
@@ -186,10 +195,20 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 this.redisCommandsContainer.hset(key, field, value);
                 break;
             case HINCRBY:
-                this.redisCommandsContainer.hincrBy(key, field, Long.valueOf(value));
+                this.redisCommandsContainer.hincrBy(
+                        key,
+                        field,
+                        logicalTypeRoot == LogicalTypeRoot.DOUBLE
+                                ? Double.valueOf(value)
+                                : Long.valueOf(value));
+
                 break;
             case INCRBY:
-                this.redisCommandsContainer.incrBy(key, Long.valueOf(value));
+                this.redisCommandsContainer.incrBy(
+                        key,
+                        logicalTypeRoot == LogicalTypeRoot.DOUBLE
+                                ? Double.valueOf(value)
+                                : Long.valueOf(value));
                 break;
             case DECRBY:
                 this.redisCommandsContainer.decrBy(key, Long.valueOf(value));

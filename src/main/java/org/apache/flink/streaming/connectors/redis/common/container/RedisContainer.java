@@ -112,7 +112,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public Double hincrByFloat(final String key, final String hashField, final Double value) {
+    public double hincrBy(final String key, final String hashField, final Double value) {
         Jedis jedis = null;
         Double result;
         try {
@@ -339,6 +339,26 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
         try {
             jedis = getInstance();
             jedis.incrBy(key, value);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis with incrby command with increment {}  error message {}",
+                        key,
+                        value,
+                        e.getMessage());
+            }
+            throw e;
+        } finally {
+            releaseInstance(jedis);
+        }
+    }
+
+    @Override
+    public void incrBy(String key, Double value) {
+        Jedis jedis = null;
+        try {
+            jedis = getInstance();
+            jedis.incrByFloat(key, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -647,26 +667,6 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
         } finally {
             releaseInstance(jedis);
         }
-    }
-
-    @Override
-    public long incrByLong(String key, long value) {
-        Jedis jedis = null;
-        long result = 0;
-        try {
-            jedis = this.getInstance();
-            result = jedis.incrBy(key, value);
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error(
-                        "Cannot send Redis message with command incrBy to key {} and value {} error message {}",
-                        new Object[] {key, value, e.getMessage()});
-            }
-            throw e;
-        } finally {
-            this.releaseInstance(jedis);
-        }
-        return result;
     }
 
     @Override
