@@ -3,7 +3,7 @@ package org.apache.flink.streaming.connectors.redis.table;
 import org.apache.flink.calcite.shaded.com.google.common.cache.Cache;
 import org.apache.flink.calcite.shaded.com.google.common.cache.CacheBuilder;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisLookupOptions;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainerBuilder;
 import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConverter;
@@ -17,7 +17,6 @@ import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.functions.TableFunction;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.util.Preconditions;
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +46,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
     public RedisLookupFunction(
             FlinkJedisConfigBase flinkJedisConfigBase,
             RedisMapper redisMapper,
-            RedisCacheOptions redisCacheOptions,
+            RedisLookupOptions redisLookupOptions,
             ResolvedSchema resolvedSchema) {
         Preconditions.checkNotNull(
                 flinkJedisConfigBase, "Redis connection pool config should not be null");
@@ -57,10 +56,10 @@ public class RedisLookupFunction extends TableFunction<RowData> {
                 "Redis Mapper data type description can not be null");
 
         this.flinkJedisConfigBase = flinkJedisConfigBase;
-        this.cacheTtl = redisCacheOptions.getCacheTtl();
-        this.cacheMaxSize = redisCacheOptions.getCacheMaxSize();
-        this.maxRetryTimes = redisCacheOptions.getMaxRetryTimes();
-        this.loadAll = redisCacheOptions.getLoadAll();
+        this.cacheTtl = redisLookupOptions.getCacheTtl();
+        this.cacheMaxSize = redisLookupOptions.getCacheMaxSize();
+        this.maxRetryTimes = redisLookupOptions.getMaxRetryTimes();
+        this.loadAll = redisLookupOptions.getLoadAll();
         if (this.loadAll) {
             Preconditions.checkState(
                     cacheMaxSize != -1 && cacheTtl != -1,
@@ -77,6 +76,8 @@ public class RedisLookupFunction extends TableFunction<RowData> {
     }
 
     public void eval(Object... keys) throws Exception {
+
+        // when cache is not null.
         if (cache != null) {
             GenericRowData genericRowData = null;
             switch (redisCommand) {
@@ -108,6 +109,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
             }
         }
 
+        // It will try many times which less than {@code maxRetryTimes} until execute success.
         for (int i = 0; i <= maxRetryTimes; i++) {
             try {
                 query(keys);
@@ -122,6 +124,12 @@ public class RedisLookupFunction extends TableFunction<RowData> {
         }
     }
 
+    /**
+     * query redis.
+     *
+     * @param keys
+     * @throws Exception
+     */
     private void query(Object... keys) throws Exception {
         String result = null;
         GenericRowData rowData = null;
@@ -141,7 +149,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
                 break;
             case HGET:
                 if (loadAll) {
-                    hgetAll(keys);
+                    loadAllElements(keys);
                     return;
                 }
                 result =
@@ -168,7 +176,12 @@ public class RedisLookupFunction extends TableFunction<RowData> {
         }
     }
 
-    void hgetAll(Object... keys) {
+    /**
+     * load all element in memory from map.
+     *
+     * @param keys
+     */
+    private void loadAllElements(Object... keys) {
         Map<String, String> map = this.redisCommandsContainer.hgetAll(String.valueOf(keys[0]));
         if (map == null) {
             return;
@@ -178,7 +191,13 @@ public class RedisLookupFunction extends TableFunction<RowData> {
         createRowData(keys, map);
     }
 
-    void createRowData(Object[] keys, Map<String, String> map) {
+    /**
+     * create row data.
+     *
+     * @param keys
+     * @param map
+     */
+    private void createRowData(Object[] keys, Map<String, String> map) {
         GenericRowData genericRowData = new GenericRowData(3);
         genericRowData.setField(0, keys[0]);
         genericRowData.setField(1, keys[1]);

@@ -78,7 +78,7 @@ with参数说明：
 | lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                |
 | sink.max-retries      | 1      | Integer | 写入失败重试次数                                                                                |
 | sink.parallelism      | (none) | Integer | 写入并发数                                                                                   |
-
+|  sink.value.from      | column  | String  | column: 值将来自于某一字段(如set: key为DDL定义的第一个字段,value则为第二个字段)<br/>row: value值取自整行数据，并以'\01'分割   |
 
 
 集群类型为sentinel时额外连接参数:

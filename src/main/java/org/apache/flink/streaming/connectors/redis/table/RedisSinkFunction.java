@@ -3,9 +3,11 @@ package org.apache.flink.streaming.connectors.redis.table;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisValueFromType;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainerBuilder;
+import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConverter;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisDataType;
@@ -42,6 +44,8 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private final int maxRetryTimes;
     private List<DataType> columnDataTypes;
 
+    private RedisValueFromType redisValueFromType;
+
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
      *
@@ -52,7 +56,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     public RedisSinkFunction(
             FlinkJedisConfigBase flinkJedisConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
-            RedisCacheOptions redisCacheOptions,
+            RedisSinkOptions redisSinkOptions,
             ResolvedSchema resolvedSchema) {
         Objects.requireNonNull(
                 flinkJedisConfigBase, "Redis connection pool config should not be null");
@@ -62,7 +66,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 "Redis Mapper data type description can not be null");
 
         this.flinkJedisConfigBase = flinkJedisConfigBase;
-        this.maxRetryTimes = redisCacheOptions.getMaxRetryTimes();
+        this.maxRetryTimes = redisSinkOptions.getMaxRetryTimes();
         this.redisSinkMapper = redisSinkMapper;
         RedisCommandDescription redisCommandDescription =
                 (RedisCommandDescription) redisSinkMapper.getCommandDescription();
@@ -70,6 +74,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         this.redisCommand = redisCommandDescription.getRedisCommand();
         this.ttl = redisCommandDescription.getTTL();
         this.columnDataTypes = resolvedSchema.getColumnDataTypes();
+        this.redisValueFromType = redisSinkOptions.getRedisValueFromType();
     }
 
     /**
@@ -97,6 +102,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                             rowData, columnDataTypes.get(1).getLogicalType(), 1);
         }
 
+        // don's need value when del redis key.
         if (redisCommand.getRedisOperationType() == RedisOperationType.DEL) {
             startSink(key, field, null, null);
             return;
@@ -108,14 +114,33 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             valueIndex = 2;
         }
 
-        String value =
-                redisSinkMapper.getValueFromData(
-                        rowData, columnDataTypes.get(valueIndex).getLogicalType(), valueIndex);
-        LogicalTypeRoot valueType = columnDataTypes.get(valueIndex).getLogicalType().getTypeRoot();
+        // the value is taken from the entire row when redisValueFromType is row, and columns
+        // separated by '\01'
+        if (redisValueFromType == RedisValueFromType.row
+                && RedisOperationType.INSERT == redisCommand.getRedisOperationType()) {
+            startSink(key, field, serializeWholeRow(rowData), null);
+        } else {
+            // The value will come from a field (for example, set: key is the first field defined by
+            // DDL, and value is the second field)
+            String value =
+                    redisSinkMapper.getValueFromData(
+                            rowData, columnDataTypes.get(valueIndex).getLogicalType(), valueIndex);
+            LogicalTypeRoot valueType =
+                    columnDataTypes.get(valueIndex).getLogicalType().getTypeRoot();
 
-        startSink(key, field, value, valueType);
+            startSink(key, field, value, valueType);
+        }
     }
 
+    /**
+     * It will try many times which less than {@code maxRetryTimes} until execute success.
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @param valueType
+     * @throws Exception
+     */
     private void startSink(String key, String field, String value, LogicalTypeRoot valueType)
             throws Exception {
         for (int i = 0; i <= maxRetryTimes; i++) {
@@ -134,6 +159,14 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         }
     }
 
+    /**
+     * process redis command.
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @param valueType
+     */
     private void sink(String key, String field, String value, LogicalTypeRoot valueType) {
         switch (redisCommand) {
             case RPUSH:
@@ -198,6 +231,25 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 throw new UnsupportedOperationException(
                         "Cannot process such data type: " + redisCommand);
         }
+    }
+
+    /**
+     * serialize whole row.
+     *
+     * @param rowData
+     * @return
+     */
+    private String serializeWholeRow(RowData rowData) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < columnDataTypes.size(); i++) {
+            stringBuilder.append(
+                    RedisRowConverter.rowDataToString(
+                            columnDataTypes.get(i).getLogicalType(), rowData, i));
+            if (i != columnDataTypes.size() - 1) {
+                stringBuilder.append(RedisDynamicTableFactory.CACHE_SEPERATOR);
+            }
+        }
+        return stringBuilder.toString();
     }
 
     /**

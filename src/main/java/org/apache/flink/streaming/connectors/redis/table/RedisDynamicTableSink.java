@@ -2,8 +2,8 @@ package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.FlinkJedisConfigHandler;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
@@ -22,9 +22,9 @@ public class RedisDynamicTableSink implements DynamicTableSink {
 
     private FlinkJedisConfigBase flinkJedisConfigBase;
     private RedisSinkMapper redisMapper;
-    private Map<String, String> properties = null;
+    private Map<String, String> properties;
     private ReadableConfig config;
-    private RedisCacheOptions redisCacheOptions;
+    private RedisSinkOptions redisSinkOptions;
     private Integer sinkParallelism;
     private ResolvedSchema resolvedSchema;
 
@@ -41,9 +41,10 @@ public class RedisDynamicTableSink implements DynamicTableSink {
         flinkJedisConfigBase =
                 RedisHandlerServices.findRedisHandler(FlinkJedisConfigHandler.class, properties)
                         .createFlinkJedisConfig(config);
-        redisCacheOptions =
-                new RedisCacheOptions.Builder()
+        redisSinkOptions =
+                new RedisSinkOptions.Builder()
                         .setMaxRetryTimes(config.get(RedisOptions.SINK_MAX_RETRIES))
+                        .setRedisValueFromType(config.get(RedisOptions.SINK_VALUE_FROM))
                         .build();
         this.resolvedSchema = resolvedSchema;
     }
@@ -64,13 +65,13 @@ public class RedisDynamicTableSink implements DynamicTableSink {
                         ? new RedisLimitedSinkFunction(
                                 flinkJedisConfigBase,
                                 redisMapper,
-                                redisCacheOptions,
+                                redisSinkOptions,
                                 resolvedSchema,
                                 config)
                         : new RedisSinkFunction(
                                 flinkJedisConfigBase,
                                 redisMapper,
-                                redisCacheOptions,
+                                redisSinkOptions,
                                 resolvedSchema);
 
         return SinkFunctionProvider.of(redisSinkFunction, sinkParallelism);

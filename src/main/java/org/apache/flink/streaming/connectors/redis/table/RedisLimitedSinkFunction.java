@@ -3,8 +3,8 @@ package org.apache.flink.streaming.connectors.redis.table;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
@@ -48,10 +48,10 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
     public RedisLimitedSinkFunction(
             FlinkJedisConfigBase flinkJedisConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
-            RedisCacheOptions redisCacheOptions,
+            RedisSinkOptions redisSinkOptions,
             ResolvedSchema resolvedSchema,
             ReadableConfig config) {
-        super(flinkJedisConfigBase, redisSinkMapper, redisCacheOptions, resolvedSchema);
+        super(flinkJedisConfigBase, redisSinkMapper, redisSinkOptions, resolvedSchema);
         maxOnline = config.get(RedisOptions.SINK_LIMIT_MAX_ONLINE);
 
         Preconditions.checkState(

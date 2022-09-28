@@ -250,7 +250,7 @@ public class SQLTest {
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
 
         String ddl =
-                "create table sink_redis(username VARCHAR, level varchar, score double) with ( 'connector'='redis', "
+                "create table sink_redis(username VARCHAR, level varchar, score int) with ( 'connector'='redis', "
                         + "'host'='"
                         + REDIS_HOST
                         + "','port'='"
@@ -264,7 +264,7 @@ public class SQLTest {
                         + "')";
 
         tEnv.executeSql(ddl);
-        String sql = " insert into sink_redis select * from (values ('11', '11', 10.3))";
+        String sql = " insert into sink_redis select * from (values ('11', '12', 10))";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
@@ -290,7 +290,33 @@ public class SQLTest {
                         + "')";
 
         tEnv.executeSql(ddl);
-        String sql = " insert into sink_redis select * from (values ('11', '11', 10.3))";
+        String sql = " insert into sink_redis select * from (values ('11', '12', 10.3))";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        System.out.println(sql);
+    }
+
+    @Test
+    public void testSinkValueFrom() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
+        String ddl =
+                "create table sink_redis(username VARCHAR, level varchar, score double) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HSET
+                        + "', 'sink.value.from'='row')";
+
+        tEnv.executeSql(ddl);
+        String sql = " insert into sink_redis select * from (values ('11', '12', 10.3))";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);

@@ -5,7 +5,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
@@ -75,8 +75,8 @@ public class DataStreamTest {
                 Arrays.asList(DataTypes.STRING(), DataTypes.STRING(), DataTypes.STRING());
         ResolvedSchema resolvedSchema = ResolvedSchema.physical(columnNames, columnDataTypes);
 
-        RedisCacheOptions redisCacheOptions =
-                new RedisCacheOptions.Builder().setCacheMaxSize(100).setCacheTTL(10L).build();
+        RedisSinkOptions redisSinkOptions =
+                new RedisSinkOptions.Builder().setMaxRetryTimes(3).build();
         FlinkJedisConfigBase conf =
                 new FlinkJedisPoolConfig.Builder()
                         .setHost(REDIS_HOST)
@@ -85,7 +85,7 @@ public class DataStreamTest {
                         .build();
 
         RedisSinkFunction redisSinkFunction =
-                new RedisSinkFunction<>(conf, redisMapper, redisCacheOptions, resolvedSchema);
+                new RedisSinkFunction<>(conf, redisMapper, redisSinkOptions, resolvedSchema);
 
         dataStream.addSink(redisSinkFunction).setParallelism(1);
         env.execute("RedisSinkTest");

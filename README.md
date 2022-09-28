@@ -52,26 +52,27 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 
 ##### with parameter description:
 
-| Field                 | Default | Type    | Description                                                  |
-| --------------------- | ------- | ------- | ------------------------------------------------------------ |
-| connector             | (none)  | String  | `redis`                                                      |
-| host                  | (none)  | String  | Redis IP                                                     |
-| port                  | 6379    | Integer | Redis port                                                   |
-| password              | null    | String  | null if not set                                              |
-| database              | 0       | Integer | db0 is used by default                                       |
-| maxTotal              | 2       | Integer | Maximum number of connections                                |
-| maxIdle               | 2       | Integer | Max keepalive connections                                    |
-| minIdle               | 1       | Integer | Minimum keepalive connections                                |
-| timeout               | 2000    | Integer | Connection timeout, in ms, default 1s                        |
-| cluster-nodes         | (none)  | String  | Cluster ip and port, not empty when redis-mode is cluster, such as:10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000 |
-| command               | (none)  | String  | Corresponds to the redis command above                       |
-| redis-mode            | (none)  | Integer | mode type： single cluster                                   |
-| lookup.cache.max-rows | -1      | Integer | Query cache size, reduce the query for redis duplicate keys  |
-| lookup.cache.ttl      | -1      | Integer | Query cache expiration time, in seconds. The condition for enabling query cache is that neither max-rows nor ttl can be -1 |
-| lookup.max-retries    | 1       | Integer | Number of retries on failed query                            |
-| lookup.cache.load-all | false   | Boolean | when command is hget, query all elements from redis map to cache,help to resolve cache penetration issues |
-| sink.max-retries      | 1       | Integer | Number of retries for write failures                         |
-| sink.parallelism      | (none)  | Integer | Number of concurrent writes                                  |
+| Field                | Default | Type    | Description                                                                                                                                                                                        |
+|----------------------|---------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| connector            | (none)  | String  | `redis`                                                                                                                                                                                            |
+| host                 | (none)  | String  | Redis IP                                                                                                                                                                                           |
+| port                 | 6379    | Integer | Redis port                                                                                                                                                                                         |
+| password             | null    | String  | null if not set                                                                                                                                                                                    |
+| database             | 0       | Integer | db0 is used by default                                                                                                                                                                             |
+| maxTotal             | 2       | Integer | Maximum number of connections                                                                                                                                                                      |
+| maxIdle              | 2       | Integer | Max keepalive connections                                                                                                                                                                          |
+| minIdle              | 1       | Integer | Minimum keepalive connections                                                                                                                                                                      |
+| timeout              | 2000    | Integer | Connection timeout, in ms, default 1s                                                                                                                                                              |
+| cluster-nodes        | (none)  | String  | Cluster ip and port, not empty when redis-mode is cluster, such as:10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000                                                                           |
+| command              | (none)  | String  | Corresponds to the redis command above                                                                                                                                                             |
+| redis-mode           | (none)  | Integer | mode type： single cluster                                                                                                                                                                          |
+| lookup.cache.max-rows | -1      | Integer | Query cache size, reduce the query for redis duplicate keys                                                                                                                                        |
+| lookup.cache.ttl     | -1      | Integer | Query cache expiration time, in seconds. The condition for enabling query cache is that neither max-rows nor ttl can be -1                                                                         |
+| lookup.max-retries   | 1       | Integer | Number of retries on failed query                                                                                                                                                                  |
+| lookup.cache.load-all | false   | Boolean | when command is hget, query all elements from redis map to cache,help to resolve cache penetration issues                                                                                          |
+| sink.max-retries     | 1       | Integer | Number of retries for write failures                                                                                                                                                               |
+| sink.parallelism     | (none)  | Integer | Number of concurrent writes                                                                                                                                                                        |
+| sink.value.from      | column  | String  | column: The value will come from a field (for example, set: key is the first field defined by DDL, and value is the second field)<br/> row: value is taken from the entire row, separated by '\01' |
 
 
 

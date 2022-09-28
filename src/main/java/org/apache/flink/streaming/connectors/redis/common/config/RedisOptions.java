@@ -158,4 +158,10 @@ public class RedisOptions {
                     .longType()
                     .defaultValue(30 * 60 * 1000L)
                     .withDescription("Optional the max online milliseconds for limited sink");
+
+    public static final ConfigOption<RedisValueFromType> SINK_VALUE_FROM =
+            ConfigOptions.key("sink.value.from")
+                    .enumType(RedisValueFromType.class)
+                    .defaultValue(RedisValueFromType.column)
+                    .withDescription("Optional where does the value come from");
 }
