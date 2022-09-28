@@ -13,8 +13,6 @@ public enum RedisDataType {
     /** Redis Hashes are maps between string fields and string values. */
     HASH,
 
-    HINCRBY,
-
     /** Redis Lists are simply lists of strings, sorted by insertion order. */
     LIST,
 
