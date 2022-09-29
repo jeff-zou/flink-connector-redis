@@ -98,6 +98,11 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.SINK_MAX_RETRIES);
         options.add(RedisOptions.SINK_PARALLELISM);
         options.add(RedisOptions.LOOKUP_CACHE_LOAD_ALL);
+        options.add(RedisOptions.SINK_LIMIT);
+        options.add(RedisOptions.SINK_LIMIT_MAX_NUM);
+        options.add(RedisOptions.SINK_LIMIT_MAX_ONLINE);
+        options.add(RedisOptions.SINK_LIMIT_INTERVAL);
+        options.add(RedisOptions.VALUE_DATA_STRUCTURE);
         return options;
     }
 

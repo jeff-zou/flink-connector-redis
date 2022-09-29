@@ -126,11 +126,42 @@ public class RedisOptions {
             ConfigOptions.key("sink.max-retries")
                     .intType()
                     .defaultValue(1)
-                    .withDescription("Optional max retries of cache sink redis");
+                    .withDescription("Optional max retries of cache sink");
 
     public static final ConfigOption<Integer> SINK_PARALLELISM =
             ConfigOptions.key("sink.parallelism")
                     .intType()
                     .noDefaultValue()
-                    .withDescription("Optional parrallelism for sink redis");
+                    .withDescription("Optional parrallelism for sink");
+
+    public static final ConfigOption<Boolean> SINK_LIMIT =
+            ConfigOptions.key("sink.limit")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("Optional if open the limit for sink ");
+
+    public static final ConfigOption<Integer> SINK_LIMIT_MAX_NUM =
+            ConfigOptions.key("sink.limit.max-num")
+                    .intType()
+                    .defaultValue(10000)
+                    .withDescription("Optional the max num of writes for limited sink");
+
+    public static final ConfigOption<Long> SINK_LIMIT_INTERVAL =
+            ConfigOptions.key("sink.limit.interval")
+                    .longType()
+                    .defaultValue(100L)
+                    .withDescription(
+                            "Optional the millisecond interval between each write for limited sink");
+
+    public static final ConfigOption<Long> SINK_LIMIT_MAX_ONLINE =
+            ConfigOptions.key("sink.limit.max-online")
+                    .longType()
+                    .defaultValue(30 * 60 * 1000L)
+                    .withDescription("Optional the max online milliseconds for limited sink");
+
+    public static final ConfigOption<RedisValueDataStructure> VALUE_DATA_STRUCTURE =
+            ConfigOptions.key("value.data.structure")
+                    .enumType(RedisValueDataStructure.class)
+                    .defaultValue(RedisValueDataStructure.column)
+                    .withDescription("Optional redis value data structure.");
 }

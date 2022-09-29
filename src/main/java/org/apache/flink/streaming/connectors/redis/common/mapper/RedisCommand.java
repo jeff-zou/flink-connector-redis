@@ -45,7 +45,8 @@ public enum RedisCommand {
     /** Adds the specified members with the specified score to the sorted set stored at key. */
     ZADD(RedisDataType.SORTED_SET, RedisOperationType.INSERT),
 
-    ZINCRBY(RedisDataType.SORTED_SET, RedisOperationType.INSERT),
+    /** */
+    ZINCRBY(RedisDataType.SORTED_SET, RedisOperationType.ACC),
 
     /** Removes the specified members from the sorted set stored at key. */
     ZREM(RedisDataType.SORTED_SET, RedisOperationType.DEL),
@@ -59,7 +60,8 @@ public enum RedisCommand {
      */
     HSET(RedisDataType.HASH, RedisOperationType.INSERT),
 
-    HINCRBY(RedisDataType.HINCRBY, RedisOperationType.ACC),
+    /** Delta plus for specified key. */
+    HINCRBY(RedisDataType.HASH, RedisOperationType.ACC),
 
     /** Delta plus for specified key. */
     INCRBY(RedisDataType.STRING, RedisOperationType.ACC),

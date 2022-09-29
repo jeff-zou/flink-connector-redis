@@ -74,7 +74,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     }
 
     @Override
-    public Double hincrByFloat(final String key, final String hashField, final Double value) {
+    public double hincrBy(final String key, final String hashField, final Double value) {
         Double result;
         try {
             result = jedisCluster.hincrByFloat(key.getBytes(), hashField.getBytes(), value);
@@ -230,6 +230,22 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     public void incrBy(String key, Long value) {
         try {
             jedisCluster.incrBy(key, value);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command incrby to key {} with increment {} and tll {} error message {}",
+                        key,
+                        value,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public void incrBy(String key, Double value) {
+        try {
+            jedisCluster.incrByFloat(key, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -452,22 +468,6 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
             }
             throw e;
         }
-    }
-
-    @Override
-    public long incrByLong(String key, long value) {
-        long result = 0;
-        try {
-            result = jedisCluster.incrBy(key, value);
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error(
-                        "Cannot send Redis message with command incrBy to key {} and value {} error message {}",
-                        new Object[] {key, value, e.getMessage()});
-            }
-            throw e;
-        }
-        return result;
     }
 
     @Override

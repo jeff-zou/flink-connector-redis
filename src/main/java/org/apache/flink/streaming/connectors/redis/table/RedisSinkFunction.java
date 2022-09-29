@@ -3,23 +3,27 @@ package org.apache.flink.streaming.connectors.redis.table;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisValueDataStructure;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainerBuilder;
+import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConverter;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisDataType;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisOperationType;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
-import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
+import org.apache.flink.table.types.logical.LogicalTypeRoot;
 import org.apache.flink.types.RowKind;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,7 +33,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisSinkFunction.class);
 
-    private Integer ttl;
+    protected Integer ttl;
 
     private RedisSinkMapper<IN> redisSinkMapper;
     private RedisCommand redisCommand;
@@ -38,7 +42,9 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private RedisCommandsContainer redisCommandsContainer;
 
     private final int maxRetryTimes;
-    private DataType[] columnDataTypes;
+    private List<DataType> columnDataTypes;
+
+    private RedisValueDataStructure redisValueDataStructure;
 
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
@@ -50,8 +56,8 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     public RedisSinkFunction(
             FlinkJedisConfigBase flinkJedisConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
-            RedisCacheOptions redisCacheOptions,
-            TableSchema tableSchema) {
+            RedisSinkOptions redisSinkOptions,
+            ResolvedSchema resolvedSchema) {
         Objects.requireNonNull(
                 flinkJedisConfigBase, "Redis connection pool config should not be null");
         Objects.requireNonNull(redisSinkMapper, "Redis Mapper can not be null");
@@ -60,14 +66,15 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 "Redis Mapper data type description can not be null");
 
         this.flinkJedisConfigBase = flinkJedisConfigBase;
-        this.maxRetryTimes = redisCacheOptions.getMaxRetryTimes();
+        this.maxRetryTimes = redisSinkOptions.getMaxRetryTimes();
         this.redisSinkMapper = redisSinkMapper;
         RedisCommandDescription redisCommandDescription =
                 (RedisCommandDescription) redisSinkMapper.getCommandDescription();
 
         this.redisCommand = redisCommandDescription.getRedisCommand();
         this.ttl = redisCommandDescription.getTTL();
-        this.columnDataTypes = tableSchema.getFieldDataTypes();
+        this.columnDataTypes = resolvedSchema.getColumnDataTypes();
+        this.redisValueDataStructure = redisSinkOptions.getRedisValueFromType();
     }
 
     /**
@@ -86,55 +93,59 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         }
 
         String key =
-                redisSinkMapper.getKeyFromData(rowData, columnDataTypes[0].getLogicalType(), 0);
-        if (redisCommand.getRedisOperationType() == RedisOperationType.DEL) {
-            deleteInvoke(key, rowData);
-            return;
-        }
-
-        String value =
-                redisSinkMapper.getValueFromData(rowData, columnDataTypes[1].getLogicalType(), 1);
+                redisSinkMapper.getKeyFromData(rowData, columnDataTypes.get(0).getLogicalType(), 0);
         String field = null;
         if (redisCommand.getRedisDataType() == RedisDataType.HASH
                 || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
             field =
                     redisSinkMapper.getFieldFromData(
-                            rowData, columnDataTypes[1].getLogicalType(), 1);
-            value =
-                    redisSinkMapper.getValueFromData(
-                            rowData, columnDataTypes[2].getLogicalType(), 2);
+                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
         }
 
-        for (int i = 0; i <= this.maxRetryTimes; i++) {
-            try {
-                sink(key, field, value);
-                if (ttl != null) {
-                    this.redisCommandsContainer.expire(key, ttl);
-                }
-                break;
-            } catch (UnsupportedOperationException e) {
-                throw e;
-            } catch (Exception e1) {
-                LOG.error("sink redis error, retry times:{}", i, e1);
-                if (i >= this.maxRetryTimes) {
-                    throw new RuntimeException("sink redis error ", e1);
-                }
-                Thread.sleep(500 * i);
-            }
+        // don's need value when del redis key.
+        if (redisCommand.getRedisOperationType() == RedisOperationType.DEL) {
+            startSink(key, field, null, null);
+            return;
+        }
+
+        int valueIndex = 1;
+        if (redisCommand.getRedisDataType() == RedisDataType.HASH
+                || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
+            valueIndex = 2;
+        }
+
+        // the value is taken from the entire row when redisValueFromType is row, and columns
+        // separated by '\01'
+        if (redisValueDataStructure == RedisValueDataStructure.row
+                && RedisOperationType.INSERT == redisCommand.getRedisOperationType()) {
+            startSink(key, field, serializeWholeRow(rowData), null);
+        } else {
+            // The value will come from a field (for example, set: key is the first field defined by
+            // DDL, and value is the second field)
+            String value =
+                    redisSinkMapper.getValueFromData(
+                            rowData, columnDataTypes.get(valueIndex).getLogicalType(), valueIndex);
+            LogicalTypeRoot valueType =
+                    columnDataTypes.get(valueIndex).getLogicalType().getTypeRoot();
+
+            startSink(key, field, value, valueType);
         }
     }
 
-    private void deleteInvoke(String key, RowData rowData) throws Exception {
-        String field = null;
-        if (redisCommand != RedisCommand.DEL) {
-            field =
-                    redisSinkMapper.getFieldFromData(
-                            rowData, columnDataTypes[1].getLogicalType(), 1);
-        }
-
+    /**
+     * It will try many times which less than {@code maxRetryTimes} until execute success.
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @param valueType
+     * @throws Exception
+     */
+    private void startSink(String key, String field, String value, LogicalTypeRoot valueType)
+            throws Exception {
         for (int i = 0; i <= maxRetryTimes; i++) {
             try {
-                sink(key, field, null);
+                sink(key, field, value, valueType);
                 break;
             } catch (UnsupportedOperationException e) {
                 throw e;
@@ -148,7 +159,15 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         }
     }
 
-    private void sink(String key, String field, String value) throws Exception {
+    /**
+     * process redis command.
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @param valueType
+     */
+    private void sink(String key, String field, String value, LogicalTypeRoot valueType) {
         switch (redisCommand) {
             case RPUSH:
                 this.redisCommandsContainer.rpush(key, value);
@@ -184,10 +203,20 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 this.redisCommandsContainer.hset(key, field, value);
                 break;
             case HINCRBY:
-                this.redisCommandsContainer.hincrBy(key, field, Long.valueOf(value));
+                this.redisCommandsContainer.hincrBy(
+                        key,
+                        field,
+                        valueType == LogicalTypeRoot.DOUBLE
+                                ? Double.valueOf(value)
+                                : Long.valueOf(value));
+
                 break;
             case INCRBY:
-                this.redisCommandsContainer.incrBy(key, Long.valueOf(value));
+                this.redisCommandsContainer.incrBy(
+                        key,
+                        valueType == LogicalTypeRoot.DOUBLE
+                                ? Double.valueOf(value)
+                                : Long.valueOf(value));
                 break;
             case DECRBY:
                 this.redisCommandsContainer.decrBy(key, Long.valueOf(value));
@@ -202,6 +231,25 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 throw new UnsupportedOperationException(
                         "Cannot process such data type: " + redisCommand);
         }
+    }
+
+    /**
+     * serialize whole row.
+     *
+     * @param rowData
+     * @return
+     */
+    private String serializeWholeRow(RowData rowData) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < columnDataTypes.size(); i++) {
+            stringBuilder.append(
+                    RedisRowConverter.rowDataToString(
+                            columnDataTypes.get(i).getLogicalType(), rowData, i));
+            if (i != columnDataTypes.size() - 1) {
+                stringBuilder.append(RedisDynamicTableFactory.CACHE_SEPERATOR);
+            }
+        }
+        return stringBuilder.toString();
     }
 
     /**

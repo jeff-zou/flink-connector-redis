@@ -5,7 +5,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisCacheOptions;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
@@ -18,31 +18,32 @@ import org.apache.flink.table.data.binary.BinaryRowData;
 import org.apache.flink.table.data.writer.BinaryRowWriter;
 import org.apache.flink.table.types.DataType;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import redis.embedded.RedisServer;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
-import static org.apache.flink.streaming.connectors.redis.table.SQLTest.PASSWORD;
+import static org.apache.flink.streaming.connectors.redis.table.SQLTest.REDIS_HOST;
+import static org.apache.flink.streaming.connectors.redis.table.SQLTest.REDIS_PASSWORD;
+import static org.apache.flink.streaming.connectors.redis.table.SQLTest.REDIS_PORT;
 
 /** Created by jeff.zou on 2021/2/26. */
 public class DataStreamTest {
 
-    private RedisServer redisServer;
+    //    private RedisServer redisServer;
+    //
+    //    @Before
+    //    public void before() throws Exception {
+    //        redisServer = RedisServer.builder().port(6379).setting("maxheap 51200").build();
+    //        redisServer.start();
+    //    }
 
-    @Before
-    public void before() throws Exception {
-        redisServer = RedisServer.builder().port(6379).setting("maxheap 51200").build();
-        redisServer.start();
-    }
+    //
+    //    @After
+    //    public void stopRedis() {
+    //        redisServer.stop();
+    //    }
 
-    /*
-    hget tom math
-    return: 150
-     */
     @Test
     public void testDateStreamInsert() throws Exception {
 
@@ -71,24 +72,19 @@ public class DataStreamTest {
                 new DataType[]{DataTypes.STRING(), DataTypes.STRING(), DataTypes.STRING()};
         TableSchema resolvedSchema = TableSchema.builder().fields(columnNames, columnDataTypes).build();
 
-        RedisCacheOptions redisCacheOptions =
-                new RedisCacheOptions.Builder().setCacheMaxSize(100).setCacheTTL(10L).build();
+        RedisSinkOptions redisSinkOptions =
+                new RedisSinkOptions.Builder().setMaxRetryTimes(3).build();
         FlinkJedisConfigBase conf =
                 new FlinkJedisPoolConfig.Builder()
-                        .setHost("10.11.80.147")
-                        .setPort(7001)
-                        .setPassword(PASSWORD)
+                        .setHost(REDIS_HOST)
+                        .setPort(REDIS_PORT)
+                        .setPassword(REDIS_PASSWORD)
                         .build();
 
         RedisSinkFunction redisSinkFunction =
-                new RedisSinkFunction<>(conf, redisMapper, redisCacheOptions, resolvedSchema);
+                new RedisSinkFunction<>(conf, redisMapper, redisSinkOptions, resolvedSchema);
 
         dataStream.addSink(redisSinkFunction).setParallelism(1);
         env.execute("RedisSinkTest");
-    }
-
-    @After
-    public void stopRedis() {
-        redisServer.stop();
     }
 }

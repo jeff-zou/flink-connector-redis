@@ -13,9 +13,13 @@ import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValida
 /** Created by jeff.zou on 2020/9/10. */
 public class SQLTest {
 
+    public static final String REDIS_HOST = "10.11.69.176";
+    public static final int REDIS_PORT = 6379;
+    public static final String REDIS_PASSWORD = "***";
+
+    public static final String CLUSTER_PASSWORD = "***";
     public static final String CLUSTERNODES =
             "10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000,10.11.80.147:8001,10.11.80.147:9000,10.11.80.147:9001";
-    public static final String PASSWORD = "KingSoft1239002nx624@a123";
 
     @Test
     public void testNoPrimaryKeyInsertSQL() throws Exception {
@@ -27,8 +31,12 @@ public class SQLTest {
 
         String ddl =
                 "create table sink_redis(username VARCHAR, passport time(3)) with ( 'connector'='redis', "
-                        + "'host'='10.11.80.147','port'='7000', 'redis-mode'='single','password'='"
-                        + PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -56,7 +64,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster', 'password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -83,7 +91,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster', 'password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -127,7 +135,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster', 'password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -178,7 +186,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster','password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -194,27 +202,6 @@ public class SQLTest {
     }
 
     @Test
-    public void testHDel() throws Exception {
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        String ddl =
-                "create table redis_sink(redis_key varchar, redis_field varchar) with('connector'='redis',"
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster','password'='"
-                        + PASSWORD
-                        + "','"
-                        + REDIS_COMMAND
-                        + "'='"
-                        + RedisCommand.HDEL
-                        + "') ";
-        tEnv.executeSql(ddl);
-        TableResult tableResult =
-                tEnv.executeSql("insert into redis_sink select * from (values('1', '1'))");
-        tableResult.getJobClient().get().getJobExecutionResult().get();
-    }
-
-    @Test
     public void testDel() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
@@ -223,7 +210,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster','password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -244,7 +231,7 @@ public class SQLTest {
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster','password'='"
-                        + PASSWORD
+                        + CLUSTER_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -254,6 +241,190 @@ public class SQLTest {
         TableResult tableResult =
                 tEnv.executeSql(
                         "insert into redis_sink select * from (values('s', 'huawei__1056640000002420'))");
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+    }
+
+    @Test
+    public void testHIncryByFloat() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
+        String ddl =
+                "create table sink_redis(username VARCHAR, level varchar, score int) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HINCRBY
+                        + "')";
+
+        tEnv.executeSql(ddl);
+        String sql = " insert into sink_redis select * from (values ('11', '12', 10))";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        System.out.println(sql);
+    }
+
+    @Test
+    public void testHDel() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
+        String ddl =
+                "create table sink_redis(username VARCHAR, level varchar, score double) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HDEL
+                        + "')";
+
+        tEnv.executeSql(ddl);
+        String sql = " insert into sink_redis select * from (values ('11', '12', 10.3))";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        System.out.println(sql);
+    }
+
+    @Test
+    public void testSinkValueFrom() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
+        String ddl =
+                "create table sink_redis(username VARCHAR, score double, score2 double) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.SET
+                        + "', 'value.data.structure'='row')";
+
+        tEnv.executeSql(ddl);
+        String sql = " insert into sink_redis select * from (values ('1', 11.3, 10.3))";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        System.out.println(sql);
+    }
+
+    @Test
+    public void testMultiFieldLeftJoinForString() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
+        // init data in redis
+        String ddl =
+                "create table sink_redis(uid VARCHAR, score double, score2 double ) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.SET
+                        + "', 'value.data.structure'='row')";
+
+        tEnv.executeSql(ddl);
+        System.out.println(ddl);
+
+        // init data in redis
+        String sql = " insert into sink_redis select * from (values ('1', 10.3, 10.1))";
+        tEnv.executeSql(sql);
+        System.out.println(sql);
+
+        // create join table
+        ddl =
+                "create table join_table with ('command'='get', 'value.data.structure'='row') like sink_redis";
+        tEnv.executeSql(ddl);
+        System.out.println(ddl);
+
+        // create result table
+        ddl =
+                "create table result_table(uid VARCHAR, username VARCHAR, score double, score2 double) with ('connector'='print')";
+        tEnv.executeSql(ddl);
+        System.out.println(ddl);
+
+        // create source table
+        ddl =
+                "create table source_table(uid VARCHAR, username VARCHAR, proc_time as procTime()) with ('connector'='datagen', 'fields.uid.kind'='sequence', 'fields.uid.start'='1', 'fields.uid.end'='2')";
+        tEnv.executeSql(ddl);
+        System.out.println(ddl);
+
+        sql =
+                "insert into result_table select s.uid, s.username, j.score, j.score2 from source_table as s join join_table for system_time as of s.proc_time as j  on j.uid = s.uid ";
+        System.out.println(sql);
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+    }
+
+    @Test
+    public void testMultiFieldLeftJoinForMap() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
+        // init data in redis
+        String ddl =
+                "create table sink_redis(uid VARCHAR, level varchar, score double, score2 double ) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HSET
+                        + "', 'value.data.structure'='row')";
+
+        tEnv.executeSql(ddl);
+        System.out.println(ddl);
+
+        // init data in redis
+        String sql = " insert into sink_redis select * from (values ('11', '11', 10.3, 10.1))";
+        tEnv.executeSql(sql);
+        System.out.println(sql);
+
+        // create join table
+        ddl =
+                "create table join_table with ('command'='hget', 'value.data.structure'='row') like sink_redis";
+        tEnv.executeSql(ddl);
+        System.out.println(ddl);
+
+        // create result table
+        ddl =
+                "create table result_table(uid VARCHAR, username VARCHAR, score double, score2 double) with ('connector'='print')";
+        tEnv.executeSql(ddl);
+        System.out.println(ddl);
+
+        // create source table
+        ddl =
+                "create table source_table(uid VARCHAR, level varchar, username VARCHAR, proc_time as procTime()) with ('connector'='datagen', 'fields.uid.kind'='sequence', 'fields.uid.start'='10', 'fields.uid.end'='12', 'fields.level.kind'='sequence', 'fields.level.start'='10', 'fields.level.end'='12')";
+        tEnv.executeSql(ddl);
+        System.out.println(ddl);
+
+        sql =
+                "insert into result_table select s.uid, s.username, j.score, j.score2 from source_table as s join join_table for system_time as of s.proc_time as j  on j.uid = s.uid and j.level = s.level";
+        System.out.println(sql);
+        TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
     }
 }

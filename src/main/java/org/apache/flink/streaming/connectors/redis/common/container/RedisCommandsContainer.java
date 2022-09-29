@@ -34,6 +34,14 @@ public interface RedisCommandsContainer extends Serializable {
     long hincrBy(String key, String hashField, Long value);
 
     /**
+     * @param key
+     * @param hashField
+     * @param value
+     * @return
+     */
+    double hincrBy(String key, String hashField, Double value);
+
+    /**
      * Insert the specified value at the tail of the list stored at key. If key does not exist, it
      * is created as empty list before performing the push operation.
      *
@@ -123,6 +131,15 @@ public interface RedisCommandsContainer extends Serializable {
     void incrBy(String key, Long value);
 
     /**
+     * increase value to specified key.
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    void incrBy(String key, Double value);
+
+    /**
      * decrease value from specified key.
      *
      * @param key the key name in which value to be set
@@ -145,7 +162,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key
      * @return
      */
-    public Map<String, String> hgetAll(String key);
+    Map<String, String> hgetAll(String key);
 
     /**
      * get value by key.
@@ -212,13 +229,9 @@ public interface RedisCommandsContainer extends Serializable {
 
     boolean hexists(String key, String field);
 
-    long incrByLong(String key, long value);
-
     void setbit(String key, long offset, boolean value);
 
     boolean getbit(String key, long offset);
-
-    Double hincrByFloat(final String key, final String hashField, final Double value);
 
     long hincrBy(String key, String hashField, Long value, Integer expireTime);
 }
