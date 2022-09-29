@@ -44,6 +44,7 @@
 
 ### 使用说明：
 
+#### value.data.structure = column(默认)
 无需通过primary key来映射redis中的Key，直接由ddl中的字段顺序来决定Key,如：
 
 ```
@@ -53,45 +54,52 @@ create table sink_redis(username VARCHAR, passport VARCHAR)  with ('command'='se
 create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('command'='hset') 
 其中name为map结构的key, subject为field, score为value.
 ```
+#### value.data.structure = row
+整行内容保存至value并以'\01'分割
+```
+create table sink_redis(username VARCHAR, passport VARCHAR)  with ('command'='set') 
+其中username为key, username\01passport为value.
+
+create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('command'='hset') 
+其中name为map结构的key, subject为field, name\01subject\01score为value.
+```
 
 
+#### with参数说明：
 
-with参数说明：
+| 字段                  | 默认值 | 类型    | 说明                                                                                               |
+| --------------------- | ------ | ------- |--------------------------------------------------------------------------------------------------|
+| connector             | (none) | String  | `redis`                                                                                          |
+| host                  | (none) | String  | Redis IP                                                                                         |
+| port                  | 6379   | Integer | Redis 端口                                                                                         |
+| password              | null   | String  | 如果没有设置，则为 null                                                                                   |
+| database              | 0      | Integer | 默认使用 db0                                                                                         |
+| maxTotal              | 2      | Integer | 最大连接数                                                                                            |
+| maxIdle               | 2      | Integer | 最大保持连接数                                                                                          |
+| minIdle               | 1      | Integer | 最小保持连接数                                                                                          |
+| timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                               |
+| cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
+| command               | (none) | String  | 对应上文中的redis命令                                                                                    |
+| redis-mode            | (none) | Integer | mode类型： single cluster                                                                           |
+| lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                                                                          |
+| lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                                       |
+| lookup.max-retries    | 1      | Integer | 查询失败重试次数                                                                                         |
+| lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
+| sink.max-retries      | 1      | Integer | 写入失败重试次数                                                                                         |
+| sink.parallelism      | (none) | Integer | 写入并发数                                                                                            |
+| value.data.structure      | column  | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
 
-| 字段                  | 默认值 | 类型    | 说明                                                                                                                                   |
-| --------------------- | ------ | ------- |--------------------------------------------------------------------------------------------------------------------------------------|
-| connector             | (none) | String  | `redis`                                                                                                                              |
-| host                  | (none) | String  | Redis IP                                                                                                                             |
-| port                  | 6379   | Integer | Redis 端口                                                                                                                             |
-| password              | null   | String  | 如果没有设置，则为 null                                                                                                                       |
-| database              | 0      | Integer | 默认使用 db0                                                                                                                             |
-| maxTotal              | 2      | Integer | 最大连接数                                                                                                                                |
-| maxIdle               | 2      | Integer | 最大保持连接数                                                                                                                              |
-| minIdle               | 1      | Integer | 最小保持连接数                                                                                                                              |
-| timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                                                                   |
-| cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000                                              |
-| command               | (none) | String  | 对应上文中的redis命令                                                                                                                        |
-| redis-mode            | (none) | Integer | mode类型： single cluster                                                                                                               |
-| lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                                                                                                              |
-| lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                                                                           |
-| lookup.max-retries    | 1      | Integer | 查询失败重试次数                                                                                                                             |
-| lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                                                             |
-| sink.max-retries      | 1      | Integer | 写入失败重试次数                                                                                                                             |
-| sink.parallelism      | (none) | Integer | 写入并发数                                                                                                                                |
-|  sink.value.from      | column  | String  | column: 值将来自于某一字段(如set: key为DDL定义的第一个字段,value则为第二个字段)<br/>row: value值取自整行数据，并以'\01'分割                                                |
-| value.data.structure      | column  | String  | column: value值来自某一字段 (如, set: key is the first field defined by DDL, and value is the second field)<br/> row: 将整行内容保存至value并以'\01'分割 |
+##### 在线调试SQL时，用于限制sink资源使用的参数:
 
-##### Additional sink parameters when u debugging sql online which need to limit the resource usage:
-
-| Field                 | Default | Type    | Description                      |
-|-----------------------|---------|---------|----------------------------------|
-| sink.limit            | false   | Boolean | if open the limit for sink       |
-| sink.limit.max-num    | 10000   | Integer | the max num of writes per thread |
-| sink.limit.interval   | 100     | String  |  the millisecond interval between each write  per thread                              |
-| sink.limit.max-online | 30 * 60 * 1000L   | String  | the max online milliseconds   per thread                                  |
+| Field                 | Default | Type    | Description                            |
+|-----------------------|---------|---------|----------------------------------------|
+| sink.limit            | false   | Boolean | 限制开头                                   |
+| sink.limit.max-num    | 10000   | Integer | taskmanager内每个slot可以写的最大数据量            |
+| sink.limit.interval   | 100     | String  | taskmanager内每个slot写入数据间隔   milliseconds            |
+| sink.limit.max-online | 30 * 60 * 1000L   | Long    | taskmanager内每个slot最大在线时间, milliseconds |
 
 
-集群类型为sentinel时额外连接参数:
+#### 集群类型为sentinel时额外连接参数:
 
 | 字段               | 默认值 | 类型   | 说明 |
 | ------------------ | ------ | ------ | ---- |
@@ -153,13 +161,13 @@ left join dim_table for system_time as of s.proctime as d on
 
 - #### 多字段的维表关联查询
 很多情况维表有多个字段,本实例展示如何利用'value.data.structure'='row'写多字段并关联查询。
-```aidl
--- init data in redis --
+```
+-- 写入多字段的维表测试数据 --
 create table sink_redis(uid VARCHAR, score double, score2 double ) with ( 'connector'='redis', 'host'='10.11.69.176','port'='6379', 'redis-mode'='single','password'='iAasRedis110','command'='SET', 'value.data.structure'='row')
 insert into sink_redis select * from (values ('1', 10.3, 10.1))
--- 'value.data.structure'='row':value is taken from the entire row and separated by '\01'
--- the value in redis will be: "1\x0110.3\x0110.1" --
--- init data in redis end --
+-- 'value.data.structure'='row':整行内容保存至value并以'\01'分割
+-- 在redis中，value保存为: "1\x0110.3\x0110.1" --
+-- 写入结束 --
 
 -- create join table --
 create table join_table with ('command'='get', 'value.data.structure'='row') like sink_redis
@@ -241,7 +249,7 @@ code format: google-java-format + Save Actions
 
 code check: CheckStyle
 
-flink 1.13/1.14/1.12
+flink 1.12/1.13/1.14+
 
 jdk1.8 jedis3.7.1
 

@@ -37,7 +37,7 @@ Development environment engineering direct reference:
 
 
 ### Instructions for use：
-
+#### value.data.structure = column
 There is no need to map the key in redis through the primary key, the key is directly determined by the order of the fields in the ddl, such as:
 
 ```
@@ -48,7 +48,15 @@ create table sink_redis(username VARCHAR, passport VARCHAR)  with ('command'='se
 create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('command'='hset') 
 ```
 
+#### value.data.structure = row
+value is taken from the entire row, separated by '\01'
+```
+create table sink_redis(username VARCHAR, passport VARCHAR)  with ('command'='set') 
+#key: username , value: username\01passport.
 
+create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('command'='hset') 
+key: name, field:subject, value: name\01subject\01score.
+```
 
 ##### with parameter description:
 
@@ -81,7 +89,7 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | sink.limit            | false   | Boolean | if open the limit for sink       |
 | sink.limit.max-num    | 10000   | Integer | the max num of writes per thread |
 | sink.limit.interval   | 100  | String  |  the millisecond interval between each write  per thread                              |
-| sink.limit.max-online | 30 * 60 * 1000L   | String  | the max online milliseconds   per thread                                  |
+| sink.limit.max-online | 30 * 60 * 1000L   | Long    | the max online milliseconds   per thread                                  |
 
 ##### Additional connection parameters when the cluster type is sentinel:
 
@@ -147,7 +155,7 @@ left join dim_table for system_time as of s.proctime as d on
 
 - #### Muti-field dimension table query
 In many cases, dimension tables have multiple fields. This example shows how to use 'value.data.structure'='row' to write multiple fields and associative queries.
-```aidl
+```
 -- init data in redis --
 create table sink_redis(uid VARCHAR, score double, score2 double ) with ( 'connector'='redis', 'host'='10.11.69.176','port'='6379', 'redis-mode'='single','password'='iAasRedis110','command'='SET', 'value.data.structure'='row')
 insert into sink_redis select * from (values ('1', 10.3, 10.1))
