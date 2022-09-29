@@ -6,7 +6,7 @@ import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfi
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
@@ -43,15 +43,15 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
      * @param flinkJedisConfigBase The configuration of {@link FlinkJedisConfigBase}
      * @param redisSinkMapper This is used to generate Redis command and key value from incoming
      * @param redisSinkOptions
-     * @param resolvedSchema
+     * @param tableSchema
      */
     public RedisLimitedSinkFunction(
             FlinkJedisConfigBase flinkJedisConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
             RedisSinkOptions redisSinkOptions,
-            ResolvedSchema resolvedSchema,
+            TableSchema tableSchema,
             ReadableConfig config) {
-        super(flinkJedisConfigBase, redisSinkMapper, redisSinkOptions, resolvedSchema);
+        super(flinkJedisConfigBase, redisSinkMapper, redisSinkOptions, tableSchema);
         maxOnline = config.get(RedisOptions.SINK_LIMIT_MAX_ONLINE);
 
         Preconditions.checkState(

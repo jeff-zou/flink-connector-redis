@@ -11,7 +11,7 @@ import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConv
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandBaseDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.functions.FunctionContext;
@@ -22,7 +22,6 @@ import org.apache.flink.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +39,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
     private final long cacheMaxSize;
     private final long cacheTtl;
     private final int maxRetryTimes;
-    private final List<DataType> dataTypes;
+    private final DataType[] dataTypes;
     private final boolean loadAll;
     private final RedisValueDataStructure redisValueDataStructure;
     private Cache<String, Object> cache;
@@ -49,7 +48,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
             FlinkJedisConfigBase flinkJedisConfigBase,
             RedisMapper redisMapper,
             RedisLookupOptions redisLookupOptions,
-            ResolvedSchema resolvedSchema) {
+            TableSchema tableSchema) {
         Preconditions.checkNotNull(
                 flinkJedisConfigBase, "Redis connection pool config should not be null");
         Preconditions.checkNotNull(redisMapper, "Redis Mapper can not be null");
@@ -75,7 +74,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
                 redisCommand == RedisCommand.HGET || redisCommand == RedisCommand.GET,
                 "unsupport command for query redis: %s",
                 redisCommand.name());
-        this.dataTypes = resolvedSchema.getColumnDataTypes();
+        this.dataTypes = tableSchema.getFieldDataTypes();
     }
 
     public void eval(Object... keys) throws Exception {
@@ -196,7 +195,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
             genericRowData.setField(1, keys[1]);
             genericRowData.setField(
                     2,
-                    RedisRowConverter.dataTypeFromString(dataTypes.get(2).getLogicalType(), value));
+                    RedisRowConverter.dataTypeFromString(dataTypes[2].getLogicalType(), value));
             return genericRowData;
         }
         return createRowData(value);
@@ -214,7 +213,7 @@ public class RedisLookupFunction extends TableFunction<RowData> {
             genericRowData.setField(0, keys[0]);
             genericRowData.setField(
                     1,
-                    RedisRowConverter.dataTypeFromString(dataTypes.get(1).getLogicalType(), value));
+                    RedisRowConverter.dataTypeFromString(dataTypes[1].getLogicalType(), value));
             return genericRowData;
         }
         return createRowData(value);
@@ -227,18 +226,18 @@ public class RedisLookupFunction extends TableFunction<RowData> {
      * @return
      */
     private GenericRowData createRowData(String value) {
-        GenericRowData genericRowData = new GenericRowData(dataTypes.size());
+        GenericRowData genericRowData = new GenericRowData(dataTypes.length);
         if (value == null) {
             return genericRowData;
         }
 
         String[] values = value.split(CACHE_SEPERATOR);
-        for (int i = 0; i < dataTypes.size(); i++) {
+        for (int i = 0; i < dataTypes.length; i++) {
             if (i < values.length) {
                 genericRowData.setField(
                         i,
                         RedisRowConverter.dataTypeFromString(
-                                dataTypes.get(i).getLogicalType(), values[i]));
+                                dataTypes[i].getLogicalType(), values[i]));
             } else {
                 genericRowData.setField(i, null);
             }

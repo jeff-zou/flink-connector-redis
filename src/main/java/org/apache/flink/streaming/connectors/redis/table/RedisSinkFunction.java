@@ -13,7 +13,7 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDes
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisDataType;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisOperationType;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
-import org.apache.flink.table.catalog.ResolvedSchema;
+import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.LogicalTypeRoot;
@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -42,7 +41,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private RedisCommandsContainer redisCommandsContainer;
 
     private final int maxRetryTimes;
-    private List<DataType> columnDataTypes;
+    private DataType[] columnDataTypes;
 
     private RedisValueDataStructure redisValueDataStructure;
 
@@ -57,7 +56,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             FlinkJedisConfigBase flinkJedisConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
             RedisSinkOptions redisSinkOptions,
-            ResolvedSchema resolvedSchema) {
+            TableSchema tableSchema) {
         Objects.requireNonNull(
                 flinkJedisConfigBase, "Redis connection pool config should not be null");
         Objects.requireNonNull(redisSinkMapper, "Redis Mapper can not be null");
@@ -73,7 +72,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         this.redisCommand = redisCommandDescription.getRedisCommand();
         this.ttl = redisCommandDescription.getTTL();
-        this.columnDataTypes = resolvedSchema.getColumnDataTypes();
+        this.columnDataTypes = tableSchema.getFieldDataTypes();
         this.redisValueDataStructure = redisSinkOptions.getRedisValueFromType();
     }
 
@@ -93,13 +92,13 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         }
 
         String key =
-                redisSinkMapper.getKeyFromData(rowData, columnDataTypes.get(0).getLogicalType(), 0);
+                redisSinkMapper.getKeyFromData(rowData, columnDataTypes[0].getLogicalType(), 0);
         String field = null;
         if (redisCommand.getRedisDataType() == RedisDataType.HASH
                 || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
             field =
                     redisSinkMapper.getFieldFromData(
-                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
+                            rowData, columnDataTypes[1].getLogicalType(), 1);
         }
 
         // don's need value when del redis key.
@@ -124,9 +123,9 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             // DDL, and value is the second field)
             String value =
                     redisSinkMapper.getValueFromData(
-                            rowData, columnDataTypes.get(valueIndex).getLogicalType(), valueIndex);
+                            rowData, columnDataTypes[valueIndex].getLogicalType(), valueIndex);
             LogicalTypeRoot valueType =
-                    columnDataTypes.get(valueIndex).getLogicalType().getTypeRoot();
+                    columnDataTypes[valueIndex].getLogicalType().getTypeRoot();
 
             startSink(key, field, value, valueType);
         }
@@ -241,11 +240,11 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      */
     private String serializeWholeRow(RowData rowData) {
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < columnDataTypes.size(); i++) {
+        for (int i = 0; i < columnDataTypes.length; i++) {
             stringBuilder.append(
                     RedisRowConverter.rowDataToString(
-                            columnDataTypes.get(i).getLogicalType(), rowData, i));
-            if (i != columnDataTypes.size() - 1) {
+                            columnDataTypes[i].getLogicalType(), rowData, i));
+            if (i != columnDataTypes.length - 1) {
                 stringBuilder.append(RedisDynamicTableFactory.CACHE_SEPERATOR);
             }
         }

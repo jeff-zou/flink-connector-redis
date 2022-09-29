@@ -30,7 +30,7 @@ Development environment engineering direct reference:
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.0-1.12</version>
 </dependency>
 ```
 
