@@ -173,8 +173,19 @@ create table result_table(uid VARCHAR, username VARCHAR, score double, score2 do
 create table source_table(uid VARCHAR, username VARCHAR, proc_time as procTime()) with ('connector'='datagen', 'fields.uid.kind'='sequence', 'fields.uid.start'='1', 'fields.uid.end'='2')
 
 -- query --
-insert into result_table select s.uid, s.username, j.score, j.score2 from source_table as s join join_table for system_time as of s.proc_time as j  on j.uid = s.uid 
-
+insert
+	into
+	result_table
+select
+	s.uid,
+	s.username,
+	j.score,
+	j.score2
+from
+	source_table as s
+join join_table for system_time as of s.proc_time as j on
+	j.uid = s.uid
+	
 result:
 2> +I[2, 1e0fe885a2990edd7f13dd0b81f923713182d5c559b21eff6bda3960cba8df27c69a3c0f26466efaface8976a2e16d9f68b3, null, null]
 1> +I[1, 30182e00eca2bff6e00a2d5331e8857a087792918c4379155b635a3cf42a53a1b8f3be7feb00b0c63c556641423be5537476, 10.3, 10.1]
