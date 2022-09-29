@@ -36,7 +36,7 @@
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.11</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -87,8 +87,8 @@ with参数说明：
 |-----------------------|---------|---------|----------------------------------|
 | sink.limit            | false   | Boolean | if open the limit for sink       |
 | sink.limit.max-num    | 10000   | Integer | the max num of writes per thread |
-| sink.limit.interval   | none)   | String  |  the millisecond interval between each write  per thread                              |
-| sink.limit.max-online | none)   | String  | the max online milliseconds   per thread                                  |
+| sink.limit.interval   | 100     | String  |  the millisecond interval between each write  per thread                              |
+| sink.limit.max-online | 30 * 60 * 1000L   | String  | the max online milliseconds   per thread                                  |
 
 
 集群类型为sentinel时额外连接参数:
@@ -243,6 +243,6 @@ code check: CheckStyle
 
 flink 1.13/1.14/1.12
 
-jdk1.8
+jdk1.8 jedis3.7.1
 
 如果需要flink 1.12版本支持，请切换到分支flink-1.12

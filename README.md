@@ -80,8 +80,8 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 |-----------------------|---------|---------|----------------------------------|
 | sink.limit            | false   | Boolean | if open the limit for sink       |
 | sink.limit.max-num    | 10000   | Integer | the max num of writes per thread |
-| sink.limit.interval   | none)   | String  |  the millisecond interval between each write  per thread                              |
-| sink.limit.max-online | none)   | String  | the max online milliseconds   per thread                                  |
+| sink.limit.interval   | 100  | String  |  the millisecond interval between each write  per thread                              |
+| sink.limit.max-online | 30 * 60 * 1000L   | String  | the max online milliseconds   per thread                                  |
 
 ##### Additional connection parameters when the cluster type is sentinel:
 
