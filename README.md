@@ -30,7 +30,7 @@ Development environment engineering direct reference:
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.0.11</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -72,9 +72,16 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | lookup.cache.load-all | false   | Boolean | when command is hget, query all elements from redis map to cache,help to resolve cache penetration issues                                                                                          |
 | sink.max-retries     | 1       | Integer | Number of retries for write failures                                                                                                                                                               |
 | sink.parallelism     | (none)  | Integer | Number of concurrent writes                                                                                                                                                                        |
-| sink.value.from      | column  | String  | column: The value will come from a field (for example, set: key is the first field defined by DDL, and value is the second field)<br/> row: value is taken from the entire row, separated by '\01' |
+| value.data.structure      | column  | String  | column: The value will come from a field (for example, set: key is the first field defined by DDL, and value is the second field)<br/> row: value is taken from the entire row, separated by '\01' |
 
+##### Additional sink parameters when u debugging sql online which need to limit the resource usage:
 
+| Field                 | Default | Type    | Description                      |
+|-----------------------|---------|---------|----------------------------------|
+| sink.limit            | false   | Boolean | if open the limit for sink       |
+| sink.limit.max-num    | 10000   | Integer | the max num of writes per thread |
+| sink.limit.interval   | none)   | String  |  the millisecond interval between each write  per thread                              |
+| sink.limit.max-online | none)   | String  | the max online milliseconds   per thread                                  |
 
 ##### Additional connection parameters when the cluster type is sentinel:
 
@@ -138,7 +145,32 @@ left join dim_table for system_time as of s.proctime as d on
 -- The line where username is 3 will be associated with the value in redis, and the output will be: 3,3,100
 ```
 
+- #### Muti-field dimension table query
+In many cases, dimension tables have multiple fields. This example shows how to use 'value.data.structure'='row' to write multiple fields and associative queries.
+```aidl
+-- init data in redis --
+create table sink_redis(uid VARCHAR, score double, score2 double ) with ( 'connector'='redis', 'host'='10.11.69.176','port'='6379', 'redis-mode'='single','password'='iAasRedis110','command'='SET', 'value.data.structure'='row')
+insert into sink_redis select * from (values ('1', 10.3, 10.1))
+-- 'value.data.structure'='row':value is taken from the entire row and separated by '\01' 
+-- the value in redis will be: "1\x0110.3\x0110.1" --
+-- init data in redis end --
 
+-- create join table --
+create table join_table with ('command'='get', 'value.data.structure'='row') like sink_redis
+
+-- create result table --
+create table result_table(uid VARCHAR, username VARCHAR, score double, score2 double) with ('connector'='print')
+
+-- create source table --
+create table source_table(uid VARCHAR, username VARCHAR, proc_time as procTime()) with ('connector'='datagen', 'fields.uid.kind'='sequence', 'fields.uid.start'='1', 'fields.uid.end'='2')
+
+-- query --
+insert into result_table select s.uid, s.username, j.score, j.score2 from source_table as s join join_table for system_time as of s.proc_time as j  on j.uid = s.uid 
+
+result:
+2> +I[2, 1e0fe885a2990edd7f13dd0b81f923713182d5c559b21eff6bda3960cba8df27c69a3c0f26466efaface8976a2e16d9f68b3, null, null]
+1> +I[1, 30182e00eca2bff6e00a2d5331e8857a087792918c4379155b635a3cf42a53a1b8f3be7feb00b0c63c556641423be5537476, 10.3, 10.1]
+```
 
 - ##### DataStream query method<br>
 
@@ -203,9 +235,9 @@ code format: google-java-format + Save Actions
 
 code check: CheckStyle
 
-flink 1.13/1.14/1.12
+flink 1.12/1.13/1.14+
 
-jdk1.8
+jdk1.8 jedis3.7.1
 
 Switch to branch flink-1.12 if you need flink1.12 support
 

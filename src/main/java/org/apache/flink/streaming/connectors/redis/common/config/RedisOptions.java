@@ -159,9 +159,9 @@ public class RedisOptions {
                     .defaultValue(30 * 60 * 1000L)
                     .withDescription("Optional the max online milliseconds for limited sink");
 
-    public static final ConfigOption<RedisValueFromType> SINK_VALUE_FROM =
-            ConfigOptions.key("sink.value.from")
-                    .enumType(RedisValueFromType.class)
-                    .defaultValue(RedisValueFromType.column)
-                    .withDescription("Optional where does the value come from");
+    public static final ConfigOption<RedisValueDataStructure> VALUE_DATA_STRUCTURE =
+            ConfigOptions.key("value.data.structure")
+                    .enumType(RedisValueDataStructure.class)
+                    .defaultValue(RedisValueDataStructure.column)
+                    .withDescription("Optional redis value data structure.");
 }

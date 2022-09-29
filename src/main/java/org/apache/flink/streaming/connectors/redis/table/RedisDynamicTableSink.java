@@ -44,7 +44,7 @@ public class RedisDynamicTableSink implements DynamicTableSink {
         redisSinkOptions =
                 new RedisSinkOptions.Builder()
                         .setMaxRetryTimes(config.get(RedisOptions.SINK_MAX_RETRIES))
-                        .setRedisValueFromType(config.get(RedisOptions.SINK_VALUE_FROM))
+                        .setRedisValueDataStructure(config.get(RedisOptions.VALUE_DATA_STRUCTURE))
                         .build();
         this.resolvedSchema = resolvedSchema;
     }

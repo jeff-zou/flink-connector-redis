@@ -42,7 +42,7 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
      *
      * @param flinkJedisConfigBase The configuration of {@link FlinkJedisConfigBase}
      * @param redisSinkMapper This is used to generate Redis command and key value from incoming
-     * @param redisCacheOptions
+     * @param redisSinkOptions
      * @param resolvedSchema
      */
     public RedisLimitedSinkFunction(

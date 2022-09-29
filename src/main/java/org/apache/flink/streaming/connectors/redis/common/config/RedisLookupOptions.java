@@ -7,13 +7,19 @@ public class RedisLookupOptions {
     private final long cacheTtl;
     private final int maxRetryTimes;
     private final boolean loadAll;
+    private final RedisValueDataStructure redisValueDataStructure;
 
     public RedisLookupOptions(
-            long cacheMaxSize, long cacheTtl, int maxRetryTimes, boolean loadAll) {
+            long cacheMaxSize,
+            long cacheTtl,
+            int maxRetryTimes,
+            boolean loadAll,
+            RedisValueDataStructure redisValueDataStructure) {
         this.cacheMaxSize = cacheMaxSize;
         this.cacheTtl = cacheTtl;
         this.maxRetryTimes = maxRetryTimes;
         this.loadAll = loadAll;
+        this.redisValueDataStructure = redisValueDataStructure;
     }
 
     public long getCacheMaxSize() {
@@ -32,46 +38,8 @@ public class RedisLookupOptions {
         return loadAll;
     }
 
-    @Override
-    public String toString() {
-        return "RedisCacheOptions{"
-                + "cacheMaxSize="
-                + cacheMaxSize
-                + ", cacheTtl="
-                + cacheTtl
-                + ", maxRetryTimes="
-                + maxRetryTimes
-                + ", loadAll="
-                + loadAll
-                + '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        RedisLookupOptions that = (RedisLookupOptions) o;
-
-        if (cacheMaxSize != that.cacheMaxSize) {
-            return false;
-        }
-        if (cacheTtl != that.cacheTtl) {
-            return false;
-        }
-        return maxRetryTimes == that.maxRetryTimes;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (cacheMaxSize ^ (cacheMaxSize >>> 32));
-        result = 31 * result + (int) (cacheTtl ^ (cacheTtl >>> 32));
-        result = 31 * result + maxRetryTimes;
-        return result;
+    public RedisValueDataStructure getRedisValueDataStructure() {
+        return redisValueDataStructure;
     }
 
     /** */
@@ -80,6 +48,8 @@ public class RedisLookupOptions {
         private long cacheTtl = -1L;
         private int maxRetryTimes = 1;
         private boolean loadAll = false;
+        private RedisValueDataStructure redisValueDataStructure =
+                RedisOptions.VALUE_DATA_STRUCTURE.defaultValue();
 
         public Builder setCacheMaxSize(long cacheMaxSize) {
             this.cacheMaxSize = cacheMaxSize;
@@ -101,8 +71,14 @@ public class RedisLookupOptions {
             return this;
         }
 
+        public Builder setRedisValueDataStructure(RedisValueDataStructure redisValueDataStructure) {
+            this.redisValueDataStructure = redisValueDataStructure;
+            return this;
+        }
+
         public RedisLookupOptions build() {
-            return new RedisLookupOptions(cacheMaxSize, cacheTtl, maxRetryTimes, loadAll);
+            return new RedisLookupOptions(
+                    cacheMaxSize, cacheTtl, maxRetryTimes, loadAll, redisValueDataStructure);
         }
     }
 }

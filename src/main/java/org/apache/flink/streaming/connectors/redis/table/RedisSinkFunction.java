@@ -4,7 +4,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisValueFromType;
+import org.apache.flink.streaming.connectors.redis.common.config.RedisValueDataStructure;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainerBuilder;
 import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConverter;
@@ -44,7 +44,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private final int maxRetryTimes;
     private List<DataType> columnDataTypes;
 
-    private RedisValueFromType redisValueFromType;
+    private RedisValueDataStructure redisValueDataStructure;
 
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
@@ -74,7 +74,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         this.redisCommand = redisCommandDescription.getRedisCommand();
         this.ttl = redisCommandDescription.getTTL();
         this.columnDataTypes = resolvedSchema.getColumnDataTypes();
-        this.redisValueFromType = redisSinkOptions.getRedisValueFromType();
+        this.redisValueDataStructure = redisSinkOptions.getRedisValueFromType();
     }
 
     /**
@@ -116,7 +116,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         // the value is taken from the entire row when redisValueFromType is row, and columns
         // separated by '\01'
-        if (redisValueFromType == RedisValueFromType.row
+        if (redisValueDataStructure == RedisValueDataStructure.row
                 && RedisOperationType.INSERT == redisCommand.getRedisOperationType()) {
             startSink(key, field, serializeWholeRow(rowData), null);
         } else {

@@ -102,7 +102,7 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.SINK_LIMIT_MAX_NUM);
         options.add(RedisOptions.SINK_LIMIT_MAX_ONLINE);
         options.add(RedisOptions.SINK_LIMIT_INTERVAL);
-        options.add(RedisOptions.SINK_VALUE_FROM);
+        options.add(RedisOptions.VALUE_DATA_STRUCTURE);
         return options;
     }
 

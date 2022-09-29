@@ -4,38 +4,39 @@ package org.apache.flink.streaming.connectors.redis.common.config;
 public class RedisSinkOptions {
     private final int maxRetryTimes;
 
-    private final RedisValueFromType redisValueFromType;
+    private final RedisValueDataStructure redisValueDataStructure;
 
     public int getMaxRetryTimes() {
         return maxRetryTimes;
     }
 
-    public RedisValueFromType getRedisValueFromType() {
-        return redisValueFromType;
+    public RedisValueDataStructure getRedisValueFromType() {
+        return redisValueDataStructure;
     }
 
-    public RedisSinkOptions(int maxRetryTimes, RedisValueFromType redisValueFromType) {
+    public RedisSinkOptions(int maxRetryTimes, RedisValueDataStructure redisValueDataStructure) {
         this.maxRetryTimes = maxRetryTimes;
-        this.redisValueFromType = redisValueFromType;
+        this.redisValueDataStructure = redisValueDataStructure;
     }
 
+    /** RedisSinkOptions.Builder. */
     public static class Builder {
         private int maxRetryTimes;
 
-        private RedisValueFromType redisValueFromType;
+        private RedisValueDataStructure redisValueDataStructure;
+
+        public Builder setRedisValueDataStructure(RedisValueDataStructure redisValueDataStructure) {
+            this.redisValueDataStructure = redisValueDataStructure;
+            return this;
+        }
 
         public Builder setMaxRetryTimes(int maxRetryTimes) {
             this.maxRetryTimes = maxRetryTimes;
             return this;
         }
 
-        public Builder setRedisValueFromType(RedisValueFromType redisValueFromType) {
-            this.redisValueFromType = redisValueFromType;
-            return this;
-        }
-
         public RedisSinkOptions build() {
-            return new RedisSinkOptions(maxRetryTimes, redisValueFromType);
+            return new RedisSinkOptions(maxRetryTimes, redisValueDataStructure);
         }
     }
 }
