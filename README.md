@@ -259,4 +259,10 @@ flink 1.12/1.13/1.14+
 jdk1.8 jedis3.7.1
 
 Switch to branch flink-1.12 if you need flink1.12 support
-
+```
+<dependency>
+    <groupId>io.github.jeff-zou</groupId>
+    <artifactId>flink-connector-redis</artifactId>
+    <version>1.1.1-1.12</version>
+</dependency>
+```

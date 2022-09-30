@@ -273,3 +273,10 @@ flink 1.12/1.13/1.14+
 jdk1.8 jedis3.7.1
 
 如果需要flink 1.12版本支持，请切换到分支flink-1.12
+```
+<dependency>
+    <groupId>io.github.jeff-zou</groupId>
+    <artifactId>flink-connector-redis</artifactId>
+    <version>1.1.1-1.12</version>
+</dependency>
+```
