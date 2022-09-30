@@ -157,7 +157,7 @@ left join dim_table for system_time as of s.proctime as d on
 In many cases, dimension tables have multiple fields. This example shows how to use 'value.data.structure'='row' to write multiple fields and associative queries.
 ```
 -- init data in redis --
-create table sink_redis(uid VARCHAR, score double, score2 double ) with ( 'connector'='redis', 'host'='10.11.69.176','port'='6379', 'redis-mode'='single','password'='iAasRedis110','command'='SET', 'value.data.structure'='row')
+create table sink_redis(uid VARCHAR, score double, score2 double ) with ( 'connector'='redis', 'host'='10.11.69.176','port'='6379', 'redis-mode'='single','password'='***','command'='SET', 'value.data.structure'='row')
 insert into sink_redis select * from (values ('1', 10.3, 10.1))
 -- 'value.data.structure'='row':value is taken from the entire row and separated by '\01' 
 -- the value in redis will be: "1\x0110.3\x0110.1" --

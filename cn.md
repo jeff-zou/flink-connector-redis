@@ -29,7 +29,9 @@
 ### 使用方法: 
 
 在命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.1.0.jar引入flink lib中即可，无需其它设置。
-
+<br/>
+项目依赖jedis 3.7.1,如flink环境无jedis,则使用flink-connector-redis-1.1.0-jar-with-dependencies.jar
+<br/>
 开发环境工程直接引用：
 
 ```
@@ -162,11 +164,19 @@ left join dim_table for system_time as of s.proctime as d on
 - #### 多字段的维表关联查询
 很多情况维表有多个字段,本实例展示如何利用'value.data.structure'='row'写多字段并关联查询。
 ```
--- 写入多字段的维表测试数据 --
-create table sink_redis(uid VARCHAR, score double, score2 double ) with ( 'connector'='redis', 'host'='10.11.69.176','port'='6379', 'redis-mode'='single','password'='iAasRedis110','command'='SET', 'value.data.structure'='row')
-insert into sink_redis select * from (values ('1', 10.3, 10.1))
--- 'value.data.structure'='row':整行内容保存至value并以'\01'分割
--- 在redis中，value保存为: "1\x0110.3\x0110.1" --
+-- 创建表
+create table sink_redis(uid VARCHAR,score double,score2 double )
+with ( 'connector' = 'redis',
+			'host' = '10.11.69.176',
+			'port' = '6379',
+			'redis-mode' = 'single',
+			'password' = '****',
+			'command' = 'SET',
+			'value.data.structure' = 'row');  -- 'value.data.structure'='row':整行内容保存至value并以'\01'分割
+-- 写入测试数据，score、score2为需要被关联查询出的两个维度
+insert into sink_redis select * from (values ('1', 10.3, 10.1));
+
+-- 在redis中，value的值为: "1\x0110.3\x0110.1" --
 -- 写入结束 --
 
 -- create join table --
@@ -178,15 +188,15 @@ create table result_table(uid VARCHAR, username VARCHAR, score double, score2 do
 -- create source table --
 create table source_table(uid VARCHAR, username VARCHAR, proc_time as procTime()) with ('connector'='datagen', 'fields.uid.kind'='sequence', 'fields.uid.start'='1', 'fields.uid.end'='2')
 
--- query --
+-- 关联查询维表，获得维表的多个字段值 --
 insert
 	into
 	result_table
 select
 	s.uid,
 	s.username,
-	j.score,
-	j.score2
+	j.score, -- 来自维表
+	j.score2 -- 来自维表
 from
 	source_table as s
 join join_table for system_time as of s.proc_time as j on
