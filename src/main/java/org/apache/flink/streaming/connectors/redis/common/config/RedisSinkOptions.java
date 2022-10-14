@@ -10,7 +10,7 @@ public class RedisSinkOptions {
         return maxRetryTimes;
     }
 
-    public RedisValueDataStructure getRedisValueFromType() {
+    public RedisValueDataStructure getRedisValueDataStructure() {
         return redisValueDataStructure;
     }
 

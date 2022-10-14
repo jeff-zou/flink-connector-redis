@@ -15,13 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.common.config.handler;
+package org.apache.flink.streaming.connectors.redis.common.config;
 
 import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
-import org.apache.flink.streaming.connectors.redis.common.hanlder.FlinkJedisConfigHandler;
 import org.apache.flink.util.Preconditions;
 
 import java.util.HashMap;
@@ -31,22 +27,19 @@ import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValida
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
 
 /** */
-public class FlinkJedisSingleConfigHandler implements FlinkJedisConfigHandler {
+public class FlinkSingleConfigHandler implements FlinkConfigHandler {
 
     @Override
-    public FlinkJedisConfigBase createFlinkJedisConfig(ReadableConfig config) {
+    public FlinkConfigBase createFlinkConfig(ReadableConfig config) {
         String host = config.get(RedisOptions.HOST);
         Preconditions.checkNotNull(host, "host should not be null in single mode");
 
-        String password = config.get(RedisOptions.PASSWORD);
-
-        FlinkJedisPoolConfig.Builder builder =
-                new FlinkJedisPoolConfig.Builder().setHost(host).setPassword(password);
+        FlinkSingleConfig.Builder builder =
+                new FlinkSingleConfig.Builder()
+                        .setHost(host)
+                        .setPassword(config.get(RedisOptions.PASSWORD));
         builder.setPort(config.get(RedisOptions.PORT));
-        builder.setMaxIdle(config.get(RedisOptions.MAXIDLE))
-                .setMinIdle(config.get(RedisOptions.MINIDLE))
-                .setMaxTotal(config.get(RedisOptions.MAXTOTAL))
-                .setTimeout(config.get(RedisOptions.TIMEOUT))
+        builder.setTimeout(config.get(RedisOptions.TIMEOUT))
                 .setDatabase(config.get(RedisOptions.DATABASE));
 
         return builder.build();
@@ -59,5 +52,5 @@ public class FlinkJedisSingleConfigHandler implements FlinkJedisConfigHandler {
         return require;
     }
 
-    public FlinkJedisSingleConfigHandler() {}
+    public FlinkSingleConfigHandler() {}
 }

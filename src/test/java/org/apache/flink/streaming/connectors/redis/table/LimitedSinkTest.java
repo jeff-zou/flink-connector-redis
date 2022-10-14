@@ -1,20 +1,18 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.connectors.redis.TestRedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 import org.junit.Test;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
-import static org.apache.flink.streaming.connectors.redis.table.SQLTest.REDIS_HOST;
-import static org.apache.flink.streaming.connectors.redis.table.SQLTest.REDIS_PASSWORD;
-import static org.apache.flink.streaming.connectors.redis.table.SQLTest.REDIS_PORT;
 
 /**
  * @Author: Jeff Zou @Date: 2022/9/27 15:08
  */
-public class LimitedSinkTest {
+public class LimitedSinkTest extends TestRedisConfigBase {
 
     @Test
     public void testLimitedSink() throws Exception {

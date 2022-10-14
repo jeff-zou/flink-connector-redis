@@ -3,8 +3,8 @@
 ### Introduction
 
 Based on the  [bahir-flink](https://github.com/apache/bahir-flink.git)，the contents adjusted relative to bahir include: 
-1. Add Table/SQL API <br/>
-2. Add dimension table query support<br/>
+1.  Use Lettuce to replace Jedis, change sync IO to async IO<br/>
+2. Add Table/SQL API, Add dimension table query support<br/>
 3. Increase query cache (support incremental and full)<br/>
 4. Added support for saving the entire row, which is used for multi-field dimension table associated query<br/>
 5. Add current limiting function for Flink SQL online debugging function<br/>
@@ -30,7 +30,7 @@ The operation commands corresponding to the supported functions of redis are:
 
 ### Instructions: 
 
-After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.1.0.jar into flink lib, no other settings are required.
+After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.2.0.jar into flink lib, no other settings are required.
 
 Development environment engineering direct reference:
 
@@ -38,7 +38,7 @@ Development environment engineering direct reference:
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
@@ -75,9 +75,6 @@ key: name, field:subject, value: name\01subject\01score.
 | port                 | 6379    | Integer | Redis port                                                                                                                                                                                         |
 | password             | null    | String  | null if not set                                                                                                                                                                                    |
 | database             | 0       | Integer | db0 is used by default                                                                                                                                                                             |
-| maxTotal             | 2       | Integer | Maximum number of connections                                                                                                                                                                      |
-| maxIdle              | 2       | Integer | Max keepalive connections                                                                                                                                                                          |
-| minIdle              | 1       | Integer | Minimum keepalive connections                                                                                                                                                                      |
 | timeout              | 2000    | Integer | Connection timeout, in ms, default 1s                                                                                                                                                              |
 | cluster-nodes        | (none)  | String  | Cluster ip and port, not empty when redis-mode is cluster, such as:10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000                                                                           |
 | command              | (none)  | String  | Corresponds to the redis command above                                                                                                                                                             |
@@ -264,9 +261,9 @@ code check: CheckStyle
 
 flink 1.12/1.13/1.14+
 
-jdk1.8 jedis3.7.1
+jdk1.8 Lettuce 6.2.1
 
-### Switch to branch flink-1.12 if you need flink1.12 support
+### Switch to branch flink-1.12 if you need flink1.12 support（note: use jedis）
 ```
 <dependency>
     <groupId>io.github.jeff-zou</groupId>

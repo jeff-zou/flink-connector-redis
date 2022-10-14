@@ -2,7 +2,7 @@ package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
+import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
@@ -40,18 +40,18 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
      *
-     * @param flinkJedisConfigBase The configuration of {@link FlinkJedisConfigBase}
+     * @param flinkConfigBase The configuration of {@link FlinkConfigBase}
      * @param redisSinkMapper This is used to generate Redis command and key value from incoming
      * @param redisSinkOptions
      * @param resolvedSchema
      */
     public RedisLimitedSinkFunction(
-            FlinkJedisConfigBase flinkJedisConfigBase,
+            FlinkConfigBase flinkConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
             RedisSinkOptions redisSinkOptions,
             ResolvedSchema resolvedSchema,
             ReadableConfig config) {
-        super(flinkJedisConfigBase, redisSinkMapper, redisSinkOptions, resolvedSchema);
+        super(flinkConfigBase, redisSinkMapper, redisSinkOptions, resolvedSchema);
         maxOnline = config.get(RedisOptions.SINK_LIMIT_MAX_ONLINE);
 
         Preconditions.checkState(

@@ -1,10 +1,10 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
+import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
+import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigHandler;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
-import org.apache.flink.streaming.connectors.redis.common.hanlder.FlinkJedisConfigHandler;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
@@ -20,7 +20,7 @@ import java.util.Map;
 /** Created by jeff.zou on 2020/9/10. */
 public class RedisDynamicTableSink implements DynamicTableSink {
 
-    private FlinkJedisConfigBase flinkJedisConfigBase;
+    private FlinkConfigBase flinkConfigBase;
     private RedisSinkMapper redisMapper;
     private Map<String, String> properties;
     private ReadableConfig config;
@@ -38,9 +38,9 @@ public class RedisDynamicTableSink implements DynamicTableSink {
                 (RedisSinkMapper)
                         RedisHandlerServices.findRedisHandler(RedisMapperHandler.class, properties)
                                 .createRedisMapper(config);
-        flinkJedisConfigBase =
-                RedisHandlerServices.findRedisHandler(FlinkJedisConfigHandler.class, properties)
-                        .createFlinkJedisConfig(config);
+        flinkConfigBase =
+                RedisHandlerServices.findRedisHandler(FlinkConfigHandler.class, properties)
+                        .createFlinkConfig(config);
         redisSinkOptions =
                 new RedisSinkOptions.Builder()
                         .setMaxRetryTimes(config.get(RedisOptions.SINK_MAX_RETRIES))
@@ -63,16 +63,13 @@ public class RedisDynamicTableSink implements DynamicTableSink {
         RedisSinkFunction redisSinkFunction =
                 config.get(RedisOptions.SINK_LIMIT)
                         ? new RedisLimitedSinkFunction(
-                                flinkJedisConfigBase,
+                                flinkConfigBase,
                                 redisMapper,
                                 redisSinkOptions,
                                 resolvedSchema,
                                 config)
                         : new RedisSinkFunction(
-                                flinkJedisConfigBase,
-                                redisMapper,
-                                redisSinkOptions,
-                                resolvedSchema);
+                                flinkConfigBase, redisMapper, redisSinkOptions, resolvedSchema);
 
         return SinkFunctionProvider.of(redisSinkFunction, sinkParallelism);
     }

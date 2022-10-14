@@ -1,5 +1,7 @@
 package org.apache.flink.streaming.connectors.redis.common.container;
 
+import io.lettuce.core.RedisFuture;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
@@ -31,7 +33,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      * @return
      */
-    long hincrBy(String key, String hashField, Long value);
+    void hincrBy(String key, String hashField, Long value);
 
     /**
      * @param key
@@ -39,7 +41,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      * @return
      */
-    double hincrBy(String key, String hashField, Double value);
+    void hincrBy(String key, String hashField, Double value);
 
     /**
      * Insert the specified value at the tail of the list stored at key. If key does not exist, it
@@ -154,7 +156,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param field
      * @return
      */
-    String hget(String key, String field);
+    RedisFuture<String> hget(String key, String field);
 
     /**
      * get all value by key.
@@ -162,7 +164,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key
      * @return
      */
-    Map<String, String> hgetAll(String key);
+    RedisFuture<Map<String, String>> hgetAll(String key);
 
     /**
      * get value by key.
@@ -170,7 +172,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key
      * @return
      */
-    String get(String key);
+    RedisFuture<String> get(String key);
 
     /**
      * Close the Jedis container.
@@ -186,17 +188,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param seconds
      * @return
      */
-    Long expire(String key, int seconds);
-
-    /**
-     * set value in map.
-     *
-     * @param key
-     * @param hashField
-     * @param value
-     * @param expireTime
-     */
-    void hset(String key, String hashField, String value, Integer expireTime);
+    void expire(String key, int seconds);
 
     /**
      * delete key in map.
@@ -220,18 +212,4 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      */
     void srem(String setName, String value);
-
-    boolean exists(String key);
-
-    boolean sismember(String key, String member);
-
-    long scard(String key);
-
-    boolean hexists(String key, String field);
-
-    void setbit(String key, long offset, boolean value);
-
-    boolean getbit(String key, long offset);
-
-    long hincrBy(String key, String hashField, Long value, Integer expireTime);
 }

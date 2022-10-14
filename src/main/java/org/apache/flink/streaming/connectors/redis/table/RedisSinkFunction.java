@@ -2,7 +2,7 @@ package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
+import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisValueDataStructure;
 import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
@@ -38,7 +38,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private RedisSinkMapper<IN> redisSinkMapper;
     private RedisCommand redisCommand;
 
-    private FlinkJedisConfigBase flinkJedisConfigBase;
+    private FlinkConfigBase flinkConfigBase;
     private RedisCommandsContainer redisCommandsContainer;
 
     private final int maxRetryTimes;
@@ -49,23 +49,22 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
      *
-     * @param flinkJedisConfigBase The configuration of {@link FlinkJedisConfigBase}
+     * @param flinkConfigBase The configuration of {@link FlinkConfigBase}
      * @param redisSinkMapper This is used to generate Redis command and key value from incoming
      *     elements.
      */
     public RedisSinkFunction(
-            FlinkJedisConfigBase flinkJedisConfigBase,
+            FlinkConfigBase flinkConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
             RedisSinkOptions redisSinkOptions,
             ResolvedSchema resolvedSchema) {
-        Objects.requireNonNull(
-                flinkJedisConfigBase, "Redis connection pool config should not be null");
+        Objects.requireNonNull(flinkConfigBase, "Redis connection pool config should not be null");
         Objects.requireNonNull(redisSinkMapper, "Redis Mapper can not be null");
         Objects.requireNonNull(
                 redisSinkMapper.getCommandDescription(),
                 "Redis Mapper data type description can not be null");
 
-        this.flinkJedisConfigBase = flinkJedisConfigBase;
+        this.flinkConfigBase = flinkConfigBase;
         this.maxRetryTimes = redisSinkOptions.getMaxRetryTimes();
         this.redisSinkMapper = redisSinkMapper;
         RedisCommandDescription redisCommandDescription =
@@ -74,7 +73,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         this.redisCommand = redisCommandDescription.getRedisCommand();
         this.ttl = redisCommandDescription.getTTL();
         this.columnDataTypes = resolvedSchema.getColumnDataTypes();
-        this.redisValueDataStructure = redisSinkOptions.getRedisValueFromType();
+        this.redisValueDataStructure = redisSinkOptions.getRedisValueDataStructure();
     }
 
     /**
@@ -91,7 +90,6 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         if (kind != RowKind.INSERT && kind != RowKind.UPDATE_AFTER) {
             return;
         }
-
         String key =
                 redisSinkMapper.getKeyFromData(rowData, columnDataTypes.get(0).getLogicalType(), 0);
         String field = null;
@@ -255,16 +253,17 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     /**
      * Initializes the connection to Redis by either cluster or sentinels or single server.
      *
-     * @throws IllegalArgumentException if jedisPoolConfig, jedisClusterConfig and
-     *     jedisSentinelConfig are all null
+     * @throws IllegalArgumentException if PoolConfig, ClusterConfig and SentinelConfig are all null
      */
     @Override
     public void open(Configuration parameters) throws Exception {
         try {
-            this.redisCommandsContainer =
-                    RedisCommandsContainerBuilder.build(this.flinkJedisConfigBase);
+            this.redisCommandsContainer = RedisCommandsContainerBuilder.build(this.flinkConfigBase);
             this.redisCommandsContainer.open();
-            LOG.info("success to create redis container:{}", this.flinkJedisConfigBase.toString());
+            LOG.info(
+                    "{} success to create redis container:{}",
+                    Thread.currentThread().getId(),
+                    this.flinkConfigBase.toString());
         } catch (Exception e) {
             LOG.error("Redis has not been properly initialized: ", e);
             throw e;

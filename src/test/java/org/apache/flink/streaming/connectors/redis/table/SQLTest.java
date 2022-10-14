@@ -1,6 +1,7 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.connectors.redis.TestRedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableResult;
@@ -11,22 +12,14 @@ import org.junit.Test;
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 
 /** Created by jeff.zou on 2020/9/10. */
-public class SQLTest {
-
-    public static final String REDIS_HOST = "10.11.69.176";
-    public static final int REDIS_PORT = 6379;
-    public static final String REDIS_PASSWORD = "***";
-
-    public static final String CLUSTER_PASSWORD = "***";
-    public static final String CLUSTERNODES =
-            "10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000,10.11.80.147:8001,10.11.80.147:9000,10.11.80.147:9001";
+public class SQLTest extends TestRedisConfigBase {
 
     @Test
     public void testNoPrimaryKeyInsertSQL() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         EnvironmentSettings environmentSettings =
-                EnvironmentSettings.newInstance().useBlinkPlanner().inStreamingMode().build();
+                EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
         String ddl =
@@ -55,7 +48,7 @@ public class SQLTest {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         EnvironmentSettings environmentSettings =
-                EnvironmentSettings.newInstance().useBlinkPlanner().inStreamingMode().build();
+                EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
         env.setParallelism(1);
 
@@ -69,7 +62,7 @@ public class SQLTest {
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.HSET
-                        + "', 'maxIdle'='2', 'minIdle'='1'  )";
+                        + "',  'minIdle'='1'  )";
 
         tEnv.executeSql(ddl);
         String sql = " insert into sink_redis select * from (values ('3', '3', '18'))";
@@ -83,7 +76,7 @@ public class SQLTest {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         EnvironmentSettings environmentSettings =
-                EnvironmentSettings.newInstance().useBlinkPlanner().inStreamingMode().build();
+                EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
         String dim =
@@ -96,7 +89,7 @@ public class SQLTest {
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.HGET
-                        + "', 'maxIdle'='2', 'minIdle'='1', 'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'lookup.max-retries'='3'  )";
+                        + "',   'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'lookup.max-retries'='3'  )";
 
         String source =
                 "create table source_table(username varchar, level varchar, proctime as procTime()) "
@@ -127,7 +120,7 @@ public class SQLTest {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
         EnvironmentSettings environmentSettings =
-                EnvironmentSettings.newInstance().useBlinkPlanner().inStreamingMode().build();
+                EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
         String dim =
@@ -140,7 +133,7 @@ public class SQLTest {
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.GET
-                        + "', 'maxIdle'='2', 'minIdle'='1', 'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'lookup.max-retries'='3'  )";
+                        + "',   'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'lookup.max-retries'='3'  )";
 
         String source =
                 "create table source_table(username varchar, level varchar, proctime as procTime()) "
@@ -171,7 +164,7 @@ public class SQLTest {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         EnvironmentSettings environmentSettings =
-                EnvironmentSettings.newInstance().useBlinkPlanner().inStreamingMode().build();
+                EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
         String source =
@@ -346,7 +339,8 @@ public class SQLTest {
         System.out.println(ddl);
 
         // init data in redis
-        String sql = " insert into sink_redis select * from (values ('1', 10.3, 10.1))";
+        String sql =
+                " insert into sink_redis select * from (values ('1', 10.3, 10.1),('2', 10.3, 10.1),('3', 10.3, 10.1))";
         tEnv.executeSql(sql);
         System.out.println(sql);
 

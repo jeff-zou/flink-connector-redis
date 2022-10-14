@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.common.mapper.row.source;
+package org.apache.flink.streaming.connectors.redis.common.mapper.row.lookup;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 
-/** HGET operation redis mapper. */
-public class HGetMapper extends RowRedisMapper {
+/** GET operation redis mapper. */
+public class GetMapper extends RowRedisMapper {
 
-    public HGetMapper() {
-        super(RedisCommand.HGET);
+    public GetMapper() {
+        super(RedisCommand.GET);
     }
 
-    public HGetMapper(ReadableConfig readableConfig) {
-        super(RedisCommand.HGET);
+    public GetMapper(ReadableConfig readableConfig) {
+        super(RedisCommand.GET);
     }
 }

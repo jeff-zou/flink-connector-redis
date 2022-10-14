@@ -10,13 +10,13 @@
 
 基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir调整的内容有：
 ```
-1.增加Table/SQL API 
-2.增加维表查询支持
+1.使用Lettuce替换Jedis,同步读写改为异步读写，大幅度提升了性能 
+2.增加了Table/SQL API，增加维表查询支持
 3.增加查询缓存(支持增量与全量)
 4.增加支持整行保存功能，用于多字段的维表关联查询
 5.增加限流功能，用于Flink SQL在线调试功能
 6.增加支持Flink高版本（包括1.12,1.13,1.14+）
-7.统一或增加过期策略、写入并发数等其它功能。
+7.统一过期策略等。
 ```
 
 因bahir使用的flink接口版本较老，所以改动较大，开发过程中参考了腾讯云与阿里云两家产商的流计算产品，取两家之长，并增加了更丰富的功能。
@@ -37,9 +37,9 @@
 
 ### 使用方法: 
 
-在命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.1.0.jar引入flink lib中即可，无需其它设置。
+在命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.2.0.jar引入flink lib中即可，无需其它设置。
 <br/>
-项目依赖jedis 3.7.1,如flink环境无jedis,则使用flink-connector-redis-1.1.0-jar-with-dependencies.jar
+项目依赖Lettuce 6.2.1,如flink环境无lettuce,则使用flink-connector-redis-1.2.0-jar-with-dependencies.jar
 <br/>
 开发环境工程直接引用：
 
@@ -47,7 +47,7 @@
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
@@ -85,9 +85,6 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | port                  | 6379   | Integer | Redis 端口                                                                                         |
 | password              | null   | String  | 如果没有设置，则为 null                                                                                   |
 | database              | 0      | Integer | 默认使用 db0                                                                                         |
-| maxTotal              | 2      | Integer | 最大连接数                                                                                            |
-| maxIdle               | 2      | Integer | 最大保持连接数                                                                                          |
-| minIdle               | 1      | Integer | 最小保持连接数                                                                                          |
 | timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                               |
 | cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
 | command               | (none) | String  | 对应上文中的redis命令                                                                                    |
@@ -112,11 +109,11 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 
 #### 集群类型为sentinel时额外连接参数:
 
-| 字段               | 默认值 | 类型   | 说明 |
-| ------------------ | ------ | ------ | ---- |
-| master.name        | (none) | String | 主名 |
-| sentinels.info     | (none) | String |      |
-| sentinels.password | none)  | String |      |
+| 字段               | 默认值 | 类型   | 说明  |
+| ------------------ | ------ | ------ |-----|
+| master.name        | (none) | String | 主名  |
+| sentinels.info     | (none) | String | 如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000  |
+| sentinels.password | none)  | String |     |
 
 ### 数据类型转换
 
@@ -281,9 +278,9 @@ code check: CheckStyle
 
 flink 1.12/1.13/1.14+
 
-jdk1.8 jedis3.7.1
+jdk1.8 Lettuce 6.2.1
 
-### 如果需要flink 1.12版本支持，请切换到分支flink-1.12
+### 如果需要flink 1.12版本支持，请切换到分支flink-1.12(注：1.12使用jedis)
 ```
 <dependency>
     <groupId>io.github.jeff-zou</groupId>

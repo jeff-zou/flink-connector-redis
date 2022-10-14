@@ -1,4 +1,4 @@
-package org.apache.flink.streaming.connectors.redis.common.mapper.row.source;
+package org.apache.flink.streaming.connectors.redis.common.mapper.row.lookup;
 
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;

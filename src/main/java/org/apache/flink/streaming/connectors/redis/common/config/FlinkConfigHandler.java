@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.common.hanlder;
+package org.apache.flink.streaming.connectors.redis.common.config;
 
 import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
+import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandler;
 
-/** handler to create flink jedis config. */
-public interface FlinkJedisConfigHandler extends RedisHandler {
+/** handler to create flink config. */
+public interface FlinkConfigHandler extends RedisHandler {
 
     /**
-     * create flink jedis config use sepecified properties.
+     * create flink config use sepecified properties.
      *
-     * @param config used to create flink jedis config
-     * @return flink jedis config
+     * @param config used to create flink config
+     * @return flink config
      */
-    FlinkJedisConfigBase createFlinkJedisConfig(ReadableConfig config);
+    FlinkConfigBase createFlinkConfig(ReadableConfig config);
 }
