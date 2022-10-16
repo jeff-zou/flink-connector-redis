@@ -218,9 +218,17 @@ genericRowData.setField(1, "math");
 genericRowData.setField(2, "152");
 DataStream<GenericRowData> dataStream = env.fromElements(genericRowData, genericRowData);
 
-RedisCacheOptions redisCacheOptions = new RedisCacheOptions.Builder().setCacheMaxSize(100).setCacheTTL(10L).build();
-FlinkJedisConfigBase conf = getLocalRedisClusterConfig();
-RedisSinkFunction redisSinkFunction = new RedisSinkFunction<>(conf, redisMapper, redisCacheOptions);
+RedisSinkOptions redisSinkOptions =
+        new RedisSinkOptions.Builder().setMaxRetryTimes(3).build();
+FlinkConfigBase conf =
+        new FlinkSingleConfig.Builder()
+                .setHost(REDIS_HOST)
+                .setPort(REDIS_PORT)
+                .setPassword(REDIS_PASSWORD)
+                .build();
+
+RedisSinkFunction redisSinkFunction =
+        new RedisSinkFunction<>(conf, redisMapper, redisSinkOptions, resolvedSchema);
 
 dataStream.addSink(redisSinkFunction).setParallelism(1);
 env.execute("RedisSinkTest");

@@ -212,28 +212,36 @@ result:
   hset示例，相当于redis命令：*hset tom math 150*
 
 ```
-Configuration configuration = new Configuration();
-configuration.setString(REDIS_MODE, REDIS_CLUSTER);
-configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
+      Configuration configuration = new Configuration();
+      configuration.setString(REDIS_MODE, REDIS_CLUSTER);
+      configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
+      
+      RedisSinkMapper redisMapper = (RedisSinkMapper)RedisHandlerServices
+      .findRedisHandler(RedisMapperHandler.class, configuration.toMap())
+      .createRedisMapper(configuration);
+      
+      StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+      
+      GenericRowData genericRowData = new GenericRowData(3);
+      genericRowData.setField(0, "tom");
+      genericRowData.setField(1, "math");
+      genericRowData.setField(2, "152");
+      DataStream<GenericRowData> dataStream = env.fromElements(genericRowData, genericRowData);
 
-RedisSinkMapper redisMapper = (RedisSinkMapper)RedisHandlerServices
-.findRedisHandler(RedisMapperHandler.class, configuration.toMap())
-.createRedisMapper(configuration);
+      RedisSinkOptions redisSinkOptions =
+                new RedisSinkOptions.Builder().setMaxRetryTimes(3).build();
+        FlinkConfigBase conf =
+                new FlinkSingleConfig.Builder()
+                        .setHost(REDIS_HOST)
+                        .setPort(REDIS_PORT)
+                        .setPassword(REDIS_PASSWORD)
+                        .build();
 
-StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        RedisSinkFunction redisSinkFunction =
+                new RedisSinkFunction<>(conf, redisMapper, redisSinkOptions, resolvedSchema);
 
-GenericRowData genericRowData = new GenericRowData(3);
-genericRowData.setField(0, "tom");
-genericRowData.setField(1, "math");
-genericRowData.setField(2, "152");
-DataStream<GenericRowData> dataStream = env.fromElements(genericRowData, genericRowData);
-
-RedisCacheOptions redisCacheOptions = new RedisCacheOptions.Builder().setCacheMaxSize(100).setCacheTTL(10L).build();
-FlinkJedisConfigBase conf = getLocalRedisClusterConfig();
-RedisSinkFunction redisSinkFunction = new RedisSinkFunction<>(conf, redisMapper, redisCacheOptions);
-
-dataStream.addSink(redisSinkFunction).setParallelism(1);
-env.execute("RedisSinkTest");
+        dataStream.addSink(redisSinkFunction).setParallelism(1);
+        env.execute("RedisSinkTest");
 ```
 
 
