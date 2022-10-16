@@ -10,7 +10,7 @@ import java.util.Map;
 public interface RedisCommandsContainer extends Serializable {
 
     /**
-     * Open the Jedis container.
+     * Open the container.
      *
      * @throws Exception if the instance can not be opened properly
      */
@@ -33,7 +33,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      * @return
      */
-    void hincrBy(String key, String hashField, Long value);
+    void hincrBy(String key, String hashField, long value);
 
     /**
      * @param key
@@ -41,7 +41,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      * @return
      */
-    void hincrBy(String key, String hashField, Double value);
+    void hincrByFloat(String key, String hashField, double value);
 
     /**
      * Insert the specified value at the tail of the list stored at key. If key does not exist, it
@@ -130,7 +130,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key
      * @param value
      */
-    void incrBy(String key, Long value);
+    void incrBy(String key, long value);
 
     /**
      * increase value to specified key.
@@ -139,7 +139,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      * @return
      */
-    void incrBy(String key, Double value);
+    void incrByFloat(String key, double value);
 
     /**
      * decrease value from specified key.
@@ -175,7 +175,7 @@ public interface RedisCommandsContainer extends Serializable {
     RedisFuture<String> get(String key);
 
     /**
-     * Close the Jedis container.
+     * Close the container.
      *
      * @throws IOException
      */

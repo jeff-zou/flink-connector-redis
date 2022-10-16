@@ -42,7 +42,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     public void close() throws IOException {
         try {
             if (redisFuture != null) {
-                redisFuture.await(3, TimeUnit.SECONDS);
+                redisFuture.await(2, TimeUnit.SECONDS);
             }
             connection.close();
         } catch (Exception e) {
@@ -76,7 +76,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public void hincrBy(final String key, final String hashField, final Long value) {
+    public void hincrBy(final String key, final String hashField, final long value) {
         try {
             redisFuture = asyncCommands.hincrby(key, hashField, value);
         } catch (Exception e) {
@@ -92,7 +92,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public void hincrBy(final String key, final String hashField, final Double value) {
+    public void hincrByFloat(final String key, final String hashField, final double value) {
         try {
             redisFuture = asyncCommands.hincrbyfloat(key, hashField, value);
         } catch (Exception e) {
@@ -250,7 +250,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public void incrBy(String key, Long value) {
+    public void incrBy(String key, long value) {
 
         try {
             redisFuture = asyncCommands.incrby(key, value);
@@ -267,7 +267,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public void incrBy(String key, Double value) {
+    public void incrByFloat(String key, double value) {
 
         try {
             redisFuture = asyncCommands.incrbyfloat(key, value);

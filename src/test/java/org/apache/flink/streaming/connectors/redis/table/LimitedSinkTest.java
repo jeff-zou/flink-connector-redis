@@ -5,7 +5,8 @@ import org.apache.flink.streaming.connectors.redis.TestRedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.commons.util.Preconditions;
 
 import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 
@@ -16,6 +17,7 @@ public class LimitedSinkTest extends TestRedisConfigBase {
 
     @Test
     public void testLimitedSink() throws Exception {
+        final int ttl = 60000;
         String sink =
                 "create table sink_redis(key_name varchar, user_name VARCHAR, passport varchar) with ( 'connector'='redis', "
                         + "'host'='"
@@ -28,7 +30,9 @@ public class LimitedSinkTest extends TestRedisConfigBase {
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.HSET
-                        + "', 'sink.limit'='true', 'sink.limit.max-online'='150000','sink.limit.max-num'='10')";
+                        + "', 'sink.limit'='true', 'sink.limit.max-online'='"
+                        + ttl
+                        + "','sink.limit.max-num'='10')";
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
@@ -40,11 +44,20 @@ public class LimitedSinkTest extends TestRedisConfigBase {
                         + " 'fields.passport.kind'='sequence',  'fields.passport.start'='0', 'fields.passport.end'='100')";
         tEnv.executeSql(source);
 
-        tEnv.executeSql(
-                        "insert into sink_redis select 'sink_limit_test', user_name, passport from source_table ")
-                .getJobClient()
-                .get()
-                .getJobExecutionResult()
-                .get();
+        try {
+            tEnv.executeSql(
+                            "insert into sink_redis select 'sink_limit_test', user_name, passport from source_table ")
+                    .getJobClient()
+                    .get()
+                    .getJobExecutionResult()
+                    .get();
+        } catch (Exception e) {
+        }
+
+        Preconditions.condition(singleRedisCommands.hget("sink_limit_test", "0").equals("0"), "");
+        Preconditions.condition(singleRedisCommands.hget("sink_limit_test", "51") == null, "");
+
+        Thread.sleep(ttl + 10000);
+        Preconditions.condition(singleRedisCommands.hget("sink_limit_test", "0") == null, "");
     }
 }

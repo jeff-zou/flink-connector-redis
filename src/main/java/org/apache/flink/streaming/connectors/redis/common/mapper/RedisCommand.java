@@ -64,7 +64,13 @@ public enum RedisCommand {
     HINCRBY(RedisDataType.HASH, RedisOperationType.ACC),
 
     /** Delta plus for specified key. */
+    HINCRBYFLOAT(RedisDataType.HASH, RedisOperationType.ACC),
+
+    /** Delta plus for specified key. */
     INCRBY(RedisDataType.STRING, RedisOperationType.ACC),
+
+    /** Delta plus for specified key. */
+    INCRBYFLOAT(RedisDataType.STRING, RedisOperationType.ACC),
 
     /** Delta plus for specified key and expire the key with fixed time. */
     INCRBY_EX(RedisDataType.STRING, RedisOperationType.ACC),

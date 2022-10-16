@@ -16,8 +16,8 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
-import org.apache.flink.table.types.logical.LogicalTypeRoot;
 import org.apache.flink.types.RowKind;
+import org.apache.flink.util.Preconditions;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +74,12 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         this.ttl = redisCommandDescription.getTTL();
         this.columnDataTypes = resolvedSchema.getColumnDataTypes();
         this.redisValueDataStructure = redisSinkOptions.getRedisValueDataStructure();
+        if (redisValueDataStructure == RedisValueDataStructure.row) {
+            Preconditions.checkArgument(
+                    this.redisCommand.getRedisOperationType() == RedisOperationType.INSERT,
+                    "the value data structure cant be row when command is %s",
+                    this.redisCommand.name());
+        }
     }
 
     /**
@@ -90,60 +96,36 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         if (kind != RowKind.INSERT && kind != RowKind.UPDATE_AFTER) {
             return;
         }
-        String key =
-                redisSinkMapper.getKeyFromData(rowData, columnDataTypes.get(0).getLogicalType(), 0);
-        String field = null;
-        if (redisCommand.getRedisDataType() == RedisDataType.HASH
-                || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
-            field =
-                    redisSinkMapper.getFieldFromData(
-                            rowData, columnDataTypes.get(1).getLogicalType(), 1);
-        }
 
-        // don's need value when del redis key.
-        if (redisCommand.getRedisOperationType() == RedisOperationType.DEL) {
-            startSink(key, field, null, null);
-            return;
-        }
-
-        int valueIndex = 1;
-        if (redisCommand.getRedisDataType() == RedisDataType.HASH
-                || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
-            valueIndex = 2;
+        String[] params = new String[calcParamNumByCommand()];
+        for (int i = 0; i < params.length; i++) {
+            params[i] =
+                    redisSinkMapper.getKeyFromData(
+                            rowData, columnDataTypes.get(i).getLogicalType(), i);
         }
 
         // the value is taken from the entire row when redisValueFromType is row, and columns
         // separated by '\01'
-        if (redisValueDataStructure == RedisValueDataStructure.row
-                && RedisOperationType.INSERT == redisCommand.getRedisOperationType()) {
-            startSink(key, field, serializeWholeRow(rowData), null);
-        } else {
-            // The value will come from a field (for example, set: key is the first field defined by
-            // DDL, and value is the second field)
-            String value =
-                    redisSinkMapper.getValueFromData(
-                            rowData, columnDataTypes.get(valueIndex).getLogicalType(), valueIndex);
-            LogicalTypeRoot valueType =
-                    columnDataTypes.get(valueIndex).getLogicalType().getTypeRoot();
-
-            startSink(key, field, value, valueType);
+        if (redisValueDataStructure == RedisValueDataStructure.row) {
+            params[params.length - 1] = serializeWholeRow(rowData);
         }
+
+        startSink(params);
     }
 
     /**
      * It will try many times which less than {@code maxRetryTimes} until execute success.
      *
-     * @param key
-     * @param field
-     * @param value
-     * @param valueType
+     * @param params
      * @throws Exception
      */
-    private void startSink(String key, String field, String value, LogicalTypeRoot valueType)
-            throws Exception {
+    private void startSink(String[] params) throws Exception {
         for (int i = 0; i <= maxRetryTimes; i++) {
             try {
-                sink(key, field, value, valueType);
+                sink(params);
+                if (ttl != null) {
+                    this.redisCommandsContainer.expire(params[0], ttl);
+                }
                 break;
             } catch (UnsupportedOperationException e) {
                 throw e;
@@ -160,70 +142,64 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     /**
      * process redis command.
      *
-     * @param key
-     * @param field
-     * @param value
-     * @param valueType
+     * @param params
      */
-    private void sink(String key, String field, String value, LogicalTypeRoot valueType) {
+    private void sink(String[] params) {
         switch (redisCommand) {
             case RPUSH:
-                this.redisCommandsContainer.rpush(key, value);
+                this.redisCommandsContainer.rpush(params[0], params[1]);
                 break;
             case LPUSH:
-                this.redisCommandsContainer.lpush(key, value);
+                this.redisCommandsContainer.lpush(params[0], params[1]);
                 break;
             case SADD:
-                this.redisCommandsContainer.sadd(key, value);
+                this.redisCommandsContainer.sadd(params[0], params[1]);
                 break;
             case SET:
-                this.redisCommandsContainer.set(key, value);
+                this.redisCommandsContainer.set(params[0], params[1]);
                 break;
             case PFADD:
-                this.redisCommandsContainer.pfadd(key, value);
+                this.redisCommandsContainer.pfadd(params[0], params[1]);
                 break;
             case PUBLISH:
-                this.redisCommandsContainer.publish(key, value);
+                this.redisCommandsContainer.publish(params[0], params[1]);
                 break;
             case ZADD:
-                this.redisCommandsContainer.zadd(key, field, value);
+                this.redisCommandsContainer.zadd(params[0], params[1], params[2]);
                 break;
             case ZINCRBY:
-                this.redisCommandsContainer.zincrBy(key, field, value);
+                this.redisCommandsContainer.zincrBy(params[0], params[1], params[2]);
                 break;
             case ZREM:
-                this.redisCommandsContainer.zrem(key, field);
+                this.redisCommandsContainer.zrem(params[0], params[1]);
                 break;
             case SREM:
-                this.redisCommandsContainer.srem(key, field);
+                this.redisCommandsContainer.srem(params[0], params[1]);
                 break;
             case HSET:
-                this.redisCommandsContainer.hset(key, field, value);
+                this.redisCommandsContainer.hset(params[0], params[1], params[2]);
                 break;
             case HINCRBY:
-                this.redisCommandsContainer.hincrBy(
-                        key,
-                        field,
-                        valueType == LogicalTypeRoot.DOUBLE
-                                ? Double.valueOf(value)
-                                : Long.valueOf(value));
-
+                this.redisCommandsContainer.hincrBy(params[0], params[1], Long.valueOf(params[2]));
+                break;
+            case HINCRBYFLOAT:
+                this.redisCommandsContainer.hincrByFloat(
+                        params[0], params[1], Double.valueOf(params[2]));
                 break;
             case INCRBY:
-                this.redisCommandsContainer.incrBy(
-                        key,
-                        valueType == LogicalTypeRoot.DOUBLE
-                                ? Double.valueOf(value)
-                                : Long.valueOf(value));
+                this.redisCommandsContainer.incrBy(params[0], Long.valueOf(params[1]));
+                break;
+            case INCRBYFLOAT:
+                this.redisCommandsContainer.incrByFloat(params[0], Double.valueOf(params[1]));
                 break;
             case DECRBY:
-                this.redisCommandsContainer.decrBy(key, Long.valueOf(value));
+                this.redisCommandsContainer.decrBy(params[0], Long.valueOf(params[1]));
                 break;
             case DEL:
-                this.redisCommandsContainer.del(key);
+                this.redisCommandsContainer.del(params[0]);
                 break;
             case HDEL:
-                this.redisCommandsContainer.hdel(key, field);
+                this.redisCommandsContainer.hdel(params[0], params[1]);
                 break;
             default:
                 throw new UnsupportedOperationException(
@@ -248,6 +224,27 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             }
         }
         return stringBuilder.toString();
+    }
+
+    /**
+     * calculate the number of redis command's param
+     *
+     * @return
+     */
+    private int calcParamNumByCommand() {
+        if (redisCommand == RedisCommand.DEL) {
+            return 1;
+        }
+
+        if (redisCommand.getRedisDataType() == RedisDataType.HASH
+                || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
+            if (redisCommand.getRedisOperationType() == RedisOperationType.INSERT
+                    || redisCommand.getRedisOperationType() == RedisOperationType.ACC) {
+                return 3;
+            }
+        }
+
+        return 2;
     }
 
     /**

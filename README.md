@@ -1,11 +1,4 @@
 [EN](README-en.md)
-
-### 插件名称：flink-connector-redis
-###### 插件地址：https://github.com/jeff-zou/flink-connector-redis.git
-
-###### 无法翻墙：https://gitee.com/jeff-zou/flink-connector-redis.git
-
-
 ### 项目介绍
 
 基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir调整的内容有：
@@ -22,24 +15,24 @@
 因bahir使用的flink接口版本较老，所以改动较大，开发过程中参考了腾讯云与阿里云两家产商的流计算产品，取两家之长，并增加了更丰富的功能。
 ### 支持功能对应redis的操作命令有：
 
-| 插入                             | 维表查询 |
-|--------------------------------|------|
-| set                            | get  |
-| hset                           | hget |
-| rpush lpush                    |      |
-| incrBy decrBy hincrBy  zincrby |      |
-| sadd zadd pfadd(hyperloglog)   |      |
-| publish                        |      |
-| zrem srem                      |      |
-| del hdel                       |      |
+| 插入                                                      | 维表查询 |
+|---------------------------------------------------------|------|
+| set                                                     | get  |
+| hset                                                    | hget |
+| rpush lpush                                             |      |
+| incrBy incrByFloat decrBy hincrBy hincryByFloat zincrby |      |
+| sadd zadd pfadd(hyperloglog)                            |      |
+| publish                                                 |      |
+| zrem srem                                               |      |
+| del hdel                                                |      |
 
 
 
 ### 使用方法: 
 
-在命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.2.0.jar引入flink lib中即可，无需其它设置。
+在命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.2.1.jar引入flink lib中即可，无需其它设置。
 <br/>
-项目依赖Lettuce 6.2.1,如flink环境无lettuce,则使用flink-connector-redis-1.2.0-jar-with-dependencies.jar
+项目依赖Lettuce 6.2.1,如flink环境无lettuce,则使用flink-connector-redis-1.2.1-jar-with-dependencies.jar
 <br/>
 开发环境工程直接引用：
 
@@ -47,7 +40,7 @@
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
 </dependency>
 ```
 

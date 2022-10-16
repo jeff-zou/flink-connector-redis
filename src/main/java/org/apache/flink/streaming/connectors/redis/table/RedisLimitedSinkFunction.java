@@ -14,8 +14,6 @@ import org.apache.flink.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,8 +32,6 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
     private int maxNum;
 
     private volatile int curNum;
-
-    private Timer timer;
 
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
@@ -76,47 +72,36 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
         startTime = System.currentTimeMillis();
-        timer = new Timer();
-        LOG.info("thread id:{} start flink limit sink timer.", Thread.currentThread().getName());
-        timer.scheduleAtFixedRate(
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        long remainTime = maxOnline - (System.currentTimeMillis() - startTime);
-                        if (remainTime < 0) {
-                            throw new RuntimeException(
-                                    "thread id:"
-                                            + Thread.currentThread().getId()
-                                            + ", the debugging time has exceeded the max online time.");
-                        }
-
-                        if (curNum > maxNum) {
-                            throw new RuntimeException(
-                                    "thread id:"
-                                            + Thread.currentThread().getId()
-                                            + ", the number of debug results has exceeded the max num."
-                                            + curNum);
-                        }
-                    }
-                },
-                10000L,
-                1000L);
     }
 
     @Override
     public void invoke(IN input, Context context) throws Exception {
+        long remainTime = maxOnline - (System.currentTimeMillis() - startTime);
+        if (remainTime < 0) {
+            throw new RuntimeException(
+                    "thread id:"
+                            + Thread.currentThread().getId()
+                            + ", the debugging time has exceeded the max online time.");
+        }
+
         RowData rowData = (RowData) input;
         RowKind kind = rowData.getRowKind();
         if (kind != RowKind.INSERT && kind != RowKind.UPDATE_AFTER) {
             return;
         }
 
-        long remainTime = maxOnline - (System.currentTimeMillis() - startTime);
-        // all keys must expire 10 seconds after online debugging.
+        // all keys must expire 10 seconds after online debugging end.
         super.ttl = (int) remainTime / 1000 + 10;
         super.invoke(input, context);
 
         TimeUnit.MILLISECONDS.sleep(sinkInterval);
         curNum++;
+        if (curNum > maxNum) {
+            throw new RuntimeException(
+                    "thread id:"
+                            + Thread.currentThread().getId()
+                            + ", the number of debug results has exceeded the max num."
+                            + curNum);
+        }
     }
 }

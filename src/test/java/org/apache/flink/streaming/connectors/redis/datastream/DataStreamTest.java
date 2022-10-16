@@ -20,6 +20,7 @@ import org.apache.flink.table.data.writer.BinaryRowWriter;
 import org.apache.flink.table.types.DataType;
 
 import org.junit.jupiter.api.Test;
+import org.junit.platform.commons.util.Preconditions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -73,5 +74,7 @@ public class DataStreamTest extends TestRedisConfigBase {
 
         dataStream.addSink(redisSinkFunction).setParallelism(1);
         env.execute("RedisSinkTest");
+
+        Preconditions.condition(singleRedisCommands.hget("tom", "math").equals("152"), "");
     }
 }
