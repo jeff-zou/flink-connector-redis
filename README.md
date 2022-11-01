@@ -71,13 +71,14 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 
 #### with参数说明：
 
-| 字段                  | 默认值 | 类型    | 说明                                                                                               |
-| --------------------- | ------ | ------- |--------------------------------------------------------------------------------------------------|
+| 字段                    | 默认值 | 类型    | 说明                                                                                               |
+|-----------------------| ------ | ------- |--------------------------------------------------------------------------------------------------|
 | connector             | (none) | String  | `redis`                                                                                          |
 | host                  | (none) | String  | Redis IP                                                                                         |
 | port                  | 6379   | Integer | Redis 端口                                                                                         |
 | password              | null   | String  | 如果没有设置，则为 null                                                                                   |
 | database              | 0      | Integer | 默认使用 db0                                                                                         |
+| ttl                   | (none) | Integer | sink时key过期时间(秒)                                                                                  |
 | timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                               |
 | cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
 | command               | (none) | String  | 对应上文中的redis命令                                                                                    |
@@ -88,7 +89,7 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
 | sink.max-retries      | 1      | Integer | 写入失败重试次数                                                                                         |
 | sink.parallelism      | (none) | Integer | 写入并发数                                                                                            |
-| value.data.structure      | column  | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
+| value.data.structure  | column  | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
 
 ##### 在线调试SQL时，用于限制sink资源使用的参数:
 
