@@ -142,7 +142,7 @@ under the License.
 
     <build>
         <plugins>
-        <!--    <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -183,13 +183,12 @@ under the License.
                     </execution>
                 </executions>
             </plugin>
--->
-            <plugin>
+           <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>${maven.shade.version}</version>
                 <configuration>
-                    <!-- put your configurations here -->
+                    &lt;!&ndash; put your configurations here &ndash;&gt;
                 </configuration>
                 <executions>
                     <execution>
@@ -199,7 +198,7 @@ under the License.
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 </project>
