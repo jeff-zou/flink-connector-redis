@@ -31,12 +31,13 @@ under the License.
         <flink.version>1.14.4</flink.version>
         <scala.binary.version>2.12</scala.binary.version>
         <slf4j.version>1.7.15</slf4j.version>
+        <maven.shade.version>3.2.4</maven.shade.version>
     </properties>
 
 
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <packaging>jar</packaging>
 
 
@@ -116,12 +117,12 @@ under the License.
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
+ <!--       <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-test-utils_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
             <scope>test</scope>
-        </dependency>
+        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/io.lettuce/lettuce-core -->
         <dependency>
@@ -129,13 +130,19 @@ under the License.
             <artifactId>lettuce-core</artifactId>
             <version>6.2.1.RELEASE</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.netty/netty-transport-native-epoll -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-native-epoll</artifactId>
+            <version>4.1.82.Final</version>
+        </dependency>
 
 
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
+        <!--    <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -176,7 +183,23 @@ under the License.
                     </execution>
                 </executions>
             </plugin>
-
+-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven.shade.version}</version>
+                <configuration>
+                    <!-- put your configurations here -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
