@@ -1,6 +1,7 @@
 package org.apache.flink.streaming.connectors.redis.common.container;
 
 import io.lettuce.core.RedisFuture;
+import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -212,4 +213,11 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      */
     void srem(String setName, String value);
+
+    /**
+     * get redis async commands.
+     *
+     * @return
+     */
+    RedisClusterAsyncCommands getAsyncCommands();
 }

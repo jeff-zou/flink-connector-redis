@@ -4,6 +4,7 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -420,5 +421,10 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             }
             throw e;
         }
+    }
+
+    @Override
+    public RedisClusterAsyncCommands getAsyncCommands() {
+        return asyncCommands;
     }
 }
