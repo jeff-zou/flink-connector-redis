@@ -30,7 +30,7 @@ The operation commands corresponding to the supported functions of redis are:
 
 ### Instructions: 
 
-After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.2.1.jar into flink lib, no other settings are required.
+After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.2.5.jar into flink lib, no other settings are required.
 
 Development environment engineering direct reference:
 
@@ -38,7 +38,7 @@ Development environment engineering direct reference:
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.5</version>
 </dependency>
 ```
 
@@ -87,6 +87,7 @@ key: name, field:subject, value: name\01subject\01score.
 | sink.max-retries     | 1       | Integer | Number of retries for write failures                                                                                                                                                               |
 | sink.parallelism     | (none)  | Integer | Number of concurrent writes                                                                                                                                                                        |
 | value.data.structure      | column  | String  | column: The value will come from a field (for example, set: key is the first field defined by DDL, and value is the second field)<br/> row: value is taken from the entire row, separated by '\01' |
+| expire.on.time        | (none) | String  | Specify the time at which the key expires. The format is LocalTime, eg: 10:00 12:12:01. The ttl field will invalid                                                                                 |
 
 ##### Additional sink parameters when u debugging sql online which need to limit the resource usage:
 

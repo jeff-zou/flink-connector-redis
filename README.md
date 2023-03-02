@@ -30,9 +30,9 @@
 
 ### 使用方法: 
 
-在命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.2.1.jar引入flink lib中即可，无需其它设置。
+在命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.2.5.jar引入flink lib中即可，无需其它设置。
 <br/>
-项目依赖Lettuce 6.2.1,如flink环境无lettuce,则使用flink-connector-redis-1.2.1-jar-with-dependencies.jar
+项目依赖Lettuce 6.2.1,如flink环境无lettuce,则使用flink-connector-redis-1.2.5-jar-with-dependencies.jar
 <br/>
 开发环境工程直接引用：
 
@@ -40,7 +40,7 @@
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.5</version>
 </dependency>
 ```
 
@@ -71,8 +71,8 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 
 #### with参数说明：
 
-| 字段                    | 默认值 | 类型    | 说明                                                                                               |
-|-----------------------| ------ | ------- |--------------------------------------------------------------------------------------------------|
+| 字段                    | 默认值    | 类型    | 说明                                                                                               |
+|-----------------------|--------| ------- |--------------------------------------------------------------------------------------------------|
 | connector             | (none) | String  | `redis`                                                                                          |
 | host                  | (none) | String  | Redis IP                                                                                         |
 | port                  | 6379   | Integer | Redis 端口                                                                                         |
@@ -89,7 +89,8 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
 | sink.max-retries      | 1      | Integer | 写入失败重试次数                                                                                         |
 | sink.parallelism      | (none) | Integer | 写入并发数                                                                                            |
-| value.data.structure  | column  | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
+| value.data.structure  | column | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
+| expire.on.time        | (none) | String  | 指定key的过期时间点,格式为LocalTime, eg: 10:00 12:12:01,ttl字段将无效                                            |
 
 ##### 在线调试SQL时，用于限制sink资源使用的参数:
 
