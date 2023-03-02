@@ -164,4 +164,10 @@ public class RedisOptions {
                     .enumType(RedisValueDataStructure.class)
                     .defaultValue(RedisValueDataStructure.column)
                     .withDescription("Optional redis value data structure.");
+
+    public static final ConfigOption<String> EXPIRE_ON_TIME =
+            ConfigOptions.key("expire.on.time")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription("Optional redis key expire on time, eg: 10:00 12:12:01");
 }

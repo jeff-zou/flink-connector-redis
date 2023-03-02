@@ -1,6 +1,7 @@
 package org.apache.flink.streaming.connectors.redis.common.mapper;
 
 import java.io.Serializable;
+import java.time.LocalTime;
 
 /** */
 public class RedisCommandDescription extends RedisCommandBaseDescription implements Serializable {
@@ -9,13 +10,19 @@ public class RedisCommandDescription extends RedisCommandBaseDescription impleme
 
     private Integer ttl;
 
-    public RedisCommandDescription(RedisCommand redisCommand, Integer ttl) {
-        super(redisCommand);
+    private LocalTime expireTime;
 
+    public RedisCommandDescription(RedisCommand redisCommand, Integer ttl, LocalTime expireTime) {
+        super(redisCommand);
+        this.expireTime = expireTime;
         this.ttl = ttl;
     }
 
     public Integer getTTL() {
         return ttl;
+    }
+
+    public LocalTime getExpireTime() {
+        return expireTime;
     }
 }

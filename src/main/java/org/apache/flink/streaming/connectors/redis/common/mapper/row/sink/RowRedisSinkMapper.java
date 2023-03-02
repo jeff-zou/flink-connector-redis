@@ -10,7 +10,9 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.logical.LogicalType;
+import org.apache.flink.util.StringUtils;
 
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +23,8 @@ public abstract class RowRedisSinkMapper
         implements RedisSinkMapper<GenericRowData>, RedisMapperHandler {
 
     private Integer ttl;
+
+    private LocalTime expireTime;
 
     private RedisCommand redisCommand;
 
@@ -45,11 +49,15 @@ public abstract class RowRedisSinkMapper
     public RowRedisSinkMapper(RedisCommand redisCommand, ReadableConfig config) {
         this.redisCommand = redisCommand;
         this.ttl = config.get(RedisOptions.TTL);
+        String expireOnTime = config.get(RedisOptions.EXPIRE_ON_TIME);
+        if (!StringUtils.isNullOrWhitespaceOnly(expireOnTime)) {
+            this.expireTime = LocalTime.parse(expireOnTime);
+        }
     }
 
     @Override
     public RedisCommandDescription getCommandDescription() {
-        return new RedisCommandDescription(redisCommand, ttl);
+        return new RedisCommandDescription(redisCommand, ttl, expireTime);
     }
 
     @Override

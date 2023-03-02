@@ -411,4 +411,21 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     public RedisClusterAsyncCommands getAsyncCommands() {
         return clusterAsyncCommands;
     }
+
+    @Override
+    public RedisFuture<Long> getTTL(String key) {
+        RedisFuture<Long> result = null;
+        try {
+            result = redisFuture = clusterAsyncCommands.ttl(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command ttl to key {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+        return result;
+    }
 }

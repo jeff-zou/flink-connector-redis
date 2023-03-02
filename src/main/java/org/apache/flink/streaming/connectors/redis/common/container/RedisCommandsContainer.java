@@ -192,6 +192,14 @@ public interface RedisCommandsContainer extends Serializable {
     void expire(String key, int seconds);
 
     /**
+     * get ttl of key.
+     *
+     * @param key
+     * @return
+     */
+    RedisFuture<Long> getTTL(String key);
+
+    /**
      * delete key in map.
      *
      * @param key

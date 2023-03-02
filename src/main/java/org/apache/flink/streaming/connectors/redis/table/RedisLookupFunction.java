@@ -56,9 +56,6 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
         Preconditions.checkNotNull(
                 flinkConfigBase, "Redis connection pool config should not be null");
         Preconditions.checkNotNull(redisMapper, "Redis Mapper can not be null");
-        Preconditions.checkNotNull(
-                redisMapper.getCommandDescription(),
-                "Redis Mapper data type description can not be null");
 
         this.flinkConfigBase = flinkConfigBase;
         this.cacheTtl = redisLookupOptions.getCacheTtl();
@@ -77,6 +74,8 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
         }
 
         RedisCommandBaseDescription redisCommandDescription = redisMapper.getCommandDescription();
+        Preconditions.checkNotNull(
+                redisCommandDescription, "Redis Mapper data type description can not be null");
         this.redisCommand = redisCommandDescription.getRedisCommand();
         Preconditions.checkArgument(
                 redisCommand == RedisCommand.HGET || redisCommand == RedisCommand.GET,

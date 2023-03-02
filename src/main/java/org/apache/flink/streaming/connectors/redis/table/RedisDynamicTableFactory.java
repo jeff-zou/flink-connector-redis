@@ -105,6 +105,7 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.VALUE_DATA_STRUCTURE);
         options.add(RedisOptions.REDIS_MASTER_NAME);
         options.add(RedisOptions.SENTINELS_INFO);
+        options.add(RedisOptions.EXPIRE_ON_TIME);
         return options;
     }
 

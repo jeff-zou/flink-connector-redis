@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,6 +35,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private static final Logger LOG = LoggerFactory.getLogger(RedisSinkFunction.class);
 
     protected Integer ttl;
+    protected int expireTimeSeconds = -1;
 
     private RedisSinkMapper<IN> redisSinkMapper;
     private RedisCommand redisCommand;
@@ -60,18 +62,21 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             ResolvedSchema resolvedSchema) {
         Objects.requireNonNull(flinkConfigBase, "Redis connection pool config should not be null");
         Objects.requireNonNull(redisSinkMapper, "Redis Mapper can not be null");
-        Objects.requireNonNull(
-                redisSinkMapper.getCommandDescription(),
-                "Redis Mapper data type description can not be null");
 
         this.flinkConfigBase = flinkConfigBase;
         this.maxRetryTimes = redisSinkOptions.getMaxRetryTimes();
         this.redisSinkMapper = redisSinkMapper;
         RedisCommandDescription redisCommandDescription =
                 (RedisCommandDescription) redisSinkMapper.getCommandDescription();
+        Preconditions.checkNotNull(
+                redisCommandDescription, "Redis Mapper data type description can not be null");
 
         this.redisCommand = redisCommandDescription.getRedisCommand();
         this.ttl = redisCommandDescription.getTTL();
+        if (redisCommandDescription.getExpireTime() != null) {
+            this.expireTimeSeconds = redisCommandDescription.getExpireTime().toSecondOfDay();
+        }
+
         this.columnDataTypes = resolvedSchema.getColumnDataTypes();
         this.redisValueDataStructure = redisSinkOptions.getRedisValueDataStructure();
         if (redisValueDataStructure == RedisValueDataStructure.row) {
@@ -123,9 +128,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         for (int i = 0; i <= maxRetryTimes; i++) {
             try {
                 sink(params);
-                if (ttl != null) {
-                    this.redisCommandsContainer.expire(params[0], ttl);
-                }
+                setTtl(params[0]);
                 break;
             } catch (UnsupportedOperationException e) {
                 throw e;
@@ -204,6 +207,26 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             default:
                 throw new UnsupportedOperationException(
                         "Cannot process such data type: " + redisCommand);
+        }
+    }
+
+    /**
+     * set ttl for key.
+     *
+     * @param key
+     */
+    private void setTtl(String key) throws Exception {
+        if (expireTimeSeconds != -1) {
+            if (this.redisCommandsContainer.getTTL(key).get() == -1) {
+                int now = LocalTime.now().toSecondOfDay();
+                this.redisCommandsContainer.expire(
+                        key,
+                        expireTimeSeconds > now
+                                ? expireTimeSeconds - now
+                                : 86400 + expireTimeSeconds - now);
+            }
+        } else if (ttl != null) {
+            this.redisCommandsContainer.expire(key, ttl);
         }
     }
 
