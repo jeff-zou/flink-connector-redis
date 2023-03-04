@@ -30,9 +30,9 @@
 
 ### 使用方法: 
 
-在命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.2.5.jar引入flink lib中即可，无需其它设置。
+在命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.2.6.jar引入flink lib中即可，无需其它设置。
 <br/>
-项目依赖Lettuce 6.2.1,如flink环境无lettuce,则使用flink-connector-redis-1.2.5-jar-with-dependencies.jar
+项目依赖Lettuce 6.2.1,如flink环境无lettuce,则使用flink-connector-redis-1.2.6-jar-with-dependencies.jar
 <br/>
 开发环境工程直接引用：
 
@@ -40,7 +40,7 @@
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.2.5</version>
+    <version>1.2.6</version>
 </dependency>
 ```
 
