@@ -29,11 +29,14 @@
 
 
 ### 使用方法: 
+1.打包命令： mvn package -DskipTests</br>
+2.将生成的包放入flink lib中即可，无需其它设置。
 
-在命令行执行 mvn package -DskipTests打包后，将生成的包flink-connector-redis-1.2.6.jar引入flink lib中即可，无需其它设置。
 <br/>
-项目依赖Lettuce 6.2.1,如flink环境无lettuce,则使用flink-connector-redis-1.2.6-jar-with-dependencies.jar
+  项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.2.6.jar，
+否则使用flink-connector-redis-1.2.6-jar-with-dependencies.jar。
 <br/>
+
 开发环境工程直接引用：
 
 ```
