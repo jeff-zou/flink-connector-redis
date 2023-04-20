@@ -567,4 +567,59 @@ public class SQLTest extends TestRedisConfigBase {
         Thread.sleep(wait * 1000);
         Preconditions.condition(clusterCommands.exists("1") == 0, "");
     }
+
+    @Test
+    public void testIncryBy() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
+        String dim =
+                "create table sink_redis(name varchar, level bigint) with ( 'connector'='redis', "
+                        + "'cluster-nodes'='"
+                        + CLUSTERNODES
+                        + "','redis-mode'='cluster', 'password'='"
+                        + CLUSTER_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.INCRBY
+                        + "' )";
+
+        tEnv.executeSql(dim);
+        String sql = " insert into sink_redis select * from (values ('1', 1))";
+        tEnv.executeSql(sql);
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        System.out.println(sql);
+
+        Preconditions.condition(clusterCommands.get("1").toString().equals("2"), "");
+    }
+
+    @Test
+    public void testIncryBy2() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
+        String dim =
+                "create table sink_redis(name varchar, level bigint) with ( 'connector'='redis', "
+                        + "'cluster-nodes'='"
+                        + CLUSTERNODES
+                        + "','redis-mode'='cluster', 'password'='"
+                        + CLUSTER_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.INCRBY
+                        + "' )";
+
+        tEnv.executeSql(dim);
+        String sql = dim + "; insert into sink_redis select * from (values ('1', 1));";
+        System.out.println(tEnv.explainSql(sql));
+        tEnv.executeSql(sql);
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        System.out.println(sql);
+
+        Preconditions.condition(clusterCommands.get("1").toString().equals("2"), "");
+    }
 }
