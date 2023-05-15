@@ -377,7 +377,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     public void del(String key) {
 
         try {
-            redisFuture = asyncCommands.hdel(key);
+            redisFuture = asyncCommands.del(key);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
