@@ -85,7 +85,7 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                               |
 | cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
 | command               | (none) | String  | 对应上文中的redis命令                                                                                    |
-| redis-mode            | (none) | Integer | mode类型： single cluster                                                                           |
+| redis-mode            | (none) | Integer | mode类型： single cluster sentinel                                                                  |
 | lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                                                                          |
 | lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                                       |
 | lookup.max-retries    | 1      | Integer | 查询失败重试次数                                                                                         |
@@ -111,7 +111,6 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | ------------------ | ------ | ------ |-----|
 | master.name        | (none) | String | 主名  |
 | sentinels.info     | (none) | String | 如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000  |
-| sentinels.password | none)  | String |     |
 
 ### 数据类型转换
 
