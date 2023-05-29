@@ -1,7 +1,5 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
-import org.apache.flink.calcite.shaded.com.google.common.cache.Cache;
-import org.apache.flink.calcite.shaded.com.google.common.cache.CacheBuilder;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisLookupOptions;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisValueDataStructure;
@@ -18,6 +16,9 @@ import org.apache.flink.table.functions.AsyncTableFunction;
 import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.util.Preconditions;
+
+import org.apache.flink.shaded.guava30.com.google.common.cache.Cache;
+import org.apache.flink.shaded.guava30.com.google.common.cache.CacheBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

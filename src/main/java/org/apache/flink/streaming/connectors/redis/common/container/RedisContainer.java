@@ -5,6 +5,7 @@ import io.lettuce.core.RedisFuture;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -377,7 +378,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     public void del(String key) {
 
         try {
-            redisFuture = asyncCommands.hdel(key);
+            redisFuture = asyncCommands.del(key);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
