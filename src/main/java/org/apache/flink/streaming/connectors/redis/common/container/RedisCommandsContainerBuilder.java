@@ -131,12 +131,15 @@ public class RedisCommandsContainerBuilder {
                         node -> {
                             String[] redis = node.split(":");
                             if (StringUtils.isNullOrWhitespaceOnly(sentinelConfig.getPassword())) {
-                                builder.withSentinel(redis[0], Integer.parseInt(redis[1]));
+                                builder.withSentinel(
+                                        redis[0],
+                                        Integer.parseInt(redis[1]),
+                                        sentinelConfig.getSentinelsPassword());
                             } else {
                                 builder.withSentinel(
                                                 redis[0],
                                                 Integer.parseInt(redis[1]),
-                                                sentinelConfig.getPassword())
+                                                sentinelConfig.getSentinelsPassword())
                                         .withPassword(sentinelConfig.getPassword());
                             }
                         });

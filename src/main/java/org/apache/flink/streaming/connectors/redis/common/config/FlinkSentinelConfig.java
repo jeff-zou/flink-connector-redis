@@ -15,6 +15,9 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
     private final int soTimeout;
     private final int database;
     private final String masterName;
+
+    private final String sentinelsPassword;
+
     /**
      * Sentinels config. The master name and sentinels are mandatory, and when you didn't set these,
      * it throws NullPointerException.
@@ -33,15 +36,16 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
             int connectionTimeout,
             int soTimeout,
             int database,
-            String password) {
+            String password,
+            String sentinelsPassword) {
         super(connectionTimeout, password);
         Objects.requireNonNull(masterName, "Master name should be presented");
         Objects.requireNonNull(sentinelsInfo, "Sentinels information should be presented");
-
         this.masterName = masterName;
         this.sentinelsInfo = sentinelsInfo;
         this.soTimeout = soTimeout;
         this.database = database;
+        this.sentinelsPassword = sentinelsPassword;
     }
 
     /**
@@ -75,6 +79,10 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
         return database;
     }
 
+    public String getSentinelsPassword() {
+        return sentinelsPassword;
+    }
+
     /** Builder for initializing {@link FlinkSentinelConfig}. */
     public static class Builder {
         private String masterName;
@@ -83,6 +91,8 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
         private int soTimeout;
         private int database;
         private String password;
+        private String sentinelsPassword;
+
         /**
          * Sets master name of the replica set.
          *
@@ -137,6 +147,11 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
             return this;
         }
 
+        public Builder setSentinelsPassword(String sentinelsPassword) {
+            this.sentinelsPassword = sentinelsPassword;
+            return this;
+        }
+
         /**
          * Builds SentinelConfig.
          *
@@ -144,26 +159,36 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
          */
         public FlinkSentinelConfig build() {
             return new FlinkSentinelConfig(
-                    masterName, sentinelsInfo, connectionTimeout, soTimeout, database, password);
+                    masterName,
+                    sentinelsInfo,
+                    connectionTimeout,
+                    soTimeout,
+                    database,
+                    password,
+                    sentinelsPassword);
         }
     }
 
     @Override
     public String toString() {
         return "FlinkSentinelConfig{"
-                + "connectionTimeout="
-                + connectionTimeout
-                + ", password='"
-                + password
-                + '\''
-                + ", sentinelsInfo="
+                + "sentinelsInfo='"
                 + sentinelsInfo
+                + '\''
                 + ", soTimeout="
                 + soTimeout
                 + ", database="
                 + database
                 + ", masterName='"
                 + masterName
+                + '\''
+                + ", sentinelsPassword='"
+                + sentinelsPassword
+                + '\''
+                + ", connectionTimeout="
+                + connectionTimeout
+                + ", password='"
+                + password
                 + '\''
                 + '}';
     }

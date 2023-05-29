@@ -107,10 +107,11 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 
 #### 集群类型为sentinel时额外连接参数:
 
-| 字段               | 默认值 | 类型   | 说明  |
-| ------------------ | ------ | ------ |-----|
-| master.name        | (none) | String | 主名  |
-| sentinels.info     | (none) | String | 如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000  |
+| 字段                 | 默认值 | 类型   | 说明                                                      |
+|--------------------| ------ | ------ |---------------------------------------------------------|
+| master.name        | (none) | String | 主名                                                      |
+| sentinels.info     | (none) | String | 如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000 |
+| sentinels.password | (none) | String | sentinel进程密码                                            |
 
 ### 数据类型转换
 

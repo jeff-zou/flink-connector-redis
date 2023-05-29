@@ -22,8 +22,8 @@ public class SentinelSQLTest {
 
         String ddl =
                 "create table sink_redis(username VARCHAR, passport time(3)) with ( 'connector'='redis', "
-                        + "'master.name'='mymaster','sentinels.info'='10.11.96.185:16379,10.11.96.186:16379,10.11.96.187:16379', 'redis-mode'='sentinel'"
-                        + ",'password'='********','"
+                        + "'master.name'='mymaster','sentinels.info'='10.11.96.185:26379,10.11.96.186:26379,10.11.96.187:26379', 'redis-mode'='sentinel'"
+                        + ",'password'='******','sentinels.password'='******','"
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.SET

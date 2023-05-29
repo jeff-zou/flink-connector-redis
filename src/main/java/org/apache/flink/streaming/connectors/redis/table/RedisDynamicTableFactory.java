@@ -1,5 +1,7 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
+
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
@@ -11,8 +13,6 @@ import org.apache.flink.table.factories.FactoryUtil;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 
 /** Created by jeff.zou on 2020/9/10. */
 public class RedisDynamicTableFactory
@@ -106,6 +106,7 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.REDIS_MASTER_NAME);
         options.add(RedisOptions.SENTINELS_INFO);
         options.add(RedisOptions.EXPIRE_ON_TIME);
+        options.add(RedisOptions.SENTINELS_PASSWORD);
         return options;
     }
 
