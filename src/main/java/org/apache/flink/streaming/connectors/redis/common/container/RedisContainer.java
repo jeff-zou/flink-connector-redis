@@ -5,11 +5,13 @@ import io.lettuce.core.RedisFuture;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -438,6 +440,25 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
                 LOG.error(
                         "Cannot send Redis message with command ttl to key {} error message {}",
                         key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+        return result;
+    }
+
+    @Override
+    public RedisFuture<List> lRange(String key, long start, long end) {
+        RedisFuture<List> result = null;
+        try {
+            result = redisFuture = asyncCommands.lrange(key, start, end);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command lrange to key {} start : {} end: {} error message {}",
+                        key,
+                        start,
+                        end,
                         e.getMessage());
             }
             throw e;

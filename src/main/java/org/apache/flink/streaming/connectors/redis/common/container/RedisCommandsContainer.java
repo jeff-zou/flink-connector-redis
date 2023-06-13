@@ -5,6 +5,7 @@ import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /** The container for all available Redis commands. */
@@ -221,6 +222,14 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      */
     void srem(String setName, String value);
+
+    /**
+     * @param key
+     * @param start
+     * @param end
+     * @return
+     */
+    RedisFuture<List> lRange(String key, long start, long end);
 
     /**
      * get redis async commands.
