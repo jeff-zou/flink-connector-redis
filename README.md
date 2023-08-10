@@ -93,7 +93,6 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | lookup.max-retries    | 1      | Integer | 查询失败重试次数                                                                                         |
 | lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
 | sink.max-retries      | 1      | Integer | 写入失败重试次数                                                                                         |
-| sink.parallelism      | (none) | Integer | 写入并发数                                                                                            |
 | value.data.structure  | column | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
 | expire.on.time        | (none) | String  | 指定key的过期时间点,格式为LocalTime, eg: 10:00 12:12:01,ttl字段将无效                                            |
 | set.if.absent         | false  | Boolean | 在key不存在时才写入,只对set hset有效                                                                         |
