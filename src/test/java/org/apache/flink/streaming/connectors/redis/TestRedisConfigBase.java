@@ -7,6 +7,7 @@ import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class TestRedisConfigBase {
         redisClient = RedisClient.create(redisURI);
         singleConnect = redisClient.connect();
         singleRedisCommands = singleConnect.sync();
-        singleRedisCommands.flushdb();
+        //        singleRedisCommands.flushdb();
         LOG.info("clear data in redis: {}", REDIS_HOST);
     }
 
@@ -77,7 +78,7 @@ public class TestRedisConfigBase {
         clusterClient = RedisClusterClient.create(redisURIS);
         clusterConnection = clusterClient.connect();
         clusterCommands = clusterConnection.sync();
-        clusterCommands.flushdb();
+        //        clusterCommands.flushdb();
         LOG.info("clear data in redis: {}", CLUSTERNODES);
     }
 
