@@ -612,14 +612,14 @@ public class SQLTest extends TestRedisConfigBase {
                         + "' )";
 
         tEnv.executeSql(dim);
-        String sql = dim + "; insert into sink_redis select * from (values ('1', 1));";
+        String sql = " insert into sink_redis select * from (values ('test', 1));";
         System.out.println(tEnv.explainSql(sql));
         tEnv.executeSql(sql);
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
 
-        Preconditions.condition(clusterCommands.get("1").toString().equals("2"), "");
+        Preconditions.condition(clusterCommands.get("test").toString().equals("2"), "");
     }
 
     @Test
