@@ -43,6 +43,8 @@
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
+    <!-- 没有单独引入项目依赖Lettuce netty-transport-native-epoll依赖时 -->
+    <!--            <classifier>jar-with-dependencies</classifier>-->
     <version>1.3.0</version>
 </dependency>
 ```
