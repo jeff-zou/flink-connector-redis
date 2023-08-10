@@ -10,12 +10,16 @@ public class RedisCommandDescription extends RedisCommandBaseDescription impleme
 
     private Integer ttl;
 
+    private Boolean setIfAbsent;
+
     private LocalTime expireTime;
 
-    public RedisCommandDescription(RedisCommand redisCommand, Integer ttl, LocalTime expireTime) {
+    public RedisCommandDescription(
+            RedisCommand redisCommand, Integer ttl, LocalTime expireTime, Boolean setIfAbsent) {
         super(redisCommand);
         this.expireTime = expireTime;
         this.ttl = ttl;
+        this.setIfAbsent = setIfAbsent;
     }
 
     public Integer getTTL() {
@@ -24,5 +28,9 @@ public class RedisCommandDescription extends RedisCommandBaseDescription impleme
 
     public LocalTime getExpireTime() {
         return expireTime;
+    }
+
+    public Boolean getSetIfAbsent() {
+        return setIfAbsent;
     }
 }

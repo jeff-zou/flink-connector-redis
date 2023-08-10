@@ -170,4 +170,10 @@ public class RedisOptions {
                     .stringType()
                     .noDefaultValue()
                     .withDescription("Optional redis key expire on time, eg: 10:00 12:12:01");
+
+    public static final ConfigOption<Boolean> SET_IF_ABSENT =
+            ConfigOptions.key("set.if.absent")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("Optional setIfAbsent for insert(set/hset) to redis");
 }

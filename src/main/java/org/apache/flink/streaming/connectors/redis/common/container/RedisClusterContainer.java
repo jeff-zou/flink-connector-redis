@@ -15,7 +15,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 
 /** Redis command container if we want to connect to a Redis cluster. */
 public class RedisClusterContainer implements RedisCommandsContainer, Closeable {
@@ -28,7 +28,6 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
 
     protected transient StatefulRedisClusterConnection<String, String> connection;
     protected transient RedisAdvancedClusterAsyncCommands clusterAsyncCommands;
-    protected transient RedisFuture redisFuture;
 
     /**
      * Initialize Redis command container for Redis cluster.
@@ -51,12 +50,11 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void close() throws IOException {
         try {
-            if (redisFuture != null) {
-                redisFuture.await(2, TimeUnit.SECONDS);
-            }
-            this.connection.close();
+            CompletableFuture completableFuture = this.connection.closeAsync();
+            completableFuture.get();
+            LOG.info("close async connection success!");
         } catch (Exception e) {
-            LOG.error("", e);
+            LOG.error("close async connection error!", e);
         }
 
         this.redisClusterClient.shutdown();
@@ -65,7 +63,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void hset(final String key, final String hashField, final String value) {
         try {
-            redisFuture = clusterAsyncCommands.hset(key, hashField, value);
+            clusterAsyncCommands.hset(key, hashField, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -81,7 +79,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void hincrBy(final String key, final String hashField, final long value) {
         try {
-            redisFuture = clusterAsyncCommands.hincrby(key, hashField, value);
+            clusterAsyncCommands.hincrby(key, hashField, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -97,7 +95,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void hincrByFloat(final String key, final String hashField, final double value) {
         try {
-            redisFuture = clusterAsyncCommands.hincrbyfloat(key, hashField, value);
+            clusterAsyncCommands.hincrbyfloat(key, hashField, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -113,7 +111,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void rpush(final String listName, final String value) {
         try {
-            redisFuture = clusterAsyncCommands.rpush(listName, value);
+            clusterAsyncCommands.rpush(listName, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -128,7 +126,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void lpush(String listName, String value) {
         try {
-            redisFuture = clusterAsyncCommands.lpush(listName, value);
+            clusterAsyncCommands.lpush(listName, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -143,7 +141,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void sadd(final String setName, final String value) {
         try {
-            redisFuture = clusterAsyncCommands.sadd(setName, value);
+            clusterAsyncCommands.sadd(setName, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -158,7 +156,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void publish(final String channelName, final String message) {
         try {
-            redisFuture = clusterAsyncCommands.publish(channelName, message);
+            clusterAsyncCommands.publish(channelName, message);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -173,7 +171,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void set(final String key, final String value) {
         try {
-            redisFuture = clusterAsyncCommands.set(key, value);
+            clusterAsyncCommands.set(key, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -188,7 +186,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void pfadd(final String key, final String element) {
         try {
-            redisFuture = clusterAsyncCommands.pfadd(key, element);
+            clusterAsyncCommands.pfadd(key, element);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -203,7 +201,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void zadd(final String key, final String score, final String element) {
         try {
-            redisFuture = clusterAsyncCommands.zadd(key, Double.valueOf(score), element);
+            clusterAsyncCommands.zadd(key, Double.valueOf(score), element);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -219,7 +217,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     public void zincrBy(final String key, final String score, final String element) {
 
         try {
-            redisFuture = clusterAsyncCommands.zincrby(key, Double.valueOf(score), element);
+            clusterAsyncCommands.zincrby(key, Double.valueOf(score), element);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -234,7 +232,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void zrem(final String key, final String element) {
         try {
-            redisFuture = clusterAsyncCommands.zrem(key, element);
+            clusterAsyncCommands.zrem(key, element);
         } catch (Exception e) {
             if (LOG.isDebugEnabled()) {
                 LOG.error(
@@ -248,7 +246,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void incrBy(String key, long value) {
         try {
-            redisFuture = clusterAsyncCommands.incrby(key, value);
+            clusterAsyncCommands.incrby(key, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -264,7 +262,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void incrByFloat(String key, double value) {
         try {
-            redisFuture = clusterAsyncCommands.incrbyfloat(key, value);
+            clusterAsyncCommands.incrbyfloat(key, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -280,7 +278,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void decrBy(String key, Long value) {
         try {
-            redisFuture = clusterAsyncCommands.decrby(key, value);
+            clusterAsyncCommands.decrby(key, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -296,7 +294,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void hdel(String key, String field) {
         try {
-            redisFuture = clusterAsyncCommands.hdel(key, field);
+            clusterAsyncCommands.hdel(key, field);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -312,7 +310,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void del(String key) {
         try {
-            redisFuture = clusterAsyncCommands.del(key);
+            clusterAsyncCommands.del(key);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -328,7 +326,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     public void expire(String key, int seconds) {
 
         try {
-            redisFuture = clusterAsyncCommands.expire(key, Duration.ofSeconds(seconds));
+            clusterAsyncCommands.expire(key, Duration.ofSeconds(seconds));
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -344,7 +342,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     @Override
     public void srem(String setName, String value) {
         try {
-            redisFuture = clusterAsyncCommands.srem(setName, value);
+            clusterAsyncCommands.srem(setName, value);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -361,7 +359,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     public RedisFuture<String> hget(String key, String field) {
         RedisFuture<String> result = null;
         try {
-            redisFuture = result = clusterAsyncCommands.hget(key, field);
+            result = clusterAsyncCommands.hget(key, field);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -379,7 +377,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     public RedisFuture<String> get(String key) {
         RedisFuture<String> result = null;
         try {
-            redisFuture = result = clusterAsyncCommands.get(key);
+            result = clusterAsyncCommands.get(key);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -396,7 +394,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     public RedisFuture<Map<String, String>> hgetAll(String key) {
         RedisFuture<Map<String, String>> result = null;
         try {
-            result = redisFuture = clusterAsyncCommands.hgetall(key);
+            result = clusterAsyncCommands.hgetall(key);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -418,7 +416,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     public RedisFuture<Long> getTTL(String key) {
         RedisFuture<Long> result = null;
         try {
-            result = redisFuture = clusterAsyncCommands.ttl(key);
+            result = clusterAsyncCommands.ttl(key);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -435,7 +433,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     public RedisFuture<List> lRange(String key, long start, long end) {
         RedisFuture<List> result = null;
         try {
-            result = redisFuture = clusterAsyncCommands.lrange(key, start, end);
+            result = clusterAsyncCommands.lrange(key, start, end);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -443,6 +441,40 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
                         key,
                         start,
                         end,
+                        e.getMessage());
+            }
+            throw e;
+        }
+        return result;
+    }
+
+    @Override
+    public RedisFuture<Long> exists(String key) {
+        RedisFuture<Long> result = null;
+        try {
+            result = clusterAsyncCommands.exists(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command exists to key {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+        return result;
+    }
+
+    @Override
+    public RedisFuture<Boolean> hexists(String key, String field) {
+        RedisFuture<Boolean> result = null;
+        try {
+            result = clusterAsyncCommands.hexists(key, field);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command exists to key {} error message {}",
+                        key,
                         e.getMessage());
             }
             throw e;

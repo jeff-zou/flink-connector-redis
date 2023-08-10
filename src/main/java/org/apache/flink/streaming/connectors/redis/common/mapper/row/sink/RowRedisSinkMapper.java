@@ -1,5 +1,7 @@
 package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
 
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
+
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConverter;
@@ -16,8 +18,6 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
-
 /** base row redis mapper implement. */
 public abstract class RowRedisSinkMapper
         implements RedisSinkMapper<GenericRowData>, RedisMapperHandler {
@@ -27,6 +27,8 @@ public abstract class RowRedisSinkMapper
     private LocalTime expireTime;
 
     private RedisCommand redisCommand;
+
+    private Boolean setIfAbsent;
 
     public RowRedisSinkMapper(int ttl, RedisCommand redisCommand) {
         this.ttl = ttl;
@@ -49,6 +51,7 @@ public abstract class RowRedisSinkMapper
     public RowRedisSinkMapper(RedisCommand redisCommand, ReadableConfig config) {
         this.redisCommand = redisCommand;
         this.ttl = config.get(RedisOptions.TTL);
+        this.setIfAbsent = config.get(RedisOptions.SET_IF_ABSENT);
         String expireOnTime = config.get(RedisOptions.EXPIRE_ON_TIME);
         if (!StringUtils.isNullOrWhitespaceOnly(expireOnTime)) {
             this.expireTime = LocalTime.parse(expireOnTime);
@@ -57,7 +60,7 @@ public abstract class RowRedisSinkMapper
 
     @Override
     public RedisCommandDescription getCommandDescription() {
-        return new RedisCommandDescription(redisCommand, ttl, expireTime);
+        return new RedisCommandDescription(redisCommand, ttl, expireTime, setIfAbsent);
     }
 
     @Override

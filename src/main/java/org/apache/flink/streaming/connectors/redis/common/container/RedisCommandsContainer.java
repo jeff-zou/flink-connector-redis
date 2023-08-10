@@ -232,6 +232,19 @@ public interface RedisCommandsContainer extends Serializable {
     RedisFuture<List> lRange(String key, long start, long end);
 
     /**
+     * @param key
+     * @return
+     */
+    RedisFuture<Long> exists(String key);
+
+    /**
+     * @param key
+     * @param field
+     * @return
+     */
+    RedisFuture<Boolean> hexists(String key, String field);
+
+    /**
      * get redis async commands.
      *
      * @return

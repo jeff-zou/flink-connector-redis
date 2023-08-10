@@ -74,8 +74,8 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 
 #### with参数说明：
 
-| 字段                    | 默认值    | 类型    | 说明                                                                                               |
-|-----------------------|--------| ------- |--------------------------------------------------------------------------------------------------|
+| 字段                    | 默认值    | 类型      | 说明                                                                                               |
+|-----------------------|--------|---------|--------------------------------------------------------------------------------------------------|
 | connector             | (none) | String  | `redis`                                                                                          |
 | host                  | (none) | String  | Redis IP                                                                                         |
 | port                  | 6379   | Integer | Redis 端口                                                                                         |
@@ -94,6 +94,7 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | sink.parallelism      | (none) | Integer | 写入并发数                                                                                            |
 | value.data.structure  | column | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
 | expire.on.time        | (none) | String  | 指定key的过期时间点,格式为LocalTime, eg: 10:00 12:12:01,ttl字段将无效                                            |
+| set.if.absent         | false  | Boolean | 在key不存在时才写入,只对set hset有效                                                                         |
 
 ##### 在线调试SQL时，用于限制sink资源使用的参数:
 

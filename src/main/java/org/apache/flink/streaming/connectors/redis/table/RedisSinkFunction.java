@@ -18,7 +18,6 @@ import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +34,8 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private static final Logger LOG = LoggerFactory.getLogger(RedisSinkFunction.class);
 
     protected Integer ttl;
+
+    private boolean setIfAbsent;
     protected int expireTimeSeconds = -1;
 
     private RedisSinkMapper<IN> redisSinkMapper;
@@ -73,6 +74,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         this.redisCommand = redisCommandDescription.getRedisCommand();
         this.ttl = redisCommandDescription.getTTL();
+        this.setIfAbsent = redisCommandDescription.getSetIfAbsent();
         if (redisCommandDescription.getExpireTime() != null) {
             this.expireTimeSeconds = redisCommandDescription.getExpireTime().toSecondOfDay();
         }
@@ -159,7 +161,21 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 this.redisCommandsContainer.sadd(params[0], params[1]);
                 break;
             case SET:
-                this.redisCommandsContainer.set(params[0], params[1]);
+                {
+                    if (!this.setIfAbsent) {
+                        this.redisCommandsContainer.set(params[0], params[1]);
+                    } else {
+                        this.redisCommandsContainer
+                                .exists(params[0])
+                                .whenComplete(
+                                        (existsVal, throwable) -> {
+                                            if (existsVal == 0) {
+                                                this.redisCommandsContainer.set(
+                                                        params[0], params[1]);
+                                            }
+                                        });
+                    }
+                }
                 break;
             case PFADD:
                 this.redisCommandsContainer.pfadd(params[0], params[1]);
@@ -180,7 +196,21 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 this.redisCommandsContainer.srem(params[0], params[1]);
                 break;
             case HSET:
-                this.redisCommandsContainer.hset(params[0], params[1], params[2]);
+                {
+                    if (!this.setIfAbsent) {
+                        this.redisCommandsContainer.hset(params[0], params[1], params[2]);
+                    } else {
+                        this.redisCommandsContainer
+                                .hexists(params[0], params[1])
+                                .whenComplete(
+                                        (exist, throwable) -> {
+                                            if (!exist) {
+                                                this.redisCommandsContainer.hset(
+                                                        params[0], params[1], params[2]);
+                                            }
+                                        });
+                    }
+                }
                 break;
             case HINCRBY:
                 this.redisCommandsContainer.hincrBy(params[0], params[1], Long.valueOf(params[2]));

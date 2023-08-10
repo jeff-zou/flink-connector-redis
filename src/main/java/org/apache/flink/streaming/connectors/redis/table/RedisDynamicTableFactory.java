@@ -107,6 +107,7 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.SENTINELS_INFO);
         options.add(RedisOptions.EXPIRE_ON_TIME);
         options.add(RedisOptions.SENTINELS_PASSWORD);
+        options.add(RedisOptions.SET_IF_ABSENT);
         return options;
     }
 

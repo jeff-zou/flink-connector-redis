@@ -1,18 +1,17 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
+
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.TestRedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.Preconditions;
 
 import java.time.LocalTime;
-
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 
 /** Created by jeff.zou on 2020/9/10. */
 public class SQLTest extends TestRedisConfigBase {
@@ -621,5 +620,68 @@ public class SQLTest extends TestRedisConfigBase {
         System.out.println(sql);
 
         Preconditions.condition(clusterCommands.get("1").toString().equals("2"), "");
+    }
+
+    @Test
+    public void testSetIfAbsent() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        EnvironmentSettings environmentSettings =
+                EnvironmentSettings.newInstance().inStreamingMode().build();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+        singleRedisCommands.set("test_time", "14640000");
+        String ddl =
+                "create table sink_redis(username VARCHAR, passport time(3)) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "', 'set.if.absent'='true"
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.SET
+                        + "')";
+
+        tEnv.executeSql(ddl);
+        String sql =
+                " insert into sink_redis select * from (values ('test_time', time '05:04:00'))";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        Preconditions.condition(singleRedisCommands.get("test_time").equals("14640000"), "");
+    }
+
+    @Test
+    public void testhsetIfAbsent() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        EnvironmentSettings environmentSettings =
+                EnvironmentSettings.newInstance().inStreamingMode().build();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+        singleRedisCommands.hset("test_time", "test", "14640000");
+        String ddl =
+                "create table sink_redis(username VARCHAR, passport varchar, my_time time(3)) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "', 'set.if.absent'='true"
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HSET
+                        + "')";
+
+        tEnv.executeSql(ddl);
+        String sql =
+                " insert into sink_redis select * from (values ('test_time', 'test', time '05:04:00'))";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        Preconditions.condition(
+                singleRedisCommands.hget("test_time", "test").equals("14640000"), "");
     }
 }
