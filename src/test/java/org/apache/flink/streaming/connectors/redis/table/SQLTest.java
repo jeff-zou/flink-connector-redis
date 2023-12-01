@@ -115,7 +115,6 @@ public class SQLTest extends TestRedisConfigBase {
                         + "'='"
                         + RedisCommand.HSET
                         + "' )";
-
         tEnv.executeSql(source);
         tEnv.executeSql(dim);
         tEnv.executeSql(sink);
@@ -132,6 +131,64 @@ public class SQLTest extends TestRedisConfigBase {
         Preconditions.condition(clusterCommands.hget("1_1", "1").equals("test"), "");
         Preconditions.condition(clusterCommands.hget("2_2", "2") == "", "");
         Preconditions.condition(clusterCommands.hget("5_5", "5").equals("test"), "");
+    }
+
+    @Test
+    public void testHgetFieldIsNullSQL() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        EnvironmentSettings environmentSettings =
+                EnvironmentSettings.newInstance().inStreamingMode().build();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+
+        clusterCommands.hset("1", "1", "test");
+        clusterCommands.hset("5", "5", "test");
+        String dim =
+                "create table dim_table(name varchar, level varchar, age varchar) with ( 'connector'='redis', "
+                        + "'cluster-nodes'='"
+                        + CLUSTERNODES
+                        + "','redis-mode'='cluster', 'password'='"
+                        + CLUSTER_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HGET
+                        + "',   'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'lookup.max-retries'='3'  )";
+
+        String source =
+                "create table source_table(username varchar, level varchar, proctime as procTime()) "
+                        + "with ('connector'='datagen',  'rows-per-second'='1', "
+                        + "'fields.username.kind'='sequence',  'fields.username.start'='1',  'fields.username.end'='9',"
+                        + "'fields.level.kind'='sequence',  'fields.level.start'='1',  'fields.level.end'='9'"
+                        + ")";
+
+        String sink =
+                "create table sink_table(username varchar, level varchar,age varchar) with ( 'connector'='redis', "
+                        + "'cluster-nodes'='"
+                        + CLUSTERNODES
+                        + "','redis-mode'='cluster', 'password'='"
+                        + CLUSTER_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HSET
+                        + "' )";
+        tEnv.executeSql(source);
+        tEnv.executeSql(dim);
+        tEnv.executeSql(sink);
+
+        String sql =
+                " insert into sink_table "
+                        + " select concat_ws('_', s.username, s.level), s.level, d.level from source_table s"
+                        + "  left join dim_table for system_time as of s.proctime as d "
+                        + " on d.name = s.username and d.level = s.level";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        System.out.println(sql);
+
+        Preconditions.condition(clusterCommands.hget("1_1", "1").equals("1"), "");
+        Preconditions.condition(clusterCommands.hget("2_2", "2") == "", "");
+        Preconditions.condition(clusterCommands.hget("5_5", "5").equals("5"), "");
     }
 
     @Test
@@ -195,9 +252,9 @@ public class SQLTest extends TestRedisConfigBase {
     public void testDel() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        clusterCommands.set("20", "20");
+        clusterCommands.set("testDel", "20");
 
-        Preconditions.condition(clusterCommands.get("20").equals("20"), "");
+        Preconditions.condition(clusterCommands.get("testDel").equals("20"), "");
         String ddl =
                 "create table redis_sink(redis_key varchar) with('connector'='redis',"
                         + "'cluster-nodes'='"
@@ -211,9 +268,9 @@ public class SQLTest extends TestRedisConfigBase {
                         + "') ";
         tEnv.executeSql(ddl);
         TableResult tableResult =
-                tEnv.executeSql("insert into redis_sink select * from (values('20'))");
+                tEnv.executeSql("insert into redis_sink select * from (values('testDel'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
-        Preconditions.condition(clusterCommands.get("20") == null, "");
+        Preconditions.condition(clusterCommands.get("testDel") == null, "");
     }
 
     @Test
@@ -237,6 +294,7 @@ public class SQLTest extends TestRedisConfigBase {
         TableResult tableResult =
                 tEnv.executeSql("insert into redis_sink select * from (values('s', 'test2'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
+        Thread.sleep(2000);
         Preconditions.condition(clusterCommands.sismember("s", "test2") == false, "");
     }
 
@@ -261,6 +319,7 @@ public class SQLTest extends TestRedisConfigBase {
         TableResult tableResult =
                 tEnv.executeSql("insert into redis_sink select * from (values('s', 'test1'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
+        Thread.sleep(2000);
         Preconditions.condition(clusterCommands.hget("s", "test1") == null, "");
     }
 
@@ -484,6 +543,7 @@ public class SQLTest extends TestRedisConfigBase {
         System.out.println(sql);
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
+        Object o = singleRedisCommands.hget("10_10", "10");
         Preconditions.condition(singleRedisCommands.hget("10_10", "10") == "", "");
         Preconditions.condition(singleRedisCommands.hget("11_11", "11").equals("10.3"), "");
         Preconditions.condition(singleRedisCommands.hget("12_12", "12") == "", "");
@@ -585,13 +645,13 @@ public class SQLTest extends TestRedisConfigBase {
                         + "' )";
 
         tEnv.executeSql(dim);
-        String sql = " insert into sink_redis select * from (values ('1', 1))";
+        String sql = " insert into sink_redis select * from (values ('testIncryBy', 1))";
         tEnv.executeSql(sql);
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
 
-        Preconditions.condition(clusterCommands.get("1").toString().equals("2"), "");
+        Preconditions.condition(clusterCommands.get("testIncryBy").toString().equals("1"), "");
     }
 
     @Test
@@ -610,16 +670,15 @@ public class SQLTest extends TestRedisConfigBase {
                         + "'='"
                         + RedisCommand.INCRBY
                         + "' )";
-
+        clusterCommands.incrby("testIncryBy2", 1);
         tEnv.executeSql(dim);
-        String sql = " insert into sink_redis select * from (values ('test', 1));";
-        System.out.println(tEnv.explainSql(sql));
-        tEnv.executeSql(sql);
+        String sql = " insert into sink_redis select * from (values ('testIncryBy2', 3));";
+        //        System.out.println(tEnv.explainSql(sql));
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
 
-        Preconditions.condition(clusterCommands.get("test").toString().equals("2"), "");
+        Preconditions.condition(clusterCommands.get("testIncryBy2").toString().equals("4"), "");
     }
 
     @Test
@@ -683,5 +742,54 @@ public class SQLTest extends TestRedisConfigBase {
         tableResult.getJobClient().get().getJobExecutionResult().get();
         Preconditions.condition(
                 singleRedisCommands.hget("test_time", "test").equals("14640000"), "");
+    }
+
+    @Test
+    public void testGetSet() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        EnvironmentSettings environmentSettings =
+                EnvironmentSettings.newInstance().inStreamingMode().build();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+        singleRedisCommands.set(
+                "1",
+                "[{\"dbname\":\"jx3log0101\",\"rn\":1,\"camp\":1,\"tongname\":\"挽花\",\"fhz\":6000,\"master_name\":\"挽花安枭\"},{\"dbname\":\"jx3log0101\",\"rn\":1,\"camp\":1,\"tongname\":\"挽花\",\"fhz\":6000,\"master_name\":\"挽花安枭\"}]");
+
+        String source =
+                "create table source_table(username varchar, level varchar, proctime as procTime()) "
+                        + "with ('connector'='datagen',  'rows-per-second'='1', "
+                        + "'fields.username.kind'='sequence',  'fields.username.start'='1',  'fields.username.end'='9',"
+                        + "'fields.level.kind'='sequence',  'fields.level.start'='1',  'fields.level.end'='9'"
+                        + ")";
+        tEnv.executeSql(source);
+        String ddl =
+                "create table join_redis(username VARCHAR, passport varchar) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.GET
+                        + "')";
+
+        tEnv.executeSql(ddl);
+
+        //        tEnv.executeSql(
+        //                "create table sink_table(msg row<request_id varchar , `rank`
+        // Array<Row<dbname varchar, rn int, camp int, tongname varchar, fhz int, master_name
+        // varchar>>>) with ('connector'='print')");
+
+        tEnv.executeSql(
+                "create table sink_table(msg row<request_id varchar , `rank`  varchar>) with ('connector'='print')");
+
+        String sql =
+                " insert into sink_table select row('test', b.passport) from  source_table s "
+                        + "left join join_redis for system_time as of proctime as b on s.username = b.username";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
     }
 }

@@ -1,5 +1,7 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
+import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
+
 import org.apache.flink.calcite.shaded.com.google.common.cache.Cache;
 import org.apache.flink.calcite.shaded.com.google.common.cache.CacheBuilder;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
@@ -18,7 +20,6 @@ import org.apache.flink.table.functions.AsyncTableFunction;
 import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.util.Preconditions;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
-import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
 
 /** redis lookup function. @Author: jeff.zou @Date: 2022/3/7.14:33 */
 public class RedisLookupFunction extends AsyncTableFunction<RowData> {
@@ -217,6 +216,9 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
     private GenericRowData createRowDataForHash(Object[] keys, String value) {
         if (redisValueDataStructure == RedisValueDataStructure.column) {
             GenericRowData genericRowData = new GenericRowData(3);
+            if (value == null) {
+                return genericRowData;
+            }
             genericRowData.setField(0, keys[0]);
             genericRowData.setField(1, keys[1]);
             genericRowData.setField(
@@ -224,7 +226,7 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
                     RedisRowConverter.dataTypeFromString(dataTypes.get(2).getLogicalType(), value));
             return genericRowData;
         }
-        return createRowData(value);
+        return createRowDataForRow(value);
     }
 
     /**
@@ -236,13 +238,17 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
     private GenericRowData createRowDataForString(Object[] keys, String value) {
         if (redisValueDataStructure == RedisValueDataStructure.column) {
             GenericRowData genericRowData = new GenericRowData(2);
+            if (value == null) {
+                return genericRowData;
+            }
             genericRowData.setField(0, keys[0]);
             genericRowData.setField(
                     1,
                     RedisRowConverter.dataTypeFromString(dataTypes.get(1).getLogicalType(), value));
             return genericRowData;
         }
-        return createRowData(value);
+
+        return createRowDataForRow(value);
     }
 
     /**
@@ -251,7 +257,7 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
      * @param value
      * @return
      */
-    private GenericRowData createRowData(String value) {
+    private GenericRowData createRowDataForRow(String value) {
         GenericRowData genericRowData = new GenericRowData(dataTypes.size());
         if (value == null) {
             return genericRowData;
