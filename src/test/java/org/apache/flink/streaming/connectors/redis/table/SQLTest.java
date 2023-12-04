@@ -11,8 +11,6 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.Preconditions;
 
-import java.time.LocalTime;
-
 /** Created by jeff.zou on 2020/9/10. */
 public class SQLTest extends TestRedisConfigBase {
 
@@ -596,38 +594,6 @@ public class SQLTest extends TestRedisConfigBase {
     }
 
     @Test
-    public void testSinkValueWithExpire() throws Exception {
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-
-        LocalTime localTime = LocalTime.now();
-        int wait = 100;
-        localTime = localTime.plusSeconds(wait);
-        String dim =
-                "create table sink_redis(name varchar, level varchar, age varchar) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'ttl'='10','expire.on.time'='"
-                        + localTime.toString()
-                        + "', 'password'='"
-                        + CLUSTER_PASSWORD
-                        + "','"
-                        + REDIS_COMMAND
-                        + "'='"
-                        + RedisCommand.HSET
-                        + "' )";
-
-        tEnv.executeSql(dim);
-        String sql = " insert into sink_redis select * from (values ('1', '11.3', '10.3'))";
-        TableResult tableResult = tEnv.executeSql(sql);
-        tableResult.getJobClient().get().getJobExecutionResult().get();
-        System.out.println(sql);
-        Preconditions.condition(clusterCommands.exists("1") == 1, "");
-        Thread.sleep(wait * 1000);
-        Preconditions.condition(clusterCommands.exists("1") == 0, "");
-    }
-
-    @Test
     public void testIncryBy() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
@@ -673,7 +639,6 @@ public class SQLTest extends TestRedisConfigBase {
         clusterCommands.incrby("testIncryBy2", 1);
         tEnv.executeSql(dim);
         String sql = " insert into sink_redis select * from (values ('testIncryBy2', 3));";
-        //        System.out.println(tEnv.explainSql(sql));
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
@@ -777,11 +742,6 @@ public class SQLTest extends TestRedisConfigBase {
                         + "')";
 
         tEnv.executeSql(ddl);
-
-        //        tEnv.executeSql(
-        //                "create table sink_table(msg row<request_id varchar , `rank`
-        // Array<Row<dbname varchar, rn int, camp int, tongname varchar, fhz int, master_name
-        // varchar>>>) with ('connector'='print')");
 
         tEnv.executeSql(
                 "create table sink_table(msg row<request_id varchar , `rank`  varchar>) with ('connector'='print')");

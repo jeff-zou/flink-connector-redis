@@ -166,7 +166,7 @@ public class RedisOptions {
                     .withDescription("Optional redis value data structure.");
 
     public static final ConfigOption<String> EXPIRE_ON_TIME =
-            ConfigOptions.key("expire.on.time")
+            ConfigOptions.key("ttl.on.time")
                     .stringType()
                     .noDefaultValue()
                     .withDescription("Optional redis key expire on time, eg: 10:00 12:12:01");
@@ -176,4 +176,10 @@ public class RedisOptions {
                     .booleanType()
                     .defaultValue(false)
                     .withDescription("Optional setIfAbsent for insert(set/hset) to redis");
+
+    public static final ConfigOption<Boolean> TTL_KEY_NOT_ABSENT =
+            ConfigOptions.key("ttl.key.not.absent")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("Optional set ttl when key not absent");
 }

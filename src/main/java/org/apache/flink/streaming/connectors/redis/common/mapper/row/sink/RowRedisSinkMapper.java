@@ -30,6 +30,8 @@ public abstract class RowRedisSinkMapper
 
     private Boolean setIfAbsent;
 
+    private Boolean ttlKeyNotAbsent;
+
     public RowRedisSinkMapper(int ttl, RedisCommand redisCommand) {
         this.ttl = ttl;
         this.redisCommand = redisCommand;
@@ -52,6 +54,7 @@ public abstract class RowRedisSinkMapper
         this.redisCommand = redisCommand;
         this.ttl = config.get(RedisOptions.TTL);
         this.setIfAbsent = config.get(RedisOptions.SET_IF_ABSENT);
+        this.ttlKeyNotAbsent = config.get(RedisOptions.TTL_KEY_NOT_ABSENT);
         String expireOnTime = config.get(RedisOptions.EXPIRE_ON_TIME);
         if (!StringUtils.isNullOrWhitespaceOnly(expireOnTime)) {
             this.expireTime = LocalTime.parse(expireOnTime);
@@ -60,7 +63,8 @@ public abstract class RowRedisSinkMapper
 
     @Override
     public RedisCommandDescription getCommandDescription() {
-        return new RedisCommandDescription(redisCommand, ttl, expireTime, setIfAbsent);
+        return new RedisCommandDescription(
+                redisCommand, ttl, expireTime, setIfAbsent, ttlKeyNotAbsent);
     }
 
     @Override

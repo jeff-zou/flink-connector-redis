@@ -27,7 +27,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param hashField Hash field
      * @param value Hash value
      */
-    void hset(String key, String hashField, String value);
+    RedisFuture<Boolean> hset(String key, String hashField, String value);
 
     /**
      * @param key
@@ -35,7 +35,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      * @return
      */
-    void hincrBy(String key, String hashField, long value);
+    RedisFuture<Long> hincrBy(String key, String hashField, long value);
 
     /**
      * @param key
@@ -43,7 +43,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      * @return
      */
-    void hincrByFloat(String key, String hashField, double value);
+    RedisFuture<Double> hincrByFloat(String key, String hashField, double value);
 
     /**
      * Insert the specified value at the tail of the list stored at key. If key does not exist, it
@@ -52,7 +52,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param listName Name of the List
      * @param value Value to be added
      */
-    void rpush(String listName, String value);
+    RedisFuture<Long> rpush(String listName, String value);
 
     /**
      * Insert the specified value at the head of the list stored at key. If key does not exist, it
@@ -61,7 +61,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param listName Name of the List
      * @param value Value to be added
      */
-    void lpush(String listName, String value);
+    RedisFuture<Long> lpush(String listName, String value);
 
     /**
      * Add the specified member to the set stored at key. Specified members that are already a
@@ -71,7 +71,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param setName Name of the Set
      * @param value Value to be added
      */
-    void sadd(String setName, String value);
+    RedisFuture<Long> sadd(String setName, String value);
 
     /**
      * Posts a message to the given channel.
@@ -79,7 +79,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param channelName Name of the channel to which data will be published
      * @param message the message
      */
-    void publish(String channelName, String message);
+    RedisFuture<Long> publish(String channelName, String message);
 
     /**
      * Set key to hold the string value. If key already holds a value, it is overwritten, regardless
@@ -89,7 +89,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key the key name in which value to be set
      * @param value the value
      */
-    void set(String key, String value);
+    RedisFuture<String> set(String key, String value);
 
     /**
      * Adds all the element arguments to the HyperLogLog data structure stored at the variable name
@@ -98,7 +98,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key The name of the key
      * @param element the element
      */
-    void pfadd(String key, String element);
+    RedisFuture<Long> pfadd(String key, String element);
 
     /**
      * Adds the specified member with the specified scores to the sorted set stored at key.
@@ -107,7 +107,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param score Score of the element
      * @param element element to be added
      */
-    void zadd(String key, String score, String element);
+    RedisFuture<Long> zadd(String key, String score, String element);
 
     /**
      * increase the specified member with the specified scores to the sorted set stored at key.
@@ -116,7 +116,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param score
      * @param element
      */
-    void zincrBy(String key, String score, String element);
+    RedisFuture zincrBy(String key, String score, String element);
 
     /**
      * Removes the specified member from the sorted set stored at key.
@@ -124,7 +124,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key The name of the Sorted Set
      * @param element element to be removed
      */
-    void zrem(String key, String element);
+    RedisFuture<Long> zrem(String key, String element);
 
     /**
      * increase value to specified key.
@@ -132,7 +132,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key
      * @param value
      */
-    void incrBy(String key, long value);
+    RedisFuture<Long> incrBy(String key, long value);
 
     /**
      * increase value to specified key.
@@ -141,7 +141,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param value
      * @return
      */
-    void incrByFloat(String key, double value);
+    RedisFuture<Double> incrByFloat(String key, double value);
 
     /**
      * decrease value from specified key.
@@ -149,7 +149,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key the key name in which value to be set
      * @param value value the value
      */
-    void decrBy(String key, Long value);
+    RedisFuture<Long> decrBy(String key, Long value);
 
     /**
      * get value by key and field .
@@ -190,7 +190,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param seconds
      * @return
      */
-    void expire(String key, int seconds);
+    RedisFuture<Boolean> expire(String key, int seconds);
 
     /**
      * get ttl of key.
@@ -206,14 +206,14 @@ public interface RedisCommandsContainer extends Serializable {
      * @param key
      * @param field
      */
-    void hdel(String key, String field);
+    RedisFuture<Long> hdel(String key, String field);
 
     /**
      * delete key.
      *
      * @param key
      */
-    void del(String key);
+    RedisFuture<Long> del(String key);
 
     /**
      * delete key value from set.
@@ -221,7 +221,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param setName
      * @param value
      */
-    void srem(String setName, String value);
+    RedisFuture<Long> srem(String setName, String value);
 
     /**
      * @param key

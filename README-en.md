@@ -30,7 +30,7 @@ The operation commands corresponding to the supported functions of redis are:
 
 ### Instructions: 
 
-After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.3.0.jar into flink lib, no other settings are required.
+After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.3.1.jar into flink lib, no other settings are required.
 
 Development environment engineering direct reference:
 
@@ -38,7 +38,7 @@ Development environment engineering direct reference:
 <dependency>
   <groupId>io.github.jeff-zou</groupId>
   <artifactId>flink-connector-redis</artifactId>
-  <version>1.3.0</version>
+  <version>1.3.1</version>
   <classifier>jar-with-dependencies</classifier>
 </dependency>
 ```
@@ -76,7 +76,6 @@ key: name, field:subject, value: name\01subject\01score.
 | port                 | 6379    | Integer | Redis port                                                                                                                                                                                         |
 | password             | null    | String  | null if not set                                                                                                                                                                                    |
 | database             | 0       | Integer | db0 is used by default                                                                                                                                                                             |
-| ttl                   | (none) | Integer | key expiration time as sink(seconds)                                                                                                                                                               |
 | timeout              | 2000    | Integer | Connection timeout, in ms, default 1s                                                                                                                                                              |
 | cluster-nodes        | (none)  | String  | Cluster ip and port, not empty when redis-mode is cluster, such as:10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000                                                                           |
 | command              | (none)  | String  | Corresponds to the redis command above                                                                                                                                                             |
@@ -87,8 +86,17 @@ key: name, field:subject, value: name\01subject\01score.
 | lookup.cache.load-all | false   | Boolean | when command is hget, query all elements from redis map to cache,help to resolve cache penetration issues                                                                                          |
 | sink.max-retries     | 1       | Integer | Number of retries for write failures                                                                                                                                                               |
 | value.data.structure      | column  | String  | column: The value will come from a field (for example, set: key is the first field defined by DDL, and value is the second field)<br/> row: value is taken from the entire row, separated by '\01' |
-| expire.on.time        | (none) | String  | Specify the time at which the key expires. The format is LocalTime, eg: 10:00 12:12:01. The ttl field will invalid                                                                                 |
 | set.if.absent         | false  | Boolean | set/hset only when the key absent                                                                                                                                                                  |
+
+
+##### sink with ttl parameters
+
+| Field              | Default | Type    | Description                                                                                          |
+|--------------------|---------|---------|------------------------------------------------------------------------------------------------------|
+| ttl                | (none)  | Integer | key expiration time (seconds), each time sink will set the ttl                                       |
+| ttl.on.time        | (none)  | String  | The expiration time of the key in LocalTime.toString(), eg: 10:00 12:12:01, if ttl is not configured |
+| ttl.key.not.absent | false   | boolean | Used with ttl, which is set when the key doesn't exist                                                                              |
+
 
 ##### Additional sink parameters when u debugging sql online which need to limit the resource usage:
 

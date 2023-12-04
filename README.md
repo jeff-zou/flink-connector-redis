@@ -33,8 +33,8 @@
 2.将生成的包放入flink lib中即可，无需其它设置。
 
 <br/>
-  项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.3.0.jar，
-否则使用flink-connector-redis-1.3.0-jar-with-dependencies.jar。
+  项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.3.1.jar，
+否则使用flink-connector-redis-1.3.1-jar-with-dependencies.jar。
 <br/>
 
 开发环境工程直接引用：
@@ -45,7 +45,7 @@
     <artifactId>flink-connector-redis</artifactId>
     <!-- 没有单独引入项目依赖Lettuce netty-transport-native-epoll依赖时 -->
     <!--            <classifier>jar-with-dependencies</classifier>-->
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 ```
 
@@ -83,7 +83,6 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | port                  | 6379   | Integer | Redis 端口                                                                                         |
 | password              | null   | String  | 如果没有设置，则为 null                                                                                   |
 | database              | 0      | Integer | 默认使用 db0                                                                                         |
-| ttl                   | (none) | Integer | sink时key过期时间(秒)                                                                                  |
 | timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                               |
 | cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
 | command               | (none) | String  | 对应上文中的redis命令                                                                                    |
@@ -94,8 +93,16 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
 | sink.max-retries      | 1      | Integer | 写入失败重试次数                                                                                         |
 | value.data.structure  | column | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
-| expire.on.time        | (none) | String  | 指定key的过期时间点,格式为LocalTime, eg: 10:00 12:12:01,ttl字段将无效                                            |
 | set.if.absent         | false  | Boolean | 在key不存在时才写入,只对set hset有效                                                                         |
+
+##### sink时ttl相关参数
+
+| Field              | Default | Type    | Description                                                       |
+|--------------------|---------|---------|-------------------------------------------------------------------|
+| ttl                | (none)  | Integer | key过期时间(秒),每次sink时会设置ttl                                          |
+| ttl.on.time        | (none)  | String  | key的过期时间点,格式为LocalTime.toString(), eg: 10:00 12:12:01,当ttl未配置时才生效 |
+| ttl.key.not.absent | false   | boolean | 与ttl一起使用,当key不存在时才设置ttl                                           |
+
 
 ##### 在线调试SQL时，用于限制sink资源使用的参数:
 

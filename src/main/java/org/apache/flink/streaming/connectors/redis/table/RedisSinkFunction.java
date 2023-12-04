@@ -1,5 +1,7 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
+import io.lettuce.core.RedisFuture;
+
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
@@ -36,6 +38,9 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     protected Integer ttl;
 
     private boolean setIfAbsent;
+
+    private boolean ttlKeyNotAbsent;
+
     protected int expireTimeSeconds = -1;
 
     private RedisSinkMapper<IN> redisSinkMapper;
@@ -74,6 +79,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         this.redisCommand = redisCommandDescription.getRedisCommand();
         this.ttl = redisCommandDescription.getTTL();
+        this.ttlKeyNotAbsent = redisCommandDescription.getTtlKeyNotAbsent();
         this.setIfAbsent = redisCommandDescription.getSetIfAbsent();
         if (redisCommandDescription.getExpireTime() != null) {
             this.expireTimeSeconds = redisCommandDescription.getExpireTime().toSecondOfDay();
@@ -129,8 +135,8 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private void startSink(String[] params) throws Exception {
         for (int i = 0; i <= maxRetryTimes; i++) {
             try {
-                sink(params);
-                setTtl(params[0]);
+                RedisFuture redisFuture = sink(params);
+                redisFuture.whenComplete((r, t) -> setTtl(params[0]));
                 break;
             } catch (UnsupportedOperationException e) {
                 throw e;
@@ -149,95 +155,102 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      *
      * @param params
      */
-    private void sink(String[] params) {
+    private RedisFuture sink(String[] params) {
+        RedisFuture redisFuture = null;
         switch (redisCommand) {
             case RPUSH:
-                this.redisCommandsContainer.rpush(params[0], params[1]);
+                redisFuture = this.redisCommandsContainer.rpush(params[0], params[1]);
                 break;
             case LPUSH:
-                this.redisCommandsContainer.lpush(params[0], params[1]);
+                redisFuture = this.redisCommandsContainer.lpush(params[0], params[1]);
                 break;
             case SADD:
-                this.redisCommandsContainer.sadd(params[0], params[1]);
+                redisFuture = this.redisCommandsContainer.sadd(params[0], params[1]);
                 break;
             case SET:
                 {
                     if (!this.setIfAbsent) {
-                        this.redisCommandsContainer.set(params[0], params[1]);
+                        redisFuture = this.redisCommandsContainer.set(params[0], params[1]);
                     } else {
-                        this.redisCommandsContainer
-                                .exists(params[0])
-                                .whenComplete(
-                                        (existsVal, throwable) -> {
-                                            if (existsVal == 0) {
-                                                this.redisCommandsContainer.set(
-                                                        params[0], params[1]);
-                                            }
-                                        });
+                        redisFuture = this.redisCommandsContainer.exists(params[0]);
+                        redisFuture.whenComplete(
+                                (existsVal, throwable) -> {
+                                    if ((int) existsVal == 0) {
+                                        this.redisCommandsContainer.set(params[0], params[1]);
+                                    }
+                                });
                     }
                 }
                 break;
             case PFADD:
-                this.redisCommandsContainer.pfadd(params[0], params[1]);
+                redisFuture = this.redisCommandsContainer.pfadd(params[0], params[1]);
                 break;
             case PUBLISH:
-                this.redisCommandsContainer.publish(params[0], params[1]);
+                redisFuture = this.redisCommandsContainer.publish(params[0], params[1]);
                 break;
             case ZADD:
-                this.redisCommandsContainer.zadd(params[0], params[1], params[2]);
+                redisFuture = this.redisCommandsContainer.zadd(params[0], params[1], params[2]);
                 break;
             case ZINCRBY:
-                this.redisCommandsContainer.zincrBy(params[0], params[1], params[2]);
+                redisFuture = this.redisCommandsContainer.zincrBy(params[0], params[1], params[2]);
                 break;
             case ZREM:
-                this.redisCommandsContainer.zrem(params[0], params[1]);
+                redisFuture = this.redisCommandsContainer.zrem(params[0], params[1]);
                 break;
             case SREM:
-                this.redisCommandsContainer.srem(params[0], params[1]);
+                redisFuture = this.redisCommandsContainer.srem(params[0], params[1]);
                 break;
             case HSET:
                 {
                     if (!this.setIfAbsent) {
-                        this.redisCommandsContainer.hset(params[0], params[1], params[2]);
+                        redisFuture =
+                                this.redisCommandsContainer.hset(params[0], params[1], params[2]);
                     } else {
-                        this.redisCommandsContainer
-                                .hexists(params[0], params[1])
-                                .whenComplete(
-                                        (exist, throwable) -> {
-                                            if (!exist) {
-                                                this.redisCommandsContainer.hset(
-                                                        params[0], params[1], params[2]);
-                                            }
-                                        });
+                        redisFuture = this.redisCommandsContainer.hexists(params[0], params[1]);
+                        redisFuture.whenComplete(
+                                (exist, throwable) -> {
+                                    if (!(Boolean) exist) {
+                                        this.redisCommandsContainer.hset(
+                                                params[0], params[1], params[2]);
+                                    }
+                                });
                     }
                 }
                 break;
             case HINCRBY:
-                this.redisCommandsContainer.hincrBy(params[0], params[1], Long.valueOf(params[2]));
+                redisFuture =
+                        this.redisCommandsContainer.hincrBy(
+                                params[0], params[1], Long.valueOf(params[2]));
                 break;
             case HINCRBYFLOAT:
-                this.redisCommandsContainer.hincrByFloat(
-                        params[0], params[1], Double.valueOf(params[2]));
+                redisFuture =
+                        this.redisCommandsContainer.hincrByFloat(
+                                params[0], params[1], Double.valueOf(params[2]));
                 break;
             case INCRBY:
-                this.redisCommandsContainer.incrBy(params[0], Long.valueOf(params[1]));
+                redisFuture =
+                        this.redisCommandsContainer.incrBy(params[0], Long.valueOf(params[1]));
                 break;
             case INCRBYFLOAT:
-                this.redisCommandsContainer.incrByFloat(params[0], Double.valueOf(params[1]));
+                redisFuture =
+                        this.redisCommandsContainer.incrByFloat(
+                                params[0], Double.valueOf(params[1]));
                 break;
             case DECRBY:
-                this.redisCommandsContainer.decrBy(params[0], Long.valueOf(params[1]));
+                redisFuture =
+                        this.redisCommandsContainer.decrBy(params[0], Long.valueOf(params[1]));
                 break;
             case DEL:
-                this.redisCommandsContainer.del(params[0]);
+                redisFuture = this.redisCommandsContainer.del(params[0]);
                 break;
             case HDEL:
-                this.redisCommandsContainer.hdel(params[0], params[1]);
+                redisFuture = this.redisCommandsContainer.hdel(params[0], params[1]);
                 break;
             default:
                 throw new UnsupportedOperationException(
                         "Cannot process such data type: " + redisCommand);
         }
+        return redisFuture;
     }
 
     /**
@@ -245,16 +258,40 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      *
      * @param key
      */
-    private void setTtl(String key) throws Exception {
-        if (expireTimeSeconds != -1) {
-            if (this.redisCommandsContainer.getTTL(key).get() == -1) {
-                int now = LocalTime.now().toSecondOfDay();
-                this.redisCommandsContainer.expire(
-                        key,
-                        expireTimeSeconds > now
-                                ? expireTimeSeconds - now
-                                : 86400 + expireTimeSeconds - now);
+    private void setTtl(String key) {
+        if (redisCommand == RedisCommand.DEL) {
+            return;
+        }
+
+        if (ttl != null) {
+            if (ttlKeyNotAbsent) {
+                // set ttl when key not absent
+                this.redisCommandsContainer
+                        .getTTL(key)
+                        .whenComplete(
+                                (t, h) -> {
+                                    if (t < 0) {
+                                        this.redisCommandsContainer.expire(key, ttl);
+                                    }
+                                });
+            } else {
+                // set ttl every sink
+                this.redisCommandsContainer.expire(key, ttl);
             }
+        } else if (expireTimeSeconds != -1) {
+            this.redisCommandsContainer
+                    .getTTL(key)
+                    .whenComplete(
+                            (t, h) -> {
+                                if (t < 0) {
+                                    int now = LocalTime.now().toSecondOfDay();
+                                    this.redisCommandsContainer.expire(
+                                            key,
+                                            expireTimeSeconds > now
+                                                    ? expireTimeSeconds - now
+                                                    : 86400 + expireTimeSeconds - now);
+                                }
+                            });
         } else if (ttl != null) {
             this.redisCommandsContainer.expire(key, ttl);
         }
