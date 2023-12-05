@@ -27,10 +27,29 @@ The operation commands corresponding to the supported functions of redis are:
 | zrem decrby srem               |                       |
 | del hdel                       |                       |
 
+### Command for CDC 
+| CDC INSERT/UPDATE                                       | CDC DELETE                                    |  
+|---------------------------------------------------------|-----------------------------------------------|
+| set                                                     | del                                           |
+| hset                                                    | hdel                                          | 
+| rpush lpush                                             | no response                                   |
+| incrBy incrByFloat decrBy hincrBy hincryByFloat zincrby | write relative value，如:incrby 2 -> incryby -2 |
+| sadd zadd                                               | srem zrem                                     |
+| pfadd(hyperloglog)                                      | no response                                   |
+| publish                                                 | no response                                   |
+| zrem srem                                               | no response                                   |
+| del hdel                                                | no response                                   |
+Note: The cdc update operation has the same effect as the cdc insert.
 
 ### Instructions: 
 
 After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.3.1.jar into flink lib, no other settings are required.
+
+
+<br/>
+ The project depends on Lettuce(6.2.1) and netty-transport-native-epoll(4.1.82.Final),flink-connection-redis-1.3.1.jar if these packages are available.
+Otherwise, use flink-connector-redis-1.3.1-jar-with-dependencies.jar.
+<br/>
 
 Development environment engineering direct reference:
 
@@ -39,7 +58,8 @@ Development environment engineering direct reference:
   <groupId>io.github.jeff-zou</groupId>
   <artifactId>flink-connector-redis</artifactId>
   <version>1.3.1</version>
-  <classifier>jar-with-dependencies</classifier>
+  <!-- When the Lettuce netty-transport-native-epoll dependency is not imported separately -->
+    <!--            <classifier>jar-with-dependencies</classifier>-->
 </dependency>
 ```
 

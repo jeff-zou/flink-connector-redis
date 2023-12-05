@@ -106,7 +106,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     public void invoke(IN input, Context context) throws Exception {
         RowData rowData = (RowData) input;
         RowKind kind = rowData.getRowKind();
-        if (kind != RowKind.INSERT && kind != RowKind.UPDATE_AFTER) {
+        if (kind == RowKind.UPDATE_BEFORE) {
             return;
         }
 
@@ -123,7 +123,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             params[params.length - 1] = serializeWholeRow(rowData);
         }
 
-        startSink(params);
+        startSink(params, kind);
     }
 
     /**
@@ -132,11 +132,20 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      * @param params
      * @throws Exception
      */
-    private void startSink(String[] params) throws Exception {
+    private void startSink(String[] params, RowKind kind) throws Exception {
         for (int i = 0; i <= maxRetryTimes; i++) {
             try {
-                RedisFuture redisFuture = sink(params);
-                redisFuture.whenComplete((r, t) -> setTtl(params[0]));
+                RedisFuture redisFuture = null;
+                if (kind == RowKind.DELETE) {
+                    redisFuture = rowKindDelete(params);
+                } else {
+                    redisFuture = sink(params);
+                }
+
+                if (redisFuture != null) {
+                    redisFuture.whenComplete((r, t) -> setTtl(params[0]));
+                }
+
                 break;
             } catch (UnsupportedOperationException e) {
                 throw e;
@@ -249,6 +258,60 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             default:
                 throw new UnsupportedOperationException(
                         "Cannot process such data type: " + redisCommand);
+        }
+        return redisFuture;
+    }
+
+    /**
+     * process redis command when RowKind == DELETE.
+     *
+     * @param params
+     */
+    private RedisFuture rowKindDelete(String[] params) {
+        RedisFuture redisFuture = null;
+        switch (redisCommand) {
+            case SADD:
+                redisFuture = this.redisCommandsContainer.srem(params[0], params[1]);
+                break;
+            case SET:
+                redisFuture = this.redisCommandsContainer.del(params[0]);
+                break;
+            case ZADD:
+                redisFuture = this.redisCommandsContainer.zrem(params[0], params[2]);
+                break;
+            case ZINCRBY:
+                Double d = -Double.valueOf(params[1]);
+                redisFuture =
+                        this.redisCommandsContainer.zincrBy(params[0], d.toString(), params[2]);
+                break;
+            case HSET:
+                {
+                    redisFuture = this.redisCommandsContainer.hdel(params[0], params[1]);
+                }
+                break;
+            case HINCRBY:
+                redisFuture =
+                        this.redisCommandsContainer.hincrBy(
+                                params[0], params[1], -Long.valueOf(params[2]));
+                break;
+            case HINCRBYFLOAT:
+                redisFuture =
+                        this.redisCommandsContainer.hincrByFloat(
+                                params[0], params[1], -Double.valueOf(params[2]));
+                break;
+            case INCRBY:
+                redisFuture =
+                        this.redisCommandsContainer.incrBy(params[0], -Long.valueOf(params[1]));
+                break;
+            case INCRBYFLOAT:
+                redisFuture =
+                        this.redisCommandsContainer.incrByFloat(
+                                params[0], -Double.valueOf(params[1]));
+                break;
+            case DECRBY:
+                redisFuture =
+                        this.redisCommandsContainer.decrBy(params[0], -Long.valueOf(params[1]));
+                break;
         }
         return redisFuture;
     }

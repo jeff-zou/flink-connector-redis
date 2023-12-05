@@ -4,21 +4,22 @@
 基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir调整的内容有：
 ```
 1.使用Lettuce替换Jedis,同步读写改为异步读写，大幅度提升了性能 
-2.增加了Table/SQL API，增加维表查询支持
+2.增加了Table/SQL API，增加维表join查询支持
 3.增加查询缓存(支持增量与全量)
 4.增加支持整行保存功能，用于多字段的维表关联查询
 5.增加限流功能，用于Flink SQL在线调试功能
 6.增加支持Flink高版本（包括1.12,1.13,1.14+）
-7.统一过期策略等。
+7.统一过期策略等
+8.支持flink cdc删除及其它RowKind.DELETE
 ```
 
 因bahir使用的flink接口版本较老，所以改动较大，开发过程中参考了腾讯云与阿里云两家产商的流计算产品，取两家之长，并增加了更丰富的功能。
 ### 支持功能对应redis的操作命令有：
 
-| 插入                                                      | 维表查询 |
-|---------------------------------------------------------|------|
-| set                                                     | get  |
-| hset                                                    | hget |
+| 插入/CDC插入与更新                                                | 维表查询 | CDC 删除       |
+|---------------------------------------------------------|------|--------------|
+| set                                                     | get  | set -> del   |
+| hset                                                    | hget | hset -> hdel |
 | rpush lpush                                             |      |
 | incrBy incrByFloat decrBy hincrBy hincryByFloat zincrby |      |
 | sadd zadd pfadd(hyperloglog)                            |      |
@@ -27,6 +28,19 @@
 | del hdel                                                |      |
 
 
+### CDC时支持类型
+| CDC插入及更新                                                | CDC删除时响应操作                     |  
+|---------------------------------------------------------|--------------------------------|
+| set                                                     | del                            |
+| hset                                                    | hdel                           | 
+| rpush lpush                                             | 不响应                            |
+| incrBy incrByFloat decrBy hincrBy hincryByFloat zincrby | 写入相对值，如:incrby 2 -> incryby -2 |
+| sadd zadd                            | srem zrem                      |
+|  pfadd(hyperloglog)                            | 不响应                            |
+| publish                                                 |     不响应                             |
+| zrem srem                                               |     不响应                             |
+| del hdel                                                |    不响应                              |
+注：cdc更新操作与插入效果相同
 
 ### 使用方法: 
 1.打包命令： mvn package -DskipTests</br>

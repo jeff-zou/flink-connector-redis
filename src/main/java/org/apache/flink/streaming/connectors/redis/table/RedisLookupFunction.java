@@ -145,8 +145,7 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
      * @param keys
      * @throws Exception
      */
-    private void query(CompletableFuture<Collection<GenericRowData>> resultFuture, Object... keys)
-            throws Exception {
+    private void query(CompletableFuture<Collection<GenericRowData>> resultFuture, Object... keys) {
         switch (redisCommand) {
             case GET:
                 this.redisCommandsContainer
