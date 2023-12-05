@@ -16,10 +16,10 @@
 因bahir使用的flink接口版本较老，所以改动较大，开发过程中参考了腾讯云与阿里云两家产商的流计算产品，取两家之长，并增加了更丰富的功能。
 ### 支持功能对应redis的操作命令有：
 
-| 插入/CDC插入与更新                                                | 维表查询 | CDC 删除       |
-|---------------------------------------------------------|------|--------------|
-| set                                                     | get  | set -> del   |
-| hset                                                    | hget | hset -> hdel |
+| 插入/CDC插入与更新                                                | 维表查询 | 
+|---------------------------------------------------------|------|
+| set                                                     | get  |
+| hset                                                    | hget | 
 | rpush lpush                                             |      |
 | incrBy incrByFloat decrBy hincrBy hincryByFloat zincrby |      |
 | sadd zadd pfadd(hyperloglog)                            |      |
