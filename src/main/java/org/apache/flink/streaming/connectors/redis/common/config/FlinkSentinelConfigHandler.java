@@ -24,6 +24,11 @@ public class FlinkSentinelConfigHandler implements FlinkConfigHandler {
         Preconditions.checkNotNull(masterName, "master should not be null in sentinel mode");
         Preconditions.checkNotNull(sentinelsInfo, "sentinels should not be null in sentinel mode");
 
+        LettuceConfig lettuceConfig =
+                new LettuceConfig(
+                        config.get(RedisOptions.NETTY_IO_POOL_SIZE),
+                        config.get(RedisOptions.NETTY_EVENT_POOL_SIZE));
+
         FlinkSentinelConfig flinkSentinelConfig =
                 new FlinkSentinelConfig.Builder()
                         .setSentinelsInfo(sentinelsInfo)
@@ -32,6 +37,7 @@ public class FlinkSentinelConfigHandler implements FlinkConfigHandler {
                         .setDatabase(config.get(RedisOptions.DATABASE))
                         .setPassword(config.get(RedisOptions.PASSWORD))
                         .setSentinelsPassword(sentinelsPassword)
+                        .setLettuceConfig(lettuceConfig)
                         .build();
         return flinkSentinelConfig;
     }

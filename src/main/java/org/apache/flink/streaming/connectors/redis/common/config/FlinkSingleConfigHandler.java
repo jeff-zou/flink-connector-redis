@@ -17,14 +17,14 @@
 
 package org.apache.flink.streaming.connectors.redis.common.config;
 
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
+
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.util.Preconditions;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
 
 /** */
 public class FlinkSingleConfigHandler implements FlinkConfigHandler {
@@ -34,10 +34,16 @@ public class FlinkSingleConfigHandler implements FlinkConfigHandler {
         String host = config.get(RedisOptions.HOST);
         Preconditions.checkNotNull(host, "host should not be null in single mode");
 
+        LettuceConfig lettuceConfig =
+                new LettuceConfig(
+                        config.get(RedisOptions.NETTY_IO_POOL_SIZE),
+                        config.get(RedisOptions.NETTY_EVENT_POOL_SIZE));
+
         FlinkSingleConfig.Builder builder =
                 new FlinkSingleConfig.Builder()
                         .setHost(host)
-                        .setPassword(config.get(RedisOptions.PASSWORD));
+                        .setPassword(config.get(RedisOptions.PASSWORD))
+                        .setLettuceConfig(lettuceConfig);
         builder.setPort(config.get(RedisOptions.PORT));
         builder.setTimeout(config.get(RedisOptions.TIMEOUT))
                 .setDatabase(config.get(RedisOptions.DATABASE));

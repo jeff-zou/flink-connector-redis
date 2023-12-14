@@ -5,6 +5,8 @@ import io.lettuce.core.RedisURI;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.resource.ClientResources;
+import io.lettuce.core.resource.DefaultClientResources;
 
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkClusterConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
@@ -29,15 +31,24 @@ public class RedisCommandsContainerBuilder {
      *     null
      */
     public static RedisCommandsContainer build(FlinkConfigBase flinkConfigBase) {
+        DefaultClientResources.Builder builder = DefaultClientResources.builder();
+        if (flinkConfigBase.getLettuceConfig().getNettyIoPoolSize() != null) {
+            builder.ioThreadPoolSize(flinkConfigBase.getLettuceConfig().getNettyIoPoolSize());
+        }
+        if (flinkConfigBase.getLettuceConfig().getNettyEventPoolSize() != null) {
+            builder.computationThreadPoolSize(
+                    flinkConfigBase.getLettuceConfig().getNettyEventPoolSize());
+        }
+        ClientResources clientResources = builder.build();
+
         if (flinkConfigBase instanceof FlinkSingleConfig) {
-            FlinkSingleConfig flinkSingleConfig = (FlinkSingleConfig) flinkConfigBase;
-            return RedisCommandsContainerBuilder.build(flinkSingleConfig);
+            return build((FlinkSingleConfig) flinkConfigBase, clientResources);
         } else if (flinkConfigBase instanceof FlinkClusterConfig) {
-            FlinkClusterConfig flinkClusterConfig = (FlinkClusterConfig) flinkConfigBase;
-            return RedisCommandsContainerBuilder.build(flinkClusterConfig);
+            return RedisCommandsContainerBuilder.build(
+                    (FlinkClusterConfig) flinkConfigBase, clientResources);
         } else if (flinkConfigBase instanceof FlinkSentinelConfig) {
-            FlinkSentinelConfig flinkSentinelConfig = (FlinkSentinelConfig) flinkConfigBase;
-            return RedisCommandsContainerBuilder.build(flinkSentinelConfig);
+            return RedisCommandsContainerBuilder.build(
+                    (FlinkSentinelConfig) flinkConfigBase, clientResources);
         } else {
             throw new IllegalArgumentException(" configuration not found");
         }
@@ -50,7 +61,8 @@ public class RedisCommandsContainerBuilder {
      * @return container for single Redis environment
      * @throws NullPointerException if singleConfig is null
      */
-    public static RedisCommandsContainer build(FlinkSingleConfig singleConfig) {
+    public static RedisCommandsContainer build(
+            FlinkSingleConfig singleConfig, ClientResources clientResources) {
         Objects.requireNonNull(singleConfig, "Redis config should not be Null");
 
         RedisURI.Builder builder =
@@ -62,7 +74,7 @@ public class RedisCommandsContainerBuilder {
             builder.withPassword(singleConfig.getPassword().toCharArray());
         }
 
-        return new RedisContainer(RedisClient.create(builder.build()));
+        return new RedisContainer(RedisClient.create(clientResources, builder.build()));
     }
 
     /**
@@ -72,7 +84,8 @@ public class RedisCommandsContainerBuilder {
      * @return container for Redis Cluster environment
      * @throws NullPointerException if ClusterConfig is null
      */
-    public static RedisCommandsContainer build(FlinkClusterConfig clusterConfig) {
+    public static RedisCommandsContainer build(
+            FlinkClusterConfig clusterConfig, ClientResources clientResources) {
         Objects.requireNonNull(clusterConfig, "Redis cluster config should not be Null");
 
         List<RedisURI> redisURIS =
@@ -93,7 +106,7 @@ public class RedisCommandsContainerBuilder {
                                 })
                         .collect(Collectors.toList());
 
-        RedisClusterClient clusterClient = RedisClusterClient.create(redisURIS);
+        RedisClusterClient clusterClient = RedisClusterClient.create(clientResources, redisURIS);
 
         ClusterTopologyRefreshOptions topologyRefreshOptions =
                 ClusterTopologyRefreshOptions.builder()
@@ -118,7 +131,8 @@ public class RedisCommandsContainerBuilder {
      * @return container for Redis sentinel environment
      * @throws NullPointerException if SentinelConfig is null
      */
-    public static RedisCommandsContainer build(FlinkSentinelConfig sentinelConfig) {
+    public static RedisCommandsContainer build(
+            FlinkSentinelConfig sentinelConfig, ClientResources clientResources) {
         Objects.requireNonNull(sentinelConfig, "Redis sentinel config should not be Null");
 
         RedisURI.Builder builder =
@@ -144,6 +158,6 @@ public class RedisCommandsContainerBuilder {
                             }
                         });
 
-        return new RedisContainer(RedisClient.create(builder.build()));
+        return new RedisContainer(RedisClient.create(clientResources, builder.build()));
     }
 }

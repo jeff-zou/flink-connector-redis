@@ -10,7 +10,6 @@ import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +85,7 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
 
         RowData rowData = (RowData) input;
         RowKind kind = rowData.getRowKind();
-        if (kind != RowKind.INSERT && kind != RowKind.UPDATE_AFTER) {
+        if (kind == RowKind.UPDATE_BEFORE) {
             return;
         }
 

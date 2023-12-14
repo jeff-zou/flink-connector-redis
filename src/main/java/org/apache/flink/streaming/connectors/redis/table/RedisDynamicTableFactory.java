@@ -109,6 +109,8 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.SENTINELS_PASSWORD);
         options.add(RedisOptions.SET_IF_ABSENT);
         options.add(RedisOptions.TTL_KEY_NOT_ABSENT);
+        options.add(RedisOptions.NETTY_EVENT_POOL_SIZE);
+        options.add(RedisOptions.NETTY_IO_POOL_SIZE);
         return options;
     }
 

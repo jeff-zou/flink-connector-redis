@@ -22,8 +22,13 @@ public class FlinkSingleConfig extends FlinkConfigBase {
      * @throws NullPointerException if parameter {@code host} is {@code null}
      */
     private FlinkSingleConfig(
-            String host, int port, int connectionTimeout, String password, int database) {
-        super(connectionTimeout, password);
+            String host,
+            int port,
+            int connectionTimeout,
+            String password,
+            int database,
+            LettuceConfig lettuceConfig) {
+        super(connectionTimeout, password, lettuceConfig);
         Objects.requireNonNull(host, "Host information should be presented");
         this.host = host;
         this.port = port;
@@ -64,6 +69,8 @@ public class FlinkSingleConfig extends FlinkConfigBase {
         private int timeout;
         private int database;
         private String password;
+
+        private LettuceConfig lettuceConfig;
 
         /**
          * Sets host.
@@ -120,28 +127,18 @@ public class FlinkSingleConfig extends FlinkConfigBase {
             return this;
         }
 
+        public Builder setLettuceConfig(LettuceConfig lettuceConfig) {
+            this.lettuceConfig = lettuceConfig;
+            return this;
+        }
+
         /**
          * Builds PoolConfig.
          *
          * @return PoolConfig
          */
         public FlinkSingleConfig build() {
-            return new FlinkSingleConfig(host, port, timeout, password, database);
+            return new FlinkSingleConfig(host, port, timeout, password, database, lettuceConfig);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "PoolConfig{"
-                + "host='"
-                + host
-                + '\''
-                + ", port="
-                + port
-                + ", timeout="
-                + connectionTimeout
-                + ", database="
-                + database
-                + '}';
     }
 }

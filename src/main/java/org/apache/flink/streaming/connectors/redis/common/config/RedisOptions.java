@@ -182,4 +182,16 @@ public class RedisOptions {
                     .booleanType()
                     .defaultValue(false)
                     .withDescription("Optional set ttl when key not absent");
+
+    public static final ConfigOption<Integer> NETTY_IO_POOL_SIZE =
+            ConfigOptions.key("io.pool.size")
+                    .intType()
+                    .defaultValue(null)
+                    .withDescription("Optional set io pool size for netty of lettuce");
+
+    public static final ConfigOption<Integer> NETTY_EVENT_POOL_SIZE =
+            ConfigOptions.key("event.pool.size")
+                    .intType()
+                    .defaultValue(null)
+                    .withDescription("Optional set event pool size for netty of lettuce");
 }

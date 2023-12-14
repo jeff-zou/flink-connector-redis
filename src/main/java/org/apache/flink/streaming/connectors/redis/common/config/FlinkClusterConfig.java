@@ -21,8 +21,9 @@ public class FlinkClusterConfig extends FlinkConfigBase {
      * @param password limit of redirections-how much we'll follow MOVED or ASK
      * @throws NullPointerException if parameter {@code nodes} is {@code null}
      */
-    private FlinkClusterConfig(String nodesInfo, int connectionTimeout, String password) {
-        super(connectionTimeout, password);
+    private FlinkClusterConfig(
+            String nodesInfo, int connectionTimeout, String password, LettuceConfig lettuceConfig) {
+        super(connectionTimeout, password, lettuceConfig);
 
         Objects.requireNonNull(nodesInfo, "nodesInfo information should be presented");
         this.nodesInfo = nodesInfo;
@@ -33,6 +34,8 @@ public class FlinkClusterConfig extends FlinkConfigBase {
         private String nodesInfo;
         private int timeout;
         private String password;
+
+        private LettuceConfig lettuceConfig;
 
         public Builder setNodesInfo(String nodesInfo) {
             this.nodesInfo = nodesInfo;
@@ -55,24 +58,18 @@ public class FlinkClusterConfig extends FlinkConfigBase {
             return this;
         }
 
+        public Builder setLettuceConfig(LettuceConfig lettuceConfig) {
+            this.lettuceConfig = lettuceConfig;
+            return this;
+        }
+
         /**
          * Builds ClusterConfig.
          *
          * @return ClusterConfig
          */
         public FlinkClusterConfig build() {
-            return new FlinkClusterConfig(nodesInfo, timeout, password);
+            return new FlinkClusterConfig(nodesInfo, timeout, password, lettuceConfig);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "FlinkClusterConfig{"
-                + "connectionTimeout="
-                + connectionTimeout
-                + ", password='"
-                + password
-                + '\''
-                + '}';
     }
 }

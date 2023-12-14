@@ -37,8 +37,9 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
             int soTimeout,
             int database,
             String password,
-            String sentinelsPassword) {
-        super(connectionTimeout, password);
+            String sentinelsPassword,
+            LettuceConfig lettuceConfig) {
+        super(connectionTimeout, password, lettuceConfig);
         Objects.requireNonNull(masterName, "Master name should be presented");
         Objects.requireNonNull(sentinelsInfo, "Sentinels information should be presented");
         this.masterName = masterName;
@@ -92,6 +93,8 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
         private int database;
         private String password;
         private String sentinelsPassword;
+
+        private LettuceConfig lettuceConfig;
 
         /**
          * Sets master name of the replica set.
@@ -152,6 +155,11 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
             return this;
         }
 
+        public Builder setLettuceConfig(LettuceConfig lettuceConfig) {
+            this.lettuceConfig = lettuceConfig;
+            return this;
+        }
+
         /**
          * Builds SentinelConfig.
          *
@@ -165,31 +173,8 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
                     soTimeout,
                     database,
                     password,
-                    sentinelsPassword);
+                    sentinelsPassword,
+                    lettuceConfig);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "FlinkSentinelConfig{"
-                + "sentinelsInfo='"
-                + sentinelsInfo
-                + '\''
-                + ", soTimeout="
-                + soTimeout
-                + ", database="
-                + database
-                + ", masterName='"
-                + masterName
-                + '\''
-                + ", sentinelsPassword='"
-                + sentinelsPassword
-                + '\''
-                + ", connectionTimeout="
-                + connectionTimeout
-                + ", password='"
-                + password
-                + '\''
-                + '}';
     }
 }

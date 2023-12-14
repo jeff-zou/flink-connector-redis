@@ -107,6 +107,8 @@ key: name, field:subject, value: name\01subject\01score.
 | sink.max-retries     | 1       | Integer | Number of retries for write failures                                                                                                                                                               |
 | value.data.structure      | column  | String  | column: The value will come from a field (for example, set: key is the first field defined by DDL, and value is the second field)<br/> row: value is taken from the entire row, separated by '\01' |
 | set.if.absent         | false  | Boolean | set/hset only when the key absent                                                                                                                                                                  |
+| io.pool.size    | (none)  | Integer | the size of io thread pool for Lettuce's netty. By default, this is the number of threads currently available to the JVM and is greater than 2                                                     |
+| event.pool.size | (none)  | Integer | the size of event thread pool for Lettuce's netty. By default, this is the number of threads currently available to the JVM and is greater than 2                                                  |
 
 
 ##### sink with ttl parameters
