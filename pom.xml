@@ -28,7 +28,7 @@ under the License.
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <flink.version>1.17.0</flink.version>
+        <flink.version>1.15.1</flink.version>
         <scala.binary.version>2.12</scala.binary.version>
         <slf4j.version>1.7.15</slf4j.version>
         <maven.shade.version>3.2.4</maven.shade.version>

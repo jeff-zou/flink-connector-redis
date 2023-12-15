@@ -131,7 +131,7 @@ public class RedisOptions {
     public static final ConfigOption<Integer> SINK_PARALLELISM =
             ConfigOptions.key("sink.parallelism")
                     .intType()
-                    .noDefaultValue()
+                    .defaultValue(1)
                     .withDescription("Optional parrallelism for sink");
 
     public static final ConfigOption<Boolean> SINK_LIMIT =
