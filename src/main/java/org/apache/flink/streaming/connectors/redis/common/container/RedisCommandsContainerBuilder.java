@@ -32,13 +32,16 @@ public class RedisCommandsContainerBuilder {
      */
     public static RedisCommandsContainer build(FlinkConfigBase flinkConfigBase) {
         DefaultClientResources.Builder builder = DefaultClientResources.builder();
-        if (flinkConfigBase.getLettuceConfig().getNettyIoPoolSize() != null) {
-            builder.ioThreadPoolSize(flinkConfigBase.getLettuceConfig().getNettyIoPoolSize());
+        if (flinkConfigBase.getLettuceConfig() != null) {
+            if (flinkConfigBase.getLettuceConfig().getNettyIoPoolSize() != null) {
+                builder.ioThreadPoolSize(flinkConfigBase.getLettuceConfig().getNettyIoPoolSize());
+            }
+            if (flinkConfigBase.getLettuceConfig().getNettyEventPoolSize() != null) {
+                builder.computationThreadPoolSize(
+                        flinkConfigBase.getLettuceConfig().getNettyEventPoolSize());
+            }
         }
-        if (flinkConfigBase.getLettuceConfig().getNettyEventPoolSize() != null) {
-            builder.computationThreadPoolSize(
-                    flinkConfigBase.getLettuceConfig().getNettyEventPoolSize());
-        }
+
         ClientResources clientResources = builder.build();
 
         if (flinkConfigBase instanceof FlinkSingleConfig) {
