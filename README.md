@@ -47,8 +47,8 @@
 2.将生成的包放入flink lib中即可，无需其它设置。
 
 <br/>
-  项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.3.1.jar，
-否则使用flink-connector-redis-1.3.1-jar-with-dependencies.jar。
+  项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.3.2.jar，
+否则使用flink-connector-redis-1.3.2-jar-with-dependencies.jar。
 <br/>
 
 开发环境工程直接引用：
@@ -59,7 +59,7 @@
     <artifactId>flink-connector-redis</artifactId>
     <!-- 没有单独引入项目依赖Lettuce netty-transport-native-epoll依赖时 -->
     <!--            <classifier>jar-with-dependencies</classifier>-->
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 ```
 
@@ -122,12 +122,12 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 
 ##### 在线调试SQL时，用于限制sink资源使用的参数:
 
-| Field                 | Default | Type    | Description                            |
-|-----------------------|---------|---------|----------------------------------------|
-| sink.limit            | false   | Boolean | 限制开头                                   |
-| sink.limit.max-num    | 10000   | Integer | taskmanager内每个slot可以写的最大数据量            |
-| sink.limit.interval   | 100     | String  | taskmanager内每个slot写入数据间隔   milliseconds            |
-| sink.limit.max-online | 30 * 60 * 1000L   | Long    | taskmanager内每个slot最大在线时间, milliseconds |
+| Field                 | Default | Type    | Description                             |
+|-----------------------|---------|---------|-----------------------------------------|
+| sink.limit            | false   | Boolean | 是否打开限制                                  |
+| sink.limit.max-num    | 10000   | Integer | taskmanager内每个slot可以写的最大数据量             |
+| sink.limit.interval   | 100     | String  | taskmanager内每个slot写入数据间隔   milliseconds |
+| sink.limit.max-online | 30 * 60 * 1000L   | Long    | taskmanager内每个slot最大在线时间, milliseconds  |
 
 
 #### 集群类型为sentinel时额外连接参数:

@@ -43,12 +43,12 @@ Note: The cdc update operation has the same effect as the cdc insert.
 
 ### Instructions: 
 
-After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.3.1.jar into flink lib, no other settings are required.
+After executing mvn package -DskipTests on the command line, import the generated package flink-connector-redis-1.3.2.jar into flink lib, no other settings are required.
 
 
 <br/>
- The project depends on Lettuce(6.2.1) and netty-transport-native-epoll(4.1.82.Final),flink-connection-redis-1.3.1.jar if these packages are available.
-Otherwise, use flink-connector-redis-1.3.1-jar-with-dependencies.jar.
+ The project depends on Lettuce(6.2.1) and netty-transport-native-epoll(4.1.82.Final),flink-connection-redis-1.3.2.jar if these packages are available.
+Otherwise, use flink-connector-redis-1.3.2-jar-with-dependencies.jar.
 <br/>
 
 Development environment engineering direct reference:
@@ -57,7 +57,7 @@ Development environment engineering direct reference:
 <dependency>
   <groupId>io.github.jeff-zou</groupId>
   <artifactId>flink-connector-redis</artifactId>
-  <version>1.3.1</version>
+  <version>1.3.2</version>
   <!-- When the Lettuce netty-transport-native-epoll dependency is not imported separately -->
     <!--            <classifier>jar-with-dependencies</classifier>-->
 </dependency>
