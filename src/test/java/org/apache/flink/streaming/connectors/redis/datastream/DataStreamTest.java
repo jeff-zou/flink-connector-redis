@@ -1,5 +1,10 @@
 package org.apache.flink.streaming.connectors.redis.datastream;
 
+import static org.apache.flink.streaming.connectors.redis.common.config.RedisOptions.TTL;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
+
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -18,16 +23,11 @@ import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.binary.BinaryRowData;
 import org.apache.flink.table.data.writer.BinaryRowWriter;
 import org.apache.flink.table.types.DataType;
-
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.Preconditions;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
 
 /** Created by jeff.zou on 2021/2/26. */
 public class DataStreamTest extends TestRedisConfigBase {
@@ -38,6 +38,7 @@ public class DataStreamTest extends TestRedisConfigBase {
         Configuration configuration = new Configuration();
         configuration.setString(REDIS_MODE, REDIS_SINGLE);
         configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
+        configuration.setInteger(TTL, 10);
 
         RedisSinkMapper redisMapper =
                 (RedisSinkMapper)
