@@ -5,6 +5,7 @@ import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValida
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.TestRedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.HSET
-                        + "','io.pool.size'='3' ,'event.pool.size'='3')";
+                        + "','io.pool.size'='3' ,'event.pool.size'='3', 'sink.parallelism'='2')";
         tEnv.executeSql(sink);
         String sql = " insert into sink_redis select '1', '1', uid from source_table";
 
@@ -40,5 +41,62 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
         Preconditions.condition(singleRedisCommands.exists("1") == 1, "");
         Thread.sleep(10 * 1000);
         Preconditions.condition(singleRedisCommands.exists("1") == 0, "");
+    }
+
+    @Test
+    public void testJoinLimitLettucePool() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        EnvironmentSettings environmentSettings =
+                EnvironmentSettings.newInstance().inStreamingMode().build();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+
+        clusterCommands.hset("1", "1", "test");
+        clusterCommands.hset("5", "5", "test");
+        String dim =
+                "create table dim_table(name varchar, level varchar, age varchar) with ( 'connector'='redis', "
+                        + "'cluster-nodes'='"
+                        + CLUSTERNODES
+                        + "','redis-mode'='cluster', 'password'='"
+                        + CLUSTER_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HGET
+                        + "')";
+
+        String source =
+                "create table source_table(username varchar, level varchar, proctime as procTime()) "
+                        + "with ('connector'='datagen',  'rows-per-second'='1', "
+                        + "'fields.username.kind'='sequence',  'fields.username.start'='1',  'fields.username.end'='9',"
+                        + "'fields.level.kind'='sequence',  'fields.level.start'='1',  'fields.level.end'='9'"
+                        + ")";
+
+        String sink =
+                "create table sink_table(username varchar, level varchar,age varchar) with ( 'connector'='redis', "
+                        + "'cluster-nodes'='"
+                        + CLUSTERNODES
+                        + "','redis-mode'='cluster', 'password'='"
+                        + CLUSTER_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HSET
+                        + "' )";
+        tEnv.executeSql(source);
+        tEnv.executeSql(dim);
+        tEnv.executeSql(sink);
+
+        String sql =
+                " insert into sink_table "
+                        + " select concat_ws('_', s.username, s.level), s.level, d.age from source_table s"
+                        + "  left join dim_table for system_time as of s.proctime as d "
+                        + " on d.name = s.username and d.level = s.level";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        System.out.println(sql);
+
+        Preconditions.condition(clusterCommands.hget("1_1", "1").equals("test"), "");
+        Preconditions.condition(clusterCommands.hget("2_2", "2") == "", "");
+        Preconditions.condition(clusterCommands.hget("5_5", "5").equals("test"), "");
     }
 }
