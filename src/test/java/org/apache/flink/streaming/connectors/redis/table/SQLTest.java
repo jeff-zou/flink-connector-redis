@@ -103,7 +103,7 @@ public class SQLTest extends TestRedisConfigBase {
                         + ")";
 
         String sink =
-                "create table sink_table(username varchar, level varchar,age varchar) with ( 'connector'='redis', "
+                "create table sink_table(username varchar, level varchar,age varchar, primary key(username) NOT ENFORCED) with ( 'connector'='redis', "
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster', 'password'='"
@@ -161,7 +161,7 @@ public class SQLTest extends TestRedisConfigBase {
                         + ")";
 
         String sink =
-                "create table sink_table(username varchar, level varchar,age varchar) with ( 'connector'='redis', "
+                "create table sink_table(username varchar, level varchar,age varchar, primary key(username) NOT ENFORCED) with ( 'connector'='redis', "
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster', 'password'='"
@@ -254,7 +254,7 @@ public class SQLTest extends TestRedisConfigBase {
 
         Preconditions.condition(clusterCommands.get("testDel").equals("20"), "");
         String ddl =
-                "create table redis_sink(redis_key varchar) with('connector'='redis',"
+                "create table redis_sink(redis_key varchar, primary key(redis_key) NOT ENFORCED) with('connector'='redis',"
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster','password'='"
@@ -278,7 +278,7 @@ public class SQLTest extends TestRedisConfigBase {
         clusterCommands.sadd("s", "test1", "test2");
         Preconditions.condition(clusterCommands.sismember("s", "test2"), "");
         String ddl =
-                "create table redis_sink(redis_key varchar, redis_member varchar) with('connector'='redis',"
+                "create table redis_sink(redis_key varchar, redis_member varchar, primary key(redis_key) NOT ENFORCED) with('connector'='redis',"
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster','password'='"
@@ -303,7 +303,7 @@ public class SQLTest extends TestRedisConfigBase {
         clusterCommands.hset("s", "test1", "test2");
         Preconditions.condition(clusterCommands.hget("s", "test1").equals("test2"), "");
         String ddl =
-                "create table redis_sink(redis_key varchar, redis_member varchar) with('connector'='redis',"
+                "create table redis_sink(redis_key varchar, redis_member varchar, primary key(redis_key) NOT ENFORCED) with('connector'='redis',"
                         + "'cluster-nodes'='"
                         + CLUSTERNODES
                         + "','redis-mode'='cluster','password'='"
@@ -328,7 +328,7 @@ public class SQLTest extends TestRedisConfigBase {
         singleRedisCommands.hset("11", "12", "1");
         Preconditions.condition(singleRedisCommands.hget("11", "12").equals("1"), "");
         String ddl =
-                "create table sink_redis(username VARCHAR, level varchar, score int) with ( 'connector'='redis', "
+                "create table sink_redis(username VARCHAR, level varchar, score int, primary key(username) NOT ENFORCED) with ( 'connector'='redis', "
                         + "'host'='"
                         + REDIS_HOST
                         + "','port'='"
@@ -383,7 +383,7 @@ public class SQLTest extends TestRedisConfigBase {
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
 
         String ddl =
-                "create table sink_redis(username VARCHAR, score double, score2 double) with ( 'connector'='redis', "
+                "create table sink_redis(username VARCHAR, score double, score2 double, primary key(username) NOT ENFORCED) with ( 'connector'='redis', "
                         + "'host'='"
                         + REDIS_HOST
                         + "','port'='"
