@@ -245,6 +245,12 @@ public interface RedisCommandsContainer extends Serializable {
     RedisFuture<Boolean> hexists(String key, String field);
 
     /**
+     * @param key
+     * @return
+     */
+    RedisFuture<Long> pfcount(String key);
+
+    /**
      * get redis async commands.
      *
      * @return

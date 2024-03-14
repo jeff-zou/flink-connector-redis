@@ -1,7 +1,7 @@
 package org.apache.flink.streaming.connectors.redis.common.config;
 
 /** query options. @Author:jeff.zou @Date: 2022/3/9.14:37 */
-public class RedisLookupOptions {
+public class RedisQueryOptions {
 
     private final long cacheMaxSize;
     private final long cacheTtl;
@@ -9,7 +9,7 @@ public class RedisLookupOptions {
     private final boolean loadAll;
     private final RedisValueDataStructure redisValueDataStructure;
 
-    public RedisLookupOptions(
+    public RedisQueryOptions(
             long cacheMaxSize,
             long cacheTtl,
             int maxRetryTimes,
@@ -76,8 +76,8 @@ public class RedisLookupOptions {
             return this;
         }
 
-        public RedisLookupOptions build() {
-            return new RedisLookupOptions(
+        public RedisQueryOptions build() {
+            return new RedisQueryOptions(
                     cacheMaxSize, cacheTtl, maxRetryTimes, loadAll, redisValueDataStructure);
         }
     }

@@ -465,4 +465,19 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
             throw e;
         }
     }
+
+    @Override
+    public RedisFuture<Long> pfcount(String key) {
+        try {
+            return clusterAsyncCommands.pfcount(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command pfcount to key {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
 }

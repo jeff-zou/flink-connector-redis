@@ -7,117 +7,118 @@ public enum RedisCommand {
      * Insert the specified value at the head of the list stored at key. If key does not exist, it
      * is created as empty list before performing the push operations.
      */
-    LPUSH(RedisDataType.LIST, RedisOperationType.INSERT),
+    LPUSH(RedisQueryCommand.LRANGE, RedisSinkCommand.LPUSH, RedisDelCommand.LREM, true),
 
     /**
      * Insert the specified value at the tail of the list stored at key. If key does not exist, it
      * is created as empty list before performing the push operation.
      */
-    RPUSH(RedisDataType.LIST, RedisOperationType.INSERT),
+    RPUSH(RedisQueryCommand.LRANGE, RedisSinkCommand.RPUSH, RedisDelCommand.LREM, true),
 
     /**
      * Add the specified member to the set stored at key. Specified member that is already a member
      * of this set is ignored.
      */
-    SADD(RedisDataType.SET, RedisOperationType.INSERT),
+    SADD(RedisQueryCommand.SMEMBERS, RedisSinkCommand.SADD, RedisDelCommand.SREM, true),
 
     /**
      * Set key to hold the string value. If key already holds a value, it is overwritten, regardless
      * of its type.
      */
-    SET(RedisDataType.STRING, RedisOperationType.INSERT),
-
-    /**
-     * Set key to hold the string value, with a time to live (TTL). If key already holds a value, it
-     * is overwritten, regardless of its type.
-     */
-    SETEX(RedisDataType.STRING, RedisOperationType.INSERT),
+    SET(RedisQueryCommand.GET, RedisSinkCommand.SET, RedisDelCommand.DEL, true),
 
     /**
      * Adds the element to the HyperLogLog data structure stored at the variable name specified as
      * first argument.
      */
-    PFADD(RedisDataType.HYPER_LOG_LOG, RedisOperationType.INSERT),
+    PFADD(RedisQueryCommand.PFCOUNT, RedisSinkCommand.PFADD, RedisDelCommand.NONE, true),
 
     /** Posts a message to the given channel. */
-    PUBLISH(RedisDataType.PUBSUB, RedisOperationType.INSERT),
+    PUBLISH(RedisQueryCommand.SUBSCRIBE, RedisSinkCommand.PUBLISH, RedisDelCommand.NONE, false),
 
     /** Adds the specified members with the specified score to the sorted set stored at key. */
-    ZADD(RedisDataType.SORTED_SET, RedisOperationType.INSERT),
+    ZADD(RedisQueryCommand.ZRANGE, RedisSinkCommand.ZADD, RedisDelCommand.ZREM, true),
 
     /** */
-    ZINCRBY(RedisDataType.SORTED_SET, RedisOperationType.ACC),
+    ZINCRBY(RedisQueryCommand.ZSCORE, RedisSinkCommand.ZINCRBY, RedisDelCommand.ZINCRBY, true),
 
     /** Removes the specified members from the sorted set stored at key. */
-    ZREM(RedisDataType.SORTED_SET, RedisOperationType.DEL),
+    ZREM(RedisQueryCommand.ZRANGE, RedisSinkCommand.ZREM, RedisDelCommand.ZREM, true),
 
     /** Removes the specified members from set at key. */
-    SREM(RedisDataType.SET, RedisOperationType.DEL),
+    SREM(RedisQueryCommand.ZRANGE, RedisSinkCommand.SREM, RedisDelCommand.SREM, true),
 
     /**
      * Sets field in the hash stored at key to value. If key does not exist, a new key holding a
      * hash is created. If field already exists in the hash, it is overwritten.
      */
-    HSET(RedisDataType.HASH, RedisOperationType.INSERT),
+    HSET(RedisQueryCommand.HGET, RedisSinkCommand.HSET, RedisDelCommand.HDEL, true),
 
     /** Delta plus for specified key. */
-    HINCRBY(RedisDataType.HASH, RedisOperationType.ACC),
+    HINCRBY(RedisQueryCommand.HGET, RedisSinkCommand.HINCRBY, RedisDelCommand.HINCRBY, true),
 
     /** Delta plus for specified key. */
-    HINCRBYFLOAT(RedisDataType.HASH, RedisOperationType.ACC),
+    HINCRBYFLOAT(
+            RedisQueryCommand.HGET,
+            RedisSinkCommand.HINCRBYFLOAT,
+            RedisDelCommand.HINCRBYFLOAT,
+            true),
 
     /** Delta plus for specified key. */
-    INCRBY(RedisDataType.STRING, RedisOperationType.ACC),
+    INCRBY(RedisQueryCommand.GET, RedisSinkCommand.INCRBY, RedisDelCommand.INCRBY, true),
 
     /** Delta plus for specified key. */
-    INCRBYFLOAT(RedisDataType.STRING, RedisOperationType.ACC),
-
-    /** Delta plus for specified key and expire the key with fixed time. */
-    INCRBY_EX(RedisDataType.STRING, RedisOperationType.ACC),
+    INCRBYFLOAT(
+            RedisQueryCommand.GET, RedisSinkCommand.INCRBYFLOAT, RedisDelCommand.INCRBYFLOAT, true),
 
     /** decrease with fixed num for specified key. */
-    DECRBY(RedisDataType.STRING, RedisOperationType.ACC),
-
-    /** decrease with fixed num for specified key and expire the key with fixed time. */
-    DESCRBY_EX(RedisDataType.STRING, RedisOperationType.ACC),
+    DECRBY(RedisQueryCommand.GET, RedisSinkCommand.DECRBY, RedisDelCommand.DECRBY, true),
 
     /** get val from map. */
-    HGET(RedisDataType.HASH, RedisOperationType.QUERY),
+    HGET(RedisQueryCommand.HGET, RedisSinkCommand.HSET, RedisDelCommand.HDEL, true),
 
     /** del val in map. */
-    HDEL(RedisDataType.HASH, RedisOperationType.DEL),
+    HDEL(RedisQueryCommand.HGET, RedisSinkCommand.HDEL, RedisDelCommand.HDEL, true),
 
     /** del key. */
-    DEL(RedisDataType.STRING, RedisOperationType.DEL),
+    DEL(RedisQueryCommand.GET, RedisSinkCommand.DEL, RedisDelCommand.DEL, true),
 
     /** get val from string. */
-    GET(RedisDataType.STRING, RedisOperationType.QUERY);
+    GET(RedisQueryCommand.GET, RedisSinkCommand.SET, RedisDelCommand.DEL, true);
 
     /** The {@link RedisDataType} this command belongs to. */
-    private RedisDataType redisDataType;
+    private RedisQueryCommand queryCommand;
 
-    private RedisOperationType redisOperationType;
+    private RedisSinkCommand sinkCommand;
 
-    RedisCommand(RedisDataType redisDataType, RedisOperationType redisOperationType) {
-        this.redisDataType = redisDataType;
-        this.redisOperationType = redisOperationType;
+    private RedisDelCommand delCommand;
+
+    private boolean commandBoundedness;
+
+    RedisCommand(
+            RedisQueryCommand queryCommand,
+            RedisSinkCommand sinkCommand,
+            RedisDelCommand delCommand,
+            boolean commandBoundedness) {
+        this.queryCommand = queryCommand;
+        this.sinkCommand = sinkCommand;
+        this.delCommand = delCommand;
+        this.commandBoundedness = commandBoundedness;
     }
 
-    /**
-     * The {@link RedisDataType} this command belongs to.
-     *
-     * @return the {@link RedisDataType}
-     */
-    public RedisDataType getRedisDataType() {
-        return redisDataType;
+    public RedisQueryCommand getQueryCommand() {
+        return queryCommand;
     }
 
-    /**
-     * The {@link RedisOperationType} this command belongs to.
-     *
-     * @return the {@link RedisOperationType}
-     */
-    public RedisOperationType getRedisOperationType() {
-        return redisOperationType;
+    public RedisSinkCommand getSinkCommand() {
+        return sinkCommand;
+    }
+
+    public RedisDelCommand getDelCommand() {
+        return delCommand;
+    }
+
+    public boolean isCommandBoundedness() {
+        return commandBoundedness;
     }
 }

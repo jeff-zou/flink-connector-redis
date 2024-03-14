@@ -13,7 +13,7 @@ import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConv
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisDataType;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisOperationType;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
@@ -87,12 +87,6 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         this.columnDataTypes = resolvedSchema.getColumnDataTypes();
         this.redisValueDataStructure = redisSinkOptions.getRedisValueDataStructure();
-        if (redisValueDataStructure == RedisValueDataStructure.row) {
-            Preconditions.checkArgument(
-                    this.redisCommand.getRedisOperationType() == RedisOperationType.INSERT,
-                    "the value data structure cant be row when command is %s",
-                    this.redisCommand.name());
-        }
     }
 
     /**
@@ -389,12 +383,12 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             return 1;
         }
 
-        if (redisCommand.getRedisDataType() == RedisDataType.HASH
-                || redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
-            if (redisCommand.getRedisOperationType() == RedisOperationType.INSERT
-                    || redisCommand.getRedisOperationType() == RedisOperationType.ACC) {
-                return 3;
-            }
+        if (redisCommand.getSinkCommand() == RedisSinkCommand.HSET
+                || redisCommand.getSinkCommand() == RedisSinkCommand.ZADD
+                || redisCommand.getSinkCommand() == RedisSinkCommand.HINCRBY
+                || redisCommand.getSinkCommand() == RedisSinkCommand.HINCRBYFLOAT
+                || redisCommand.getSinkCommand() == RedisSinkCommand.ZINCRBY) {
+            return 3;
         }
 
         return 2;

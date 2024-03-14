@@ -194,4 +194,16 @@ public class RedisOptions {
                     .intType()
                     .defaultValue(null)
                     .withDescription("Optional set event pool size for netty of lettuce");
+
+    public static final ConfigOption<Integer> SCAN_KEY =
+            ConfigOptions.key("scan.key")
+                    .intType()
+                    .defaultValue(null)
+                    .withDescription("Optional set key for query");
+
+    public static final ConfigOption<Integer> SCAN_FIELD =
+            ConfigOptions.key("scan.field")
+                    .intType()
+                    .defaultValue(null)
+                    .withDescription("Optional set field for query");
 }

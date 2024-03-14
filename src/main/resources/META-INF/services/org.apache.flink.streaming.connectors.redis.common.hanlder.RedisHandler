@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.SetExSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.DecrBySinkMapper
-org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.DecrByExSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.HSetSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.lookup.HGetMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.lookup.GetMapper
@@ -23,7 +21,6 @@ org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.IncrBySinkMap
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.IncrByFloatSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.HIncrBySinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.HIncrByFloatSinkMapper
-org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.IncrByExSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.LPushSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.PfAddSinkMapper
 org.apache.flink.streaming.connectors.redis.common.mapper.row.sink.RPushSinkMapper
