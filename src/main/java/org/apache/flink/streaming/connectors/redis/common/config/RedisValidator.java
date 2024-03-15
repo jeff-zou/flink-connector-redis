@@ -15,19 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
+package org.apache.flink.streaming.connectors.redis.common.config;
 
-import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+/** redis validator for validate redis descriptor. */
+public class RedisValidator {
+    public static final String REDIS_MODE = "redis-mode";
+    public static final String REDIS_CLUSTER = "cluster";
+    public static final String REDIS_SENTINEL = "sentinel";
+    public static final String REDIS_SINGLE = "single";
 
-/** ZINCRBY operation redis mapper. */
-public class ZIncrBySinkMapper extends RowRedisSinkMapper {
-
-    public ZIncrBySinkMapper() {
-        super(RedisCommand.ZINCRBY);
-    }
-
-    public ZIncrBySinkMapper(ReadableConfig config) {
-        super(RedisCommand.ZINCRBY, config);
-    }
+    public static final String REDIS_COMMAND = "command";
 }

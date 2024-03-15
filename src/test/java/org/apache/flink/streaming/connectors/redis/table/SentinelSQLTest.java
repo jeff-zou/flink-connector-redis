@@ -1,6 +1,6 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
+import static org.apache.flink.streaming.connectors.redis.common.config.RedisValidator.REDIS_COMMAND;
 
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;

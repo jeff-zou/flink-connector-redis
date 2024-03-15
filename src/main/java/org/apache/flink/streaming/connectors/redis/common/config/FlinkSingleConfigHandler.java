@@ -17,8 +17,8 @@
 
 package org.apache.flink.streaming.connectors.redis.common.config;
 
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
+import static org.apache.flink.streaming.connectors.redis.common.config.RedisValidator.REDIS_MODE;
+import static org.apache.flink.streaming.connectors.redis.common.config.RedisValidator.REDIS_SINGLE;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.util.Preconditions;

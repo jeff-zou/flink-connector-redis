@@ -1,6 +1,6 @@
 package org.apache.flink.streaming.connectors.redis.common.config;
 
-import org.apache.flink.streaming.connectors.redis.common.util.CheckUtil;
+import org.apache.flink.util.Preconditions;
 
 import java.io.Serializable;
 
@@ -15,7 +15,8 @@ public abstract class FlinkConfigBase implements Serializable {
     protected final LettuceConfig lettuceConfig;
 
     protected FlinkConfigBase(int connectionTimeout, String password, LettuceConfig lettuceConfig) {
-        CheckUtil.checkArgument(connectionTimeout >= 0, "connection timeout can not be negative");
+        Preconditions.checkArgument(
+                connectionTimeout >= 0, "connection timeout can not be negative");
         this.password = password;
         this.connectionTimeout = connectionTimeout;
         this.lettuceConfig = lettuceConfig;

@@ -6,8 +6,9 @@ import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigHand
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisQueryOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
-import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RowRedisQueryMapper;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.source.AsyncTableFunctionProvider;
@@ -32,20 +33,22 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
 
     protected DataType producedDataType;
 
+    private RedisCommand redisCommand;
+
     public RedisDynamicTableSource(
+            RedisCommand redisCommand,
             DataType physicalDataType,
             Map<String, String> properties,
             ResolvedSchema resolvedSchema,
             ReadableConfig config) {
+        this.redisCommand = redisCommand;
         this.properties = properties;
         Preconditions.checkNotNull(properties, "properties should not be null");
         this.resolvedSchema = resolvedSchema;
         Preconditions.checkNotNull(resolvedSchema, "resolvedSchema should not be null");
         this.config = config;
         this.producedDataType = physicalDataType;
-        redisMapper =
-                RedisHandlerServices.findRedisHandler(RedisMapperHandler.class, properties)
-                        .createRedisMapper(config);
+        redisMapper = new RowRedisQueryMapper(redisCommand);
         this.properties = properties;
         this.resolvedSchema = resolvedSchema;
         this.config = config;
@@ -84,7 +87,8 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
 
     @Override
     public DynamicTableSource copy() {
-        return new RedisDynamicTableSource(producedDataType, properties, resolvedSchema, config);
+        return new RedisDynamicTableSource(
+                redisCommand, producedDataType, properties, resolvedSchema, config);
     }
 
     @Override

@@ -1,26 +1,17 @@
-package org.apache.flink.streaming.connectors.redis.common.mapper.row.sink;
-
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
+package org.apache.flink.streaming.connectors.redis.common.mapper;
 
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConverter;
-import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.util.StringUtils;
 
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.Map;
 
 /** base row redis mapper implement. */
-public abstract class RowRedisSinkMapper
-        implements RedisSinkMapper<GenericRowData>, RedisMapperHandler {
+public class RowRedisSinkMapper implements RedisSinkMapper<GenericRowData> {
 
     private Integer ttl;
 
@@ -31,24 +22,6 @@ public abstract class RowRedisSinkMapper
     private Boolean setIfAbsent;
 
     private Boolean ttlKeyNotAbsent;
-
-    public RowRedisSinkMapper(int ttl, RedisCommand redisCommand) {
-        this.ttl = ttl;
-        this.redisCommand = redisCommand;
-    }
-
-    public RowRedisSinkMapper(RedisCommand redisCommand, int ttl) {
-        this.ttl = ttl;
-        this.redisCommand = redisCommand;
-    }
-
-    public RowRedisSinkMapper(RedisCommand redisCommand) {
-        this.redisCommand = redisCommand;
-    }
-
-    public RowRedisSinkMapper(RedisCommand redisCommand, Map<String, String> config) {
-        this.redisCommand = redisCommand;
-    }
 
     public RowRedisSinkMapper(RedisCommand redisCommand, ReadableConfig config) {
         this.redisCommand = redisCommand;
@@ -84,13 +57,6 @@ public abstract class RowRedisSinkMapper
 
     public RedisCommand getRedisCommand() {
         return redisCommand;
-    }
-
-    @Override
-    public Map<String, String> requiredContext() {
-        Map<String, String> require = new HashMap<>();
-        require.put(REDIS_COMMAND, getRedisCommand().name());
-        return require;
     }
 
     @Override

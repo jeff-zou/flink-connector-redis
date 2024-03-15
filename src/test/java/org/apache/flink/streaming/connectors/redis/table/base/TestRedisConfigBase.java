@@ -1,4 +1,4 @@
-package org.apache.flink.streaming.connectors.redis;
+package org.apache.flink.streaming.connectors.redis.table.base;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
@@ -26,9 +26,9 @@ public class TestRedisConfigBase {
 
     public static final String REDIS_HOST = "10.11.69.176";
     public static final int REDIS_PORT = 6379;
-    public static final String REDIS_PASSWORD = "***";
+    public static final String REDIS_PASSWORD = "******";
 
-    public static final String CLUSTER_PASSWORD = "***";
+    public static final String CLUSTER_PASSWORD = "******";
     public static final String CLUSTERNODES =
             "10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000,10.11.80.147:8001,10.11.80.147:9000,10.11.80.147:9001";
     private RedisClient redisClient;
@@ -50,7 +50,7 @@ public class TestRedisConfigBase {
         redisClient = RedisClient.create(redisURI);
         singleConnect = redisClient.connect();
         singleRedisCommands = singleConnect.sync();
-        //        singleRedisCommands.flushdb();
+        singleRedisCommands.flushdb();
         LOG.info("clear data in redis: {}", REDIS_HOST);
     }
 
@@ -78,7 +78,7 @@ public class TestRedisConfigBase {
         clusterClient = RedisClusterClient.create(redisURIS);
         clusterConnection = clusterClient.connect();
         clusterCommands = clusterConnection.sync();
-        //        clusterCommands.flushdb();
+        clusterCommands.flushdb();
         LOG.info("clear data in redis: {}", CLUSTERNODES);
     }
 

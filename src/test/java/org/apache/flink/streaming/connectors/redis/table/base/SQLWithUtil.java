@@ -1,10 +1,10 @@
-package org.apache.flink.streaming.connectors.redis.table;
+package org.apache.flink.streaming.connectors.redis.table.base;
 
-import static org.apache.flink.streaming.connectors.redis.TestRedisConfigBase.CLUSTERNODES;
-import static org.apache.flink.streaming.connectors.redis.TestRedisConfigBase.CLUSTER_PASSWORD;
-import static org.apache.flink.streaming.connectors.redis.TestRedisConfigBase.REDIS_HOST;
-import static org.apache.flink.streaming.connectors.redis.TestRedisConfigBase.REDIS_PASSWORD;
-import static org.apache.flink.streaming.connectors.redis.TestRedisConfigBase.REDIS_PORT;
+import static org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase.CLUSTERNODES;
+import static org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase.CLUSTER_PASSWORD;
+import static org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase.REDIS_HOST;
+import static org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase.REDIS_PASSWORD;
+import static org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase.REDIS_PORT;
 
 public class SQLWithUtil {
     public static String sigleWith() {

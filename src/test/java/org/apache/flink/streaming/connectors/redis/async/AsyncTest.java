@@ -1,7 +1,5 @@
 package org.apache.flink.streaming.connectors.redis.async;
 
-import org.apache.flink.streaming.connectors.redis.TestRedisConfigBase;
-
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.RedisURI;
@@ -13,6 +11,8 @@ import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.async.RedisAdvancedClusterAsyncCommands;
+
+import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;

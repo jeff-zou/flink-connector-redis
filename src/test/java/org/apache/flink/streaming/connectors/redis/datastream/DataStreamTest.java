@@ -1,22 +1,21 @@
 package org.apache.flink.streaming.connectors.redis.datastream;
 
 import static org.apache.flink.streaming.connectors.redis.common.config.RedisOptions.TTL;
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SINGLE;
+import static org.apache.flink.streaming.connectors.redis.common.config.RedisValidator.REDIS_COMMAND;
+import static org.apache.flink.streaming.connectors.redis.common.config.RedisValidator.REDIS_MODE;
+import static org.apache.flink.streaming.connectors.redis.common.config.RedisValidator.REDIS_SINGLE;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.redis.TestRedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkSingleConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
-import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
-import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisMapperHandler;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RowRedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.table.RedisSinkFunction;
+import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.StringData;
@@ -40,11 +39,7 @@ public class DataStreamTest extends TestRedisConfigBase {
         configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
         configuration.setInteger(TTL, 10);
 
-        RedisSinkMapper redisMapper =
-                (RedisSinkMapper)
-                        RedisHandlerServices.findRedisHandler(
-                                        RedisMapperHandler.class, configuration.toMap())
-                                .createRedisMapper(configuration);
+        RedisSinkMapper redisMapper = new RowRedisSinkMapper(RedisCommand.HSET, configuration);
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 

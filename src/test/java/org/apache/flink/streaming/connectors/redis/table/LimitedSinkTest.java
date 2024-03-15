@@ -1,14 +1,13 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
-import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.redis.TestRedisConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import static org.apache.flink.streaming.connectors.redis.common.config.RedisValidator.REDIS_COMMAND;
 
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
+import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.Preconditions;
-
-import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_COMMAND;
 
 /**
  * @Author: Jeff Zou @Date: 2022/9/27 15:08

@@ -6,9 +6,7 @@ public enum RedisQueryCommand {
     HGETALL,
     LRANGE,
     SMEMBERS,
-
     ZRANGE,
-
     SUBSCRIBE,
     ZSCORE,
     PFCOUNT,
