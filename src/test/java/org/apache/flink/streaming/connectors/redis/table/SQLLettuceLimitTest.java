@@ -4,7 +4,6 @@ import static org.apache.flink.streaming.connectors.redis.common.config.RedisVal
 
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.streaming.connectors.redis.table.base.SQLWithUtil;
 import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableResult;
@@ -27,7 +26,7 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
 
         String sink =
                 "create table sink_redis(name varchar, level varchar, age varchar) with (  "
-                        + SQLWithUtil.sigleWith()
+                        + sigleWith()
                         + "'ttl'='10', '"
                         + REDIS_COMMAND
                         + "'='"
@@ -51,14 +50,16 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
-        clusterCommands.hset("1", "1", "test");
-        clusterCommands.hset("5", "5", "test");
+        singleRedisCommands.hset("1", "1", "test");
+        singleRedisCommands.hset("5", "5", "test");
         String dim =
                 "create table dim_table(name varchar, level varchar, age varchar) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -73,11 +74,13 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
                         + ")";
 
         String sink =
-                "create table sink_table(username varchar, level varchar,age varchar) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                "create table sink_table(username varchar, level varchar,age varchar) with (  'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -96,8 +99,8 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
 
-        Preconditions.condition(clusterCommands.hget("1_1", "1").equals("test"), "");
-        Preconditions.condition(clusterCommands.hget("2_2", "2") == "", "");
-        Preconditions.condition(clusterCommands.hget("5_5", "5").equals("test"), "");
+        Preconditions.condition(singleRedisCommands.hget("1_1", "1").equals("test"), "");
+        Preconditions.condition(singleRedisCommands.hget("2_2", "2") == "", "");
+        Preconditions.condition(singleRedisCommands.hget("5_5", "5").equals("test"), "");
     }
 }

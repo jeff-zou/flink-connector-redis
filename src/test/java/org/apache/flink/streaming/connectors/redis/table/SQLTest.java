@@ -55,10 +55,12 @@ public class SQLTest extends TestRedisConfigBase {
 
         String ddl =
                 "create table sink_redis(username varchar, level varchar, age varchar) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -70,7 +72,8 @@ public class SQLTest extends TestRedisConfigBase {
                 " insert into sink_redis select * from (values ('test_cluster_sink', '3', '18'))";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
-        Preconditions.condition(clusterCommands.hget("test_cluster_sink", "3").equals("18"), "");
+        Preconditions.condition(
+                singleRedisCommands.hget("test_cluster_sink", "3").equals("18"), "");
     }
 
     @Test
@@ -81,14 +84,16 @@ public class SQLTest extends TestRedisConfigBase {
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
-        clusterCommands.hset("1", "1", "test");
-        clusterCommands.hset("5", "5", "test");
+        singleRedisCommands.hset("1", "1", "test");
+        singleRedisCommands.hset("5", "5", "test");
         String dim =
                 "create table dim_table(name varchar, level varchar, age varchar) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -104,10 +109,12 @@ public class SQLTest extends TestRedisConfigBase {
 
         String sink =
                 "create table sink_table(username varchar, level varchar,age varchar) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -126,9 +133,9 @@ public class SQLTest extends TestRedisConfigBase {
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
 
-        Preconditions.condition(clusterCommands.hget("1_1", "1").equals("test"), "");
-        Preconditions.condition(clusterCommands.hget("2_2", "2") == "", "");
-        Preconditions.condition(clusterCommands.hget("5_5", "5").equals("test"), "");
+        Preconditions.condition(singleRedisCommands.hget("1_1", "1").equals("test"), "");
+        Preconditions.condition(singleRedisCommands.hget("2_2", "2") == "", "");
+        Preconditions.condition(singleRedisCommands.hget("5_5", "5").equals("test"), "");
     }
 
     @Test
@@ -139,14 +146,16 @@ public class SQLTest extends TestRedisConfigBase {
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
-        clusterCommands.hset("1", "1", "test");
-        clusterCommands.hset("5", "5", "test");
+        singleRedisCommands.hset("1", "1", "test");
+        singleRedisCommands.hset("5", "5", "test");
         String dim =
                 "create table dim_table(name varchar, level varchar, age varchar) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -162,10 +171,12 @@ public class SQLTest extends TestRedisConfigBase {
 
         String sink =
                 "create table sink_table(username varchar, level varchar,age varchar) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -184,9 +195,9 @@ public class SQLTest extends TestRedisConfigBase {
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
 
-        Preconditions.condition(clusterCommands.hget("1_1", "1").equals("1"), "");
-        Preconditions.condition(clusterCommands.hget("2_2", "2") == "", "");
-        Preconditions.condition(clusterCommands.hget("5_5", "5").equals("5"), "");
+        Preconditions.condition(singleRedisCommands.hget("1_1", "1").equals("1"), "");
+        Preconditions.condition(singleRedisCommands.hget("2_2", "2") == "", "");
+        Preconditions.condition(singleRedisCommands.hget("5_5", "5").equals("5"), "");
     }
 
     @Test
@@ -197,13 +208,15 @@ public class SQLTest extends TestRedisConfigBase {
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
-        clusterCommands.set("10", "1800000");
+        singleRedisCommands.set("10", "1800000");
         String dim =
                 "create table dim_table(name varchar, login_time time(3) ) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -218,11 +231,13 @@ public class SQLTest extends TestRedisConfigBase {
                         + ")";
 
         String sink =
-                "create table sink_table(username varchar, level varchar,login_time time(3)) with  ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                "create table sink_table(username varchar, level varchar,login_time time(3)) with  ('connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -241,24 +256,26 @@ public class SQLTest extends TestRedisConfigBase {
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
-        Preconditions.condition(clusterCommands.hget("10_10", "10").equals("1800000"), "");
-        Preconditions.condition(clusterCommands.hget("11_11", "11") == "", "");
-        Preconditions.condition(clusterCommands.hget("11_11", "12") == null, "");
+        Preconditions.condition(singleRedisCommands.hget("10_10", "10").equals("1800000"), "");
+        Preconditions.condition(singleRedisCommands.hget("11_11", "11") == "", "");
+        Preconditions.condition(singleRedisCommands.hget("11_11", "12") == null, "");
     }
 
     @Test
     public void testDel() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        clusterCommands.set("testDel", "20");
+        singleRedisCommands.set("testDel", "20");
 
-        Preconditions.condition(clusterCommands.get("testDel").equals("20"), "");
+        Preconditions.condition(singleRedisCommands.get("testDel").equals("20"), "");
         String ddl =
-                "create table redis_sink(redis_key varchar) with('connector'='redis',"
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster','password'='"
-                        + CLUSTER_PASSWORD
+                "create table redis_sink(redis_key varchar) with('connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -268,21 +285,23 @@ public class SQLTest extends TestRedisConfigBase {
         TableResult tableResult =
                 tEnv.executeSql("insert into redis_sink select * from (values('testDel'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
-        Preconditions.condition(clusterCommands.get("testDel") == null, "");
+        Preconditions.condition(singleRedisCommands.get("testDel") == null, "");
     }
 
     @Test
     public void testSRem() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        clusterCommands.sadd("s", "test1", "test2");
-        Preconditions.condition(clusterCommands.sismember("s", "test2"), "");
+        singleRedisCommands.sadd("s", "test1", "test2");
+        Preconditions.condition(singleRedisCommands.sismember("s", "test2"), "");
         String ddl =
-                "create table redis_sink(redis_key varchar, redis_member varchar) with('connector'='redis',"
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster','password'='"
-                        + CLUSTER_PASSWORD
+                "create table redis_sink(redis_key varchar, redis_member varchar) with('connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -293,21 +312,23 @@ public class SQLTest extends TestRedisConfigBase {
                 tEnv.executeSql("insert into redis_sink select * from (values('s', 'test2'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
         Thread.sleep(2000);
-        Preconditions.condition(clusterCommands.sismember("s", "test2") == false, "");
+        Preconditions.condition(singleRedisCommands.sismember("s", "test2") == false, "");
     }
 
     @Test
     public void testHdel() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        clusterCommands.hset("s", "test1", "test2");
-        Preconditions.condition(clusterCommands.hget("s", "test1").equals("test2"), "");
+        singleRedisCommands.hset("s", "test1", "test2");
+        Preconditions.condition(singleRedisCommands.hget("s", "test1").equals("test2"), "");
         String ddl =
-                "create table redis_sink(redis_key varchar, redis_member varchar) with('connector'='redis',"
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster','password'='"
-                        + CLUSTER_PASSWORD
+                "create table redis_sink(redis_key varchar, redis_member varchar) with('connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -318,7 +339,7 @@ public class SQLTest extends TestRedisConfigBase {
                 tEnv.executeSql("insert into redis_sink select * from (values('s', 'test1'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
         Thread.sleep(2000);
-        Preconditions.condition(clusterCommands.hget("s", "test1") == null, "");
+        Preconditions.condition(singleRedisCommands.hget("s", "test1") == null, "");
     }
 
     @Test
@@ -555,13 +576,15 @@ public class SQLTest extends TestRedisConfigBase {
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
 
-        clusterCommands.hset("key1", "field1", "1");
+        singleRedisCommands.hset("key1", "field1", "1");
         String dim =
                 "create table dim_table(name varchar, level varchar, age varchar) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -600,10 +623,12 @@ public class SQLTest extends TestRedisConfigBase {
 
         String dim =
                 "create table sink_redis(name varchar, level bigint) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
@@ -617,7 +642,7 @@ public class SQLTest extends TestRedisConfigBase {
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
 
-        Preconditions.condition(clusterCommands.get("testIncryBy").toString().equals("1"), "");
+        Preconditions.condition(singleRedisCommands.get("testIncryBy").toString().equals("1"), "");
     }
 
     @Test
@@ -627,23 +652,25 @@ public class SQLTest extends TestRedisConfigBase {
 
         String dim =
                 "create table sink_redis(name varchar, level bigint) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.INCRBY
                         + "' )";
-        clusterCommands.incrby("testIncryBy2", 1);
+        singleRedisCommands.incrby("testIncryBy2", 1);
         tEnv.executeSql(dim);
         String sql = " insert into sink_redis select * from (values ('testIncryBy2', 3));";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
 
-        Preconditions.condition(clusterCommands.get("testIncryBy2").toString().equals("4"), "");
+        Preconditions.condition(singleRedisCommands.get("testIncryBy2").toString().equals("4"), "");
     }
 
     @Test
@@ -684,6 +711,7 @@ public class SQLTest extends TestRedisConfigBase {
         EnvironmentSettings environmentSettings =
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+        singleRedisCommands.del("test_time");
         singleRedisCommands.hset("test_time", "test", "14640000");
         String ddl =
                 "create table sink_redis(username VARCHAR, passport varchar, my_time time(3)) with ( 'connector'='redis', "
@@ -716,9 +744,7 @@ public class SQLTest extends TestRedisConfigBase {
         EnvironmentSettings environmentSettings =
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
-        singleRedisCommands.set(
-                "1",
-                "[{\"dbname\":\"jx3log0101\",\"rn\":1,\"camp\":1,\"tongname\":\"挽花\",\"fhz\":6000,\"master_name\":\"挽花安枭\"},{\"dbname\":\"jx3log0101\",\"rn\":1,\"camp\":1,\"tongname\":\"挽花\",\"fhz\":6000,\"master_name\":\"挽花安枭\"}]");
+        singleRedisCommands.set("1", "test");
 
         String source =
                 "create table source_table(username varchar, level varchar, proctime as procTime()) "
@@ -756,10 +782,7 @@ public class SQLTest extends TestRedisConfigBase {
     @Test
     public void testGetAfterInsert() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
-        EnvironmentSettings environmentSettings =
-                EnvironmentSettings.newInstance().inStreamingMode().build();
-        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
 
         String dim =
                 "create table dim_table(name varchar, nickname varchar) with ( 'connector'='redis', "
@@ -811,10 +834,12 @@ public class SQLTest extends TestRedisConfigBase {
 
         String dim =
                 "create table dim_table(name varchar, level varchar, age varchar) with ( 'connector'='redis', "
-                        + "'cluster-nodes'='"
-                        + CLUSTERNODES
-                        + "','redis-mode'='cluster', 'password'='"
-                        + CLUSTER_PASSWORD
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"

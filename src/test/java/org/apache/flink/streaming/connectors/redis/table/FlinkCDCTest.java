@@ -4,7 +4,6 @@ import static org.apache.flink.streaming.connectors.redis.common.config.RedisVal
 
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.streaming.connectors.redis.table.base.SQLWithUtil;
 import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
@@ -36,7 +35,7 @@ public class FlinkCDCTest extends TestRedisConfigBase {
 
         String sink =
                 "create table sink_redis(name varchar, level varchar, age varchar) with (  "
-                        + SQLWithUtil.sigleWith()
+                        + sigleWith()
                         + " '"
                         + REDIS_COMMAND
                         + "'='"

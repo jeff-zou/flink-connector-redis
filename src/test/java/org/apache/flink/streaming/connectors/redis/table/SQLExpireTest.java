@@ -4,7 +4,6 @@ import static org.apache.flink.streaming.connectors.redis.common.config.RedisVal
 
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.streaming.connectors.redis.table.base.SQLWithUtil;
 import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
@@ -28,7 +27,7 @@ public class SQLExpireTest extends TestRedisConfigBase {
 
         String sink =
                 "create table sink_redis(name varchar, level varchar, age varchar) with (  "
-                        + SQLWithUtil.sigleWith()
+                        + sigleWith()
                         + "'ttl'='10', '"
                         + REDIS_COMMAND
                         + "'='"
@@ -51,11 +50,11 @@ public class SQLExpireTest extends TestRedisConfigBase {
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
 
         LocalTime localTime = LocalTime.now();
-        int wait = 10;
+        int wait = 8;
         localTime = localTime.plusSeconds(wait);
         String dim =
                 "create table sink_redis(name varchar, level varchar, age varchar) with ( "
-                        + SQLWithUtil.sigleWith()
+                        + sigleWith()
                         + " 'ttl.on.time'='"
                         + localTime.toString()
                         + "', '"
@@ -87,18 +86,19 @@ public class SQLExpireTest extends TestRedisConfigBase {
 
         String dim =
                 "create table sink_redis(name varchar, level varchar, age varchar) with ( "
-                        + SQLWithUtil.clusterWith()
-                        + " 'ttl'='10', 'ttl.key.not.absent'='true', '"
+                        + sigleWith()
+                        + " 'ttl'='8', 'ttl.key.not.absent'='true', '"
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.HSET
                         + "' )";
 
         tEnv.executeSql(dim);
-        String sql = " insert into sink_redis select '1', '1', uid from source_table";
+        String sql = " insert into sink_redis select 'test_hash', '1', uid from source_table";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
-        System.out.println(sql);
-        Preconditions.condition(singleRedisCommands.exists("1") == 0, "");
+        Preconditions.condition(singleRedisCommands.exists("test_hash") == 1, "");
+        Thread.sleep(10 * 1000);
+        Preconditions.condition(singleRedisCommands.exists("test_hash") == 0, "");
     }
 }

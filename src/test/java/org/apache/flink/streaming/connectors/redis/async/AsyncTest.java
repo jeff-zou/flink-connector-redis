@@ -29,13 +29,15 @@ public class AsyncTest extends TestRedisConfigBase {
     @Test
     public void testLettuceCluster() throws Exception {
         List<RedisURI> redisURIS = new ArrayList<>();
-        Arrays.stream(CLUSTERNODES.split(","))
+        Arrays.stream(
+                        "10.11.0.1:7000,10.11.0.1:7001,10.11.0.1:8000,10.11.0.1:8001,10.11.0.1:9000,10.11.0.1:9001"
+                                .split(","))
                 .forEach(
                         node -> {
                             String[] redis = node.split(":");
                             RedisURI redisURI =
                                     RedisURI.builder()
-                                            .withPassword(CLUSTER_PASSWORD.toCharArray())
+                                            .withPassword("abc123".toCharArray())
                                             .withHost(redis[0])
                                             .withPort(Integer.parseInt(redis[1]))
                                             .build();
