@@ -5,7 +5,6 @@ import static org.apache.flink.streaming.connectors.redis.common.config.RedisVal
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
-import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,7 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
     public void testSinkLimitLettucePool() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        env.setParallelism(1);
+        singleRedisCommands.del("1");
         String ddl =
                 "create table source_table(uid VARCHAR) with ('connector'='datagen',"
                         + "'rows-per-second'='1', "
@@ -37,7 +36,6 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
 
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
-        System.out.println(sql);
         Preconditions.condition(singleRedisCommands.exists("1") == 1, "");
         Thread.sleep(10 * 1000);
         Preconditions.condition(singleRedisCommands.exists("1") == 0, "");
@@ -46,12 +44,10 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
     @Test
     public void testJoinLimitLettucePool() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        EnvironmentSettings environmentSettings =
-                EnvironmentSettings.newInstance().inStreamingMode().build();
-        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
-
-        singleRedisCommands.hset("1", "1", "test");
-        singleRedisCommands.hset("5", "5", "test");
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+        singleRedisCommands.del("test_hash", "test_hash2");
+        singleRedisCommands.hset("test_hash", "1", "test");
+        singleRedisCommands.hset("test_hash", "5", "test");
         String dim =
                 "create table dim_table(name varchar, level varchar, age varchar) with ( 'connector'='redis', "
                         + "'host'='"
@@ -92,15 +88,15 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
 
         String sql =
                 " insert into sink_table "
-                        + " select concat_ws('_', s.username, s.level), s.level, d.age from source_table s"
+                        + " select 'test_hash2', s.level, d.age from source_table s"
                         + "  left join dim_table for system_time as of s.proctime as d "
-                        + " on d.name = s.username and d.level = s.level";
+                        + " on d.name = 'test_hash' and d.level = s.level";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
 
-        Preconditions.condition(singleRedisCommands.hget("1_1", "1").equals("test"), "");
-        Preconditions.condition(singleRedisCommands.hget("2_2", "2") == "", "");
-        Preconditions.condition(singleRedisCommands.hget("5_5", "5").equals("test"), "");
+        Preconditions.condition(singleRedisCommands.hget("test_hash2", "1").equals("test"), "");
+        Preconditions.condition(singleRedisCommands.hget("test_hash2", "2") == "", "");
+        Preconditions.condition(singleRedisCommands.hget("test_hash2", "5").equals("test"), "");
     }
 }

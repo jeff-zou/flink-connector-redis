@@ -16,6 +16,7 @@ public class LimitedSinkTest extends TestRedisConfigBase {
 
     @Test
     public void testLimitedSink() throws Exception {
+        singleRedisCommands.del("sink_limit_test");
         final int ttl = 60000;
         String sink =
                 "create table sink_redis(key_name varchar, user_name VARCHAR, passport varchar) with ( 'connector'='redis', "

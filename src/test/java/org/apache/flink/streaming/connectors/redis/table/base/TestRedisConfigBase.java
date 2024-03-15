@@ -5,8 +5,8 @@ import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,13 +20,13 @@ public class TestRedisConfigBase {
     public static final String REDIS_HOST = "10.11.69.176";
     public static final int REDIS_PORT = 6379;
     public static final String REDIS_PASSWORD = "******";
-    protected StatefulRedisConnection<String, String> singleConnect;
-    protected RedisCommands singleRedisCommands;
+    protected static StatefulRedisConnection<String, String> singleConnect;
+    protected static RedisCommands singleRedisCommands;
 
-    private RedisClient redisClient;
+    private static RedisClient redisClient;
 
-    @BeforeEach
-    public void connectRedis() {
+    @BeforeAll
+    public static void connectRedis() {
         RedisURI redisURI =
                 RedisURI.builder()
                         .withHost(REDIS_HOST)
@@ -39,9 +39,10 @@ public class TestRedisConfigBase {
         LOG.info("connecto to the redis: {}", REDIS_HOST);
     }
 
-    @AfterEach
-    public void stopSingle() {
+    @AfterAll
+    public static void stopSingle() {
         singleConnect.close();
+        redisClient.shutdown();
     }
 
     protected String sigleWith() {

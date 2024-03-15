@@ -18,11 +18,11 @@ public class SQLExpireTest extends TestRedisConfigBase {
     public void testSinkValueWithExpire() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        env.setParallelism(1);
+        singleRedisCommands.del("1");
         String ddl =
                 "create table source_table(uid VARCHAR) with ('connector'='datagen',"
                         + "'rows-per-second'='1', "
-                        + "'fields.uid.kind'='sequence', 'fields.uid.start'='1', 'fields.uid.end'='10')";
+                        + "'fields.uid.kind'='sequence', 'fields.uid.start'='1', 'fields.uid.end'='1')";
         tEnv.executeSql(ddl);
 
         String sink =
@@ -48,7 +48,7 @@ public class SQLExpireTest extends TestRedisConfigBase {
     public void testSinkValueWithExpireOnTime() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-
+        singleRedisCommands.del("1");
         LocalTime localTime = LocalTime.now();
         int wait = 8;
         localTime = localTime.plusSeconds(wait);
@@ -67,9 +67,8 @@ public class SQLExpireTest extends TestRedisConfigBase {
         String sql = " insert into sink_redis select * from (values ('1', '11.3', '10.3'))";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
-        System.out.println(sql);
         Preconditions.condition(singleRedisCommands.exists("1") == 1, "");
-        Thread.sleep(wait * 1000);
+        Thread.sleep(10 * 1000);
         Preconditions.condition(singleRedisCommands.exists("1") == 0, "");
     }
 
@@ -77,11 +76,11 @@ public class SQLExpireTest extends TestRedisConfigBase {
     public void testSinkValueWithExpireOnKeyPresent() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        env.setParallelism(1);
+        singleRedisCommands.del("test_hash");
         String ddl =
                 "create table source_table(uid VARCHAR) with ('connector'='datagen',"
                         + "'rows-per-second'='1', "
-                        + "'fields.uid.kind'='sequence', 'fields.uid.start'='1', 'fields.uid.end'='8')";
+                        + "'fields.uid.kind'='sequence', 'fields.uid.start'='1', 'fields.uid.end'='1')";
         tEnv.executeSql(ddl);
 
         String dim =
