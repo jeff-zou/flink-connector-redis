@@ -1,5 +1,5 @@
 [EN](README-en.md)
-### 项目介绍
+# 1 项目介绍
 
 基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir调整的内容有：
 ```
@@ -15,37 +15,11 @@
 
 因bahir使用的flink接口版本较老，所以改动较大，开发过程中参考了腾讯云与阿里云两家产商的流计算产品，取两家之长，并增加了更丰富的功能。
 
-使用注意：redis不支持两段提交无法实现刚好一次语义。
-
-### 支持功能对应redis的操作命令有：
-
-| 插入/CDC插入与更新                                                | 维表查询 | 
-|---------------------------------------------------------|------|
-| set                                                     | get  |
-| hset                                                    | hget | 
-| rpush lpush                                             |      |
-| incrBy incrByFloat decrBy hincrBy hincryByFloat zincrby |      |
-| sadd zadd pfadd(hyperloglog)                            |      |
-| publish                                                 |      |
-| zrem srem                                               |      |
-| del hdel                                                |      |
+注：redis不支持两段提交无法实现刚好一次语义。
 
 
-### CDC时支持类型
-| CDC插入及更新                                                | CDC删除时响应操作                     |  
-|---------------------------------------------------------|--------------------------------|
-| set                                                     | del                            |
-| hset                                                    | hdel                           | 
-| rpush lpush                                             | 不响应                            |
-| incrBy incrByFloat decrBy hincrBy hincryByFloat zincrby | 写入相对值，如:incrby 2 -> incryby -2 |
-| sadd zadd                            | srem zrem                      |
-|  pfadd(hyperloglog)                            | 不响应                            |
-| publish                                                 |     不响应                             |
-| zrem srem                                               |     不响应                             |
-| del hdel                                                |    不响应                              |
-注：cdc更新操作与插入效果相同
 
-### 使用方法: 
+# 2 使用方法: 
 1.打包命令： mvn package -DskipTests</br>
 2.将生成的包放入flink lib中即可，无需其它设置。
 
@@ -65,12 +39,56 @@
     <version>1.3.2</version>
 </dependency>
 ```
+# 3 参数说明：
+## 3.1 主要参数：
 
+| 字段                    | 默认值    | 类型      | 说明                                                                                               |
+|-----------------------|--------|---------|--------------------------------------------------------------------------------------------------|
+| connector             | (none) | String  | `redis`                                                                                          |
+| host                  | (none) | String  | Redis IP                                                                                         |
+| port                  | 6379   | Integer | Redis 端口                                                                                         |
+| password              | null   | String  | 如果没有设置，则为 null                                                                                   |
+| database              | 0      | Integer | 默认使用 db0                                                                                         |
+| timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                               |
+| cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
+| command               | (none) | String  | 对应上文中的redis命令                                                                                    |
+| redis-mode            | (none) | Integer | mode类型： single cluster sentinel                                                                  |
+| lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                                                                          |
+| lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                                       |
+| lookup.max-retries    | 1      | Integer | 查询失败重试次数                                                                                         |
+| lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
+| sink.max-retries      | 1      | Integer | 写入失败重试次数                                                                                         |
+| value.data.structure  | column | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
+| set.if.absent         | false  | Boolean | 在key不存在时才写入,只对set hset有效                                                                         |
+| io.pool.size          | (none) | Integer | Lettuce内netty的io线程池大小,默认情况下该值为当前JVM可用线程数，并且大于2                                                   |
+| event.pool.size       | (none) | Integer | Lettuce内netty的event线程池大小 ,默认情况下该值为当前JVM可用线程数，并且大于2                                               |
+| scan.key              | (none) | String  | 查询时redis key                                                                                     |
+| scan.addition.key     | (none) | String | 查询时限定redis key,如map结构时的hashfield                                                                 |
+| scan.range.start      | 0/-1   | Integer | 查询list等结构时指定range start                                                                          |
+| scan.range.stop       | 0/-1   | Integer | 查询list等结构时指定range start                                                                          |
 
+### 3.1.1 command值与redis命令对应关系：
 
-### 使用说明：
+| command值                  | 写入                        | 查询             | 维表关联   | cdc删除(RowKind.delete)            |
+|---------------------------|---------------------------|----------------|--------|----------------------------------|
+| set                       | set                       | get            | get    | del                              |
+| hset                      | hset                      | hget           | hget   | hdel                             |
+| rpush                     | rpush                     | lrange(-1, -1) |        | lrem -1                          |
+| lpush                     | lpush                     | lrange(0, 0)   |        | lrem  1                          |
+| incrBy incrByFloat decrBy | incrBy incrByFloat decrBy | get            | get    | 写入相对值，如:incrby 2 -> incryby -2   | 
+| hincrBy hincryByFloat     | hincrBy hincryByFloat     | hget           | hget   | 写入相对值，如:hincrby 2 -> hincryby -2 |
+| zincrby                   | zincrby                   | zscore         | zscore | 写入相对值，如:zincrby 2 -> zincryby -2 |
+| sadd                      | sadd                      | srandmember 10 |        | srem                             |   
+| zadd                      | zadd                      | zscore         | zscore | zrem                             |   
+| pfadd(hyperloglog)        | pfadd(hyperloglog)        |                |        |                                  |   
+| publish                   | publish                   | subscribe      |        |                                  |
+| zrem                      | zadd                      | zscore         | zscore | zrem                             |
+| srem                      | srem                      | srandmember 10 |        |                                  |
+| del                       | del                       | get            |        |                                  |
+| hdel                      | hdel                      | hget           |        |                                  |
+注：**为空表示不支持**
 
-#### value.data.structure = column(默认)
+### 3.1.2 value.data.structure = column(默认)
 无需通过primary key来映射redis中的Key，直接由ddl中的字段顺序来决定Key,如：
 
 ```
@@ -80,7 +98,7 @@ create table sink_redis(username VARCHAR, passport VARCHAR)  with ('command'='se
 create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('command'='hset') 
 其中name为map结构的key, subject为field, score为value.
 ```
-#### value.data.structure = row
+### 3.1.3 value.data.structure = row
 整行内容保存至value并以'\01'分割
 ```
 create table sink_redis(username VARCHAR, passport VARCHAR)  with ('command'='set') 
@@ -90,31 +108,7 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 其中name为map结构的key, subject为field, name\01subject\01score为value.
 ```
 
-
-#### with参数说明：
-
-| 字段                            | 默认值    | 类型      | 说明                                                                                               |
-|-------------------------------|--------|---------|--------------------------------------------------------------------------------------------------|
-| connector                     | (none) | String  | `redis`                                                                                          |
-| host                          | (none) | String  | Redis IP                                                                                         |
-| port                          | 6379   | Integer | Redis 端口                                                                                         |
-| password                      | null   | String  | 如果没有设置，则为 null                                                                                   |
-| database                      | 0      | Integer | 默认使用 db0                                                                                         |
-| timeout                       | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                               |
-| cluster-nodes                 | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
-| command                       | (none) | String  | 对应上文中的redis命令                                                                                    |
-| redis-mode                    | (none) | Integer | mode类型： single cluster sentinel                                                                  |
-| lookup.cache.max-rows         | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                                                                          |
-| lookup.cache.ttl              | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                                       |
-| lookup.max-retries            | 1      | Integer | 查询失败重试次数                                                                                         |
-| lookup.cache.load-all         | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
-| sink.max-retries              | 1      | Integer | 写入失败重试次数                                                                                         |
-| value.data.structure          | column | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
-| set.if.absent                 | false  | Boolean | 在key不存在时才写入,只对set hset有效                                                                         |
-| io.pool.size    | (none)  | Integer | Lettuce内netty的io线程池大小,默认情况下该值为当前JVM可用线程数，并且大于2                                                   |
-| event.pool.size | (none)  | Integer | Lettuce内netty的event线程池大小 ,默认情况下该值为当前JVM可用线程数，并且大于2                                                                        |
-
-##### sink时ttl相关参数
+## 3.2 sink时ttl相关参数
 
 | Field              | Default | Type    | Description                                                       |
 |--------------------|---------|---------|-------------------------------------------------------------------|
@@ -123,7 +117,7 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | ttl.key.not.absent | false   | boolean | 与ttl一起使用,当key不存在时才设置ttl                                           |
 
 
-##### 在线调试SQL时，用于限制sink资源使用的参数:
+## 3.3 在线调试SQL时，用于限制sink资源使用的参数:
 
 | Field                 | Default | Type    | Description                             |
 |-----------------------|---------|---------|-----------------------------------------|
@@ -133,7 +127,7 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | sink.limit.max-online | 30 * 60 * 1000L   | Long    | taskmanager内每个slot最大在线时间, milliseconds  |
 
 
-#### 集群类型为sentinel时额外连接参数:
+## 3.4 集群类型为sentinel时额外连接参数:
 
 | 字段                 | 默认值 | 类型   | 说明                                                      |
 |--------------------| ------ | ------ |---------------------------------------------------------|
@@ -141,7 +135,7 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | sentinels.info     | (none) | String | 如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000 |
 | sentinels.password | (none) | String | sentinel进程密码                                            |
 
-### 数据类型转换
+# 4 数据类型转换
 
 | flink type   | redis row converter                                          |
 | ------------ | ------------------------------------------------------------ |
@@ -163,8 +157,8 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | TIMESTAMP | String the millisecond from epoch as long <br/>timestamp TimeStampData.fromEpochMillis(Long.valueOf(String str))                    |
 
 
-### 使用示例:
-- ##### 维表查询：
+# 5 使用示例:
+- ## 5.1 维表查询：
 ```
 create table sink_redis(name varchar, level varchar, age varchar) with ( 'connector'='redis', 'host'='10.11.80.147','port'='7001', 'redis-mode'='single','password'='******','command'='hset');
 
@@ -193,7 +187,7 @@ left join dim_table for system_time as of s.proctime as d on
 -- username为3那一行会关联到redis内的值，输出为： 3,3,100	
 ```
 
-- #### 多字段的维表关联查询
+- ## 5.2 多字段的维表关联查询
 很多情况维表有多个字段,本实例展示如何利用'value.data.structure'='row'写多字段并关联查询。
 ```
 -- 创建表
@@ -239,7 +233,7 @@ result:
 1> +I[1, 30182e00eca2bff6e00a2d5331e8857a087792918c4379155b635a3cf42a53a1b8f3be7feb00b0c63c556641423be5537476, 10.3, 10.1]
 ```
 
-- ##### DataStream查询方式<br>
+- ## 5.3 DataStream查询方式<br>
 
   示例代码路径:  src/test/java/org.apache.flink.streaming.connectors.redis.datastream.DataStreamTest.java<br>
   hset示例，相当于redis命令：*hset tom math 150*
@@ -279,7 +273,7 @@ result:
 
 
 
-- ##### redis-cluster写入示例 <br>
+- ## 5.4 redis-cluster写入示例 <br>
 
   示例代码路径:  src/test/java/org.apache.flink.streaming.connectors.redis.table.SQLTest.java<br>
   set示例，相当于redis命令： *set test test11*
@@ -302,7 +296,7 @@ tableResult.getJobClient().get()
 
 
 
-### 开发与测试环境
+## 5.5 开发与测试环境
 
 ide: IntelliJ IDEA 
 
@@ -314,7 +308,7 @@ flink 1.12/1.13/1.14+
 
 jdk1.8 Lettuce 6.2.1
 
-### 如果需要flink 1.12版本支持，请切换到分支flink-1.12(注：1.12使用jedis)
+## 5.6 如果需要flink 1.12版本支持，请切换到分支flink-1.12(注：1.12使用jedis)
 ```
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
