@@ -11,6 +11,7 @@
 6.增加支持Flink高版本（包括1.12,1.13,1.14+）
 7.统一过期策略等
 8.支持flink cdc删除及其它RowKind.DELETE
+9.支持查询
 ```
 
 因bahir使用的flink接口版本较老，所以改动较大，开发过程中参考了腾讯云与阿里云两家产商的流计算产品，取两家之长，并增加了更丰富的功能。
@@ -69,23 +70,25 @@
 
 ### 3.1.1 command值与redis命令对应关系：
 
-| command值                  | 写入                        | 查询             | 维表关联   | cdc删除(RowKind.delete)            |
-|---------------------------|---------------------------|----------------|--------|----------------------------------|
-| set                       | set                       | get            | get    | del                              |
-| hset                      | hset                      | hget           | hget   | hdel                             |
-| rpush                     | rpush                     | lrange(-1, -1) |        | lrem -1                          |
-| lpush                     | lpush                     | lrange(0, 0)   |        | lrem  1                          |
-| incrBy incrByFloat decrBy | incrBy incrByFloat decrBy | get            | get    | 写入相对值，如:incrby 2 -> incryby -2   | 
-| hincrBy hincryByFloat     | hincrBy hincryByFloat     | hget           | hget   | 写入相对值，如:hincrby 2 -> hincryby -2 |
-| zincrby                   | zincrby                   | zscore         | zscore | 写入相对值，如:zincrby 2 -> zincryby -2 |
-| sadd                      | sadd                      | srandmember 10 |        | srem                             |   
-| zadd                      | zadd                      | zscore         | zscore | zrem                             |   
-| pfadd(hyperloglog)        | pfadd(hyperloglog)        |                |        |                                  |   
-| publish                   | publish                   | subscribe      |        |                                  |
-| zrem                      | zadd                      | zscore         | zscore | zrem                             |
-| srem                      | srem                      | srandmember 10 |        |                                  |
-| del                       | del                       | get            |        |                                  |
-| hdel                      | hdel                      | hget           |        |                                  |
+| command值              | 写入                    | 查询             | 维表关联   | 删除(Flink CDC等产生的RowKind.delete)  |
+|-----------------------|-----------------------|----------------|--------|----------------------------------|
+| set                   | set                   | get            | get    | del                              |
+| hset                  | hset                  | hget           | hget   | hdel                             |
+| rpush                 | rpush                 | lrange(-1, -1) |        | lrem -1                          |
+| lpush                 | lpush                 | lrange(0, 0)   |        | lrem  1                          |
+| incrBy incrByFloat    | incrBy incrByFloat    | get            | get    | 写入相对值，如:incrby 2 -> incryby -2   | 
+| hincrBy hincryByFloat | hincrBy hincryByFloat | hget           | hget   | 写入相对值，如:hincrby 2 -> hincryby -2 |
+| zincrby               | zincrby               | zscore         | zscore | 写入相对值，如:zincrby 2 -> zincryby -2 |
+| sadd                  | sadd                  | srandmember 10 |        | srem                             |   
+| zadd                  | zadd                  | zscore         | zscore | zrem                             |   
+| pfadd(hyperloglog)    | pfadd(hyperloglog)    |                |        |                                  |   
+| publish               | publish               | subscribe      |        |                                  |
+| zrem                  | zadd                  | zscore         | zscore | zrem                             |
+| srem                  | srem                  | srandmember 10 |        |                                  |
+| del                   | del                   | get            | get    |                                  |
+| hdel                  | hdel                  | hget           | hget   |                                  |
+| decrBy                | decrBy                | get            | get    |                                  | 
+
 注：**为空表示不支持**
 
 ### 3.1.2 value.data.structure = column(默认)
