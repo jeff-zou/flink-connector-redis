@@ -1,14 +1,14 @@
 package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigHandler;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
-import org.apache.flink.streaming.connectors.redis.common.hanlder.RedisHandlerServices;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RowRedisSinkMapper;
+import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
+import org.apache.flink.streaming.connectors.redis.config.FlinkConfigHandler;
+import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
+import org.apache.flink.streaming.connectors.redis.config.RedisSinkOptions;
+import org.apache.flink.streaming.connectors.redis.hanlder.RedisHandlerServices;
+import org.apache.flink.streaming.connectors.redis.mapper.RedisSinkMapper;
+import org.apache.flink.streaming.connectors.redis.mapper.RowRedisSinkMapper;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.sink.DynamicTableSink;

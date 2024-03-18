@@ -4,17 +4,17 @@ import io.lettuce.core.RedisFuture;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisValueDataStructure;
-import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
-import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainerBuilder;
-import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConverter;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisDataType;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkCommand;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
+import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.command.RedisCommandDescription;
+import org.apache.flink.streaming.connectors.redis.command.RedisInsertCommand;
+import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
+import org.apache.flink.streaming.connectors.redis.config.RedisSinkOptions;
+import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
+import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainer;
+import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainerBuilder;
+import org.apache.flink.streaming.connectors.redis.converter.RedisRowConverter;
+import org.apache.flink.streaming.connectors.redis.mapper.RedisDataType;
+import org.apache.flink.streaming.connectors.redis.mapper.RedisSinkMapper;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.types.DataType;
@@ -383,11 +383,11 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             return 1;
         }
 
-        if (redisCommand.getSinkCommand() == RedisSinkCommand.HSET
-                || redisCommand.getSinkCommand() == RedisSinkCommand.ZADD
-                || redisCommand.getSinkCommand() == RedisSinkCommand.HINCRBY
-                || redisCommand.getSinkCommand() == RedisSinkCommand.HINCRBYFLOAT
-                || redisCommand.getSinkCommand() == RedisSinkCommand.ZINCRBY) {
+        if (redisCommand.getInsertCommand() == RedisInsertCommand.HSET
+                || redisCommand.getInsertCommand() == RedisInsertCommand.ZADD
+                || redisCommand.getInsertCommand() == RedisInsertCommand.HINCRBY
+                || redisCommand.getInsertCommand() == RedisInsertCommand.HINCRBYFLOAT
+                || redisCommand.getInsertCommand() == RedisInsertCommand.ZINCRBY) {
             return 3;
         }
 

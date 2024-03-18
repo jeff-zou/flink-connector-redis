@@ -4,14 +4,14 @@ import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTabl
 
 import org.apache.flink.calcite.shaded.com.google.common.cache.Cache;
 import org.apache.flink.calcite.shaded.com.google.common.cache.CacheBuilder;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisQueryOptions;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisValueDataStructure;
-import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
-import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainerBuilder;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandBaseDescription;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
+import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.command.RedisCommandBaseDescription;
+import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
+import org.apache.flink.streaming.connectors.redis.config.RedisQueryOptions;
+import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
+import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainer;
+import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainerBuilder;
+import org.apache.flink.streaming.connectors.redis.mapper.RedisMapper;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;

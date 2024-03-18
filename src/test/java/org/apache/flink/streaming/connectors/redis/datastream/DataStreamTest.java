@@ -1,19 +1,19 @@
 package org.apache.flink.streaming.connectors.redis.datastream;
 
-import static org.apache.flink.streaming.connectors.redis.common.config.RedisOptions.TTL;
-import static org.apache.flink.streaming.connectors.redis.common.config.RedisValidator.REDIS_COMMAND;
-import static org.apache.flink.streaming.connectors.redis.common.config.RedisValidator.REDIS_MODE;
-import static org.apache.flink.streaming.connectors.redis.common.config.RedisValidator.REDIS_SINGLE;
+import static org.apache.flink.streaming.connectors.redis.config.RedisOptions.TTL;
+import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_COMMAND;
+import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_MODE;
+import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_SINGLE;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkSingleConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RowRedisSinkMapper;
+import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
+import org.apache.flink.streaming.connectors.redis.config.FlinkSingleConfig;
+import org.apache.flink.streaming.connectors.redis.config.RedisSinkOptions;
+import org.apache.flink.streaming.connectors.redis.mapper.RedisSinkMapper;
+import org.apache.flink.streaming.connectors.redis.mapper.RowRedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.table.RedisSinkFunction;
 import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
 import org.apache.flink.table.api.DataTypes;

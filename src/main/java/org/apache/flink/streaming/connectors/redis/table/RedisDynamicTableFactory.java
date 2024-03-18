@@ -2,8 +2,8 @@ package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
 import org.apache.flink.table.connector.sink.DynamicTableSink;
 import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.factories.DynamicTableSinkFactory;
@@ -98,7 +98,9 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.NETTY_EVENT_POOL_SIZE);
         options.add(RedisOptions.NETTY_IO_POOL_SIZE);
         options.add(RedisOptions.SCAN_KEY);
-        options.add(RedisOptions.SCAN_FIELD);
+        options.add(RedisOptions.SCAN_ADDITION_KEY);
+        options.add(RedisOptions.SCAN_RANGE_STOP);
+        options.add(RedisOptions.SCAN_RANGE_START);
         return options;
     }
 

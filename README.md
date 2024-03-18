@@ -70,24 +70,27 @@
 
 ### 3.1.1 command值与redis命令对应关系：
 
-| command值              | 写入                    | 查询             | 维表关联   | 删除(Flink CDC等产生的RowKind.delete)  |
-|-----------------------|-----------------------|----------------|--------|----------------------------------|
-| set                   | set                   | get            | get    | del                              |
-| hset                  | hset                  | hget           | hget   | hdel                             |
-| rpush                 | rpush                 | lrange(-1, -1) |        | lrem -1                          |
-| lpush                 | lpush                 | lrange(0, 0)   |        | lrem  1                          |
-| incrBy incrByFloat    | incrBy incrByFloat    | get            | get    | 写入相对值，如:incrby 2 -> incryby -2   | 
-| hincrBy hincryByFloat | hincrBy hincryByFloat | hget           | hget   | 写入相对值，如:hincrby 2 -> hincryby -2 |
-| zincrby               | zincrby               | zscore         | zscore | 写入相对值，如:zincrby 2 -> zincryby -2 |
-| sadd                  | sadd                  | srandmember 10 |        | srem                             |   
-| zadd                  | zadd                  | zscore         | zscore | zrem                             |   
-| pfadd(hyperloglog)    | pfadd(hyperloglog)    |                |        |                                  |   
-| publish               | publish               | subscribe      |        |                                  |
-| zrem                  | zadd                  | zscore         | zscore | zrem                             |
-| srem                  | srem                  | srandmember 10 |        |                                  |
-| del                   | del                   | get            | get    |                                  |
-| hdel                  | hdel                  | hget           | hget   |                                  |
-| decrBy                | decrBy                | get            | get    |                                  | 
+| command值              | 写入                    | 查询              | 维表关联    | 删除(Flink CDC等产生的RowKind.delete)  |
+|-----------------------|-----------------------|-----------------|---------|----------------------------------|
+| set                   | set                   | get             | get     | del                              |
+| hset                  | hset                  | hget            | hget    | hdel                             |
+| get                   | set                   | get             | get     | del                              |
+| hset                  | hset                  | hget            | hget    | hdel                             | 
+| rpush                 | rpush                 | lrange(-1, -1)  |         | lrem -1                          |
+| lpush                 | lpush                 | lrange(0, 0)    |         | lrem  1                          |
+| incrBy incrByFloat    | incrBy incrByFloat    | get             | get     | 写入相对值，如:incrby 2 -> incryby -2   | 
+| hincrBy hincryByFloat | hincrBy hincryByFloat | hget            | hget    | 写入相对值，如:hincrby 2 -> hincryby -2 |
+| zincrby               | zincrby               | zscore          | zscore  | 写入相对值，如:zincrby 2 -> zincryby -2 |
+| sadd                  | sadd                  | srandmember 10  |         | srem                             |   
+| zadd                  | zadd                  | zscore          | zscore  | zrem                             |   
+| pfadd(hyperloglog)    | pfadd(hyperloglog)    |                 |         |                                  |   
+| publish               | publish               | subscribe       |         |                                  |
+| subscribe             | publish               | subscribe       |         |                                  |
+| zrem                  | zrem                  | zscore          | zscore  |                                  |
+| srem                  | srem                  | srandmember 10  |         |                                  |
+| del                   | del                   | get             | get     |                                  |
+| hdel                  | hdel                  | hget            | hget    |                                  |
+| decrBy                | decrBy                | get             | get     |                                  | 
 
 注：**为空表示不支持**
 

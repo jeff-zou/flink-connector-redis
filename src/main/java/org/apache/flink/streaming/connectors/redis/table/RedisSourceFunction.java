@@ -3,14 +3,15 @@ package org.apache.flink.streaming.connectors.redis.table;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.api.functions.source.RichSourceFunction;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisQueryOptions;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisValueDataStructure;
-import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainer;
-import org.apache.flink.streaming.connectors.redis.common.container.RedisCommandsContainerBuilder;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandBaseDescription;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
+import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
+import org.apache.flink.streaming.connectors.redis.command.RedisCommandBaseDescription;
+import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
+import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
+import org.apache.flink.streaming.connectors.redis.config.RedisQueryOptions;
+import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
+import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainer;
+import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainerBuilder;
+import org.apache.flink.streaming.connectors.redis.mapper.RedisMapper;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.types.DataType;
@@ -24,7 +25,7 @@ public class RedisSourceFunction<T> extends RichSourceFunction<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisSourceFunction.class);
 
-    ReadableConfig config;
+    ReadableConfig readableConfig;
 
     private FlinkConfigBase flinkConfigBase;
     private RedisCommandsContainer redisCommandsContainer;
@@ -39,11 +40,11 @@ public class RedisSourceFunction<T> extends RichSourceFunction<T> {
 
     public RedisSourceFunction(
             RedisMapper redisMapper,
-            ReadableConfig config,
+            ReadableConfig readableConfig,
             FlinkConfigBase flinkConfigBase,
             RedisQueryOptions redisQueryOptions,
             ResolvedSchema resolvedSchema) {
-        this.config = config;
+        this.readableConfig = readableConfig;
         this.flinkConfigBase = flinkConfigBase;
         this.maxRetryTimes = redisQueryOptions.getMaxRetryTimes();
         this.redisValueDataStructure = redisQueryOptions.getRedisValueDataStructure();
@@ -56,7 +57,9 @@ public class RedisSourceFunction<T> extends RichSourceFunction<T> {
 
     @Override
     public void open(Configuration parameters) throws Exception {
-
+        Preconditions.checkNotNull(
+                this.readableConfig.get(RedisOptions.SCAN_KEY),
+                "the scan key for source can nto be null");
         try {
             this.redisCommandsContainer = RedisCommandsContainerBuilder.build(this.flinkConfigBase);
             this.redisCommandsContainer.open();
@@ -65,7 +68,6 @@ public class RedisSourceFunction<T> extends RichSourceFunction<T> {
             LOG.error("Redis has not been properly initialized: ", e);
             throw e;
         }
-
         super.open(parameters);
     }
 
@@ -89,7 +91,7 @@ public class RedisSourceFunction<T> extends RichSourceFunction<T> {
     }
 
     private void query(SourceContext ctx, String[] keys) throws Exception {
-        switch (redisCommand.getQueryCommand()) {
+        switch (redisCommand.getSelectCommand()) {
             case GET:
                 {
                     String result = this.redisCommandsContainer.get(String.valueOf(keys[0])).get();

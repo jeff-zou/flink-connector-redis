@@ -2,10 +2,10 @@ package org.apache.flink.streaming.connectors.redis.table;
 
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
-import org.apache.flink.streaming.connectors.redis.common.config.RedisSinkOptions;
-import org.apache.flink.streaming.connectors.redis.common.mapper.RedisSinkMapper;
+import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
+import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
+import org.apache.flink.streaming.connectors.redis.config.RedisSinkOptions;
+import org.apache.flink.streaming.connectors.redis.mapper.RedisSinkMapper;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.types.RowKind;

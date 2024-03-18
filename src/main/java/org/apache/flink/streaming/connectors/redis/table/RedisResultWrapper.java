@@ -2,8 +2,8 @@ package org.apache.flink.streaming.connectors.redis.table;
 
 import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
 
-import org.apache.flink.streaming.connectors.redis.common.config.RedisValueDataStructure;
-import org.apache.flink.streaming.connectors.redis.common.converter.RedisRowConverter;
+import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
+import org.apache.flink.streaming.connectors.redis.converter.RedisRowConverter;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.types.DataType;
 
