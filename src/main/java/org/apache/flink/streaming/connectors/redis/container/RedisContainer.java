@@ -200,9 +200,9 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public RedisFuture<Long> zadd(final String key, final String score, final String element) {
+    public RedisFuture<Long> zadd(final String key, final double score, final String element) {
         try {
-            return asyncCommands.zadd(key, Double.valueOf(score), element);
+            return asyncCommands.zadd(key, score, element);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
@@ -215,9 +215,9 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public RedisFuture<Double> zincrBy(final String key, final String score, final String element) {
+    public RedisFuture<Double> zincrBy(final String key, final double score, final String element) {
         try {
-            return asyncCommands.zincrby(key, Double.valueOf(score), element);
+            return asyncCommands.zincrby(key, score, element);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(

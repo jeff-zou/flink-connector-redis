@@ -107,7 +107,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param score Score of the element
      * @param element element to be added
      */
-    RedisFuture<Long> zadd(String key, String score, String element);
+    RedisFuture<Long> zadd(String key, double score, String element);
 
     /**
      * increase the specified member with the specified scores to the sorted set stored at key.
@@ -116,7 +116,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param score
      * @param element
      */
-    RedisFuture zincrBy(String key, String score, String element);
+    RedisFuture zincrBy(String key, double score, String element);
 
     /**
      * Removes the specified member from the sorted set stored at key.

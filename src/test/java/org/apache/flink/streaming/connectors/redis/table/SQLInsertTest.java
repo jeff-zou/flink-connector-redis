@@ -357,4 +357,65 @@ public class SQLInsertTest extends TestRedisConfigBase {
         Preconditions.condition(
                 singleRedisCommands.hget("test_time", "test").equals("14640000"), "");
     }
+
+    @Test
+    public void testZadd() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        EnvironmentSettings environmentSettings =
+                EnvironmentSettings.newInstance().inStreamingMode().build();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+        singleRedisCommands.del("test_zadd");
+        String ddl =
+                "create table sink_redis(username VARCHAR, age varchar, passport varchar) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "', 'set.if.absent'='true"
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.ZADD
+                        + "')";
+
+        tEnv.executeSql(ddl);
+        String sql = " insert into sink_redis select * from (values ('test_zadd', '100',  'test'))";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        Preconditions.condition(singleRedisCommands.zscore("test_zadd", "test") == 100, "");
+    }
+
+    @Test
+    public void testZincry() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        EnvironmentSettings environmentSettings =
+                EnvironmentSettings.newInstance().inStreamingMode().build();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+        singleRedisCommands.del("test_zadd");
+        singleRedisCommands.zadd("test_zadd", 100, "test");
+        String ddl =
+                "create table sink_redis(username VARCHAR, age varchar, passport varchar) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "', 'set.if.absent'='true"
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.ZINCRBY
+                        + "')";
+
+        tEnv.executeSql(ddl);
+        String sql = " insert into sink_redis select * from (values ('test_zadd', '100',  'test'))";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        Preconditions.condition(singleRedisCommands.zscore("test_zadd", "test") == 200, "");
+    }
 }

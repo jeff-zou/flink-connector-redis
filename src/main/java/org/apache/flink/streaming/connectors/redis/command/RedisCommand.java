@@ -51,7 +51,7 @@ public enum RedisCommand {
             RedisInsertCommand.RPUSH,
             RedisSelectCommand.LRANGE,
             RedisJoinCommand.NONE,
-            RedisDeleteCommand.LREM,
+            RedisDeleteCommand.NONE,
             true),
     /**
      * Insert the specified value at the head of the list stored at key. If key does not exist, it
@@ -61,7 +61,7 @@ public enum RedisCommand {
             RedisInsertCommand.LPUSH,
             RedisSelectCommand.LRANGE,
             RedisJoinCommand.NONE,
-            RedisDeleteCommand.LREM,
+            RedisDeleteCommand.NONE,
             true),
 
     /** Delta plus for specified key. */

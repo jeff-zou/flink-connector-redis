@@ -160,7 +160,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      */
     private RedisFuture sink(String[] params) {
         RedisFuture redisFuture = null;
-        switch (redisCommand) {
+        switch (redisCommand.getInsertCommand()) {
             case RPUSH:
                 redisFuture = this.redisCommandsContainer.rpush(params[0], params[1]);
                 break;
@@ -192,10 +192,14 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 redisFuture = this.redisCommandsContainer.publish(params[0], params[1]);
                 break;
             case ZADD:
-                redisFuture = this.redisCommandsContainer.zadd(params[0], params[1], params[2]);
+                redisFuture =
+                        this.redisCommandsContainer.zadd(
+                                params[0], Double.valueOf(params[1]), params[2]);
                 break;
             case ZINCRBY:
-                redisFuture = this.redisCommandsContainer.zincrBy(params[0], params[1], params[2]);
+                redisFuture =
+                        this.redisCommandsContainer.zincrBy(
+                                params[0], Double.valueOf(params[1]), params[2]);
                 break;
             case ZREM:
                 redisFuture = this.redisCommandsContainer.zrem(params[0], params[1]);
@@ -263,22 +267,21 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      */
     private RedisFuture rowKindDelete(String[] params) {
         RedisFuture redisFuture = null;
-        switch (redisCommand) {
-            case SADD:
+        switch (redisCommand.getDeleteCommand()) {
+            case SREM:
                 redisFuture = this.redisCommandsContainer.srem(params[0], params[1]);
                 break;
-            case SET:
+            case DEL:
                 redisFuture = this.redisCommandsContainer.del(params[0]);
                 break;
-            case ZADD:
+            case ZREM:
                 redisFuture = this.redisCommandsContainer.zrem(params[0], params[2]);
                 break;
             case ZINCRBY:
                 Double d = -Double.valueOf(params[1]);
-                redisFuture =
-                        this.redisCommandsContainer.zincrBy(params[0], d.toString(), params[2]);
+                redisFuture = this.redisCommandsContainer.zincrBy(params[0], d, params[2]);
                 break;
-            case HSET:
+            case HDEL:
                 {
                     redisFuture = this.redisCommandsContainer.hdel(params[0], params[1]);
                 }
@@ -301,10 +304,6 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 redisFuture =
                         this.redisCommandsContainer.incrByFloat(
                                 params[0], -Double.valueOf(params[1]));
-                break;
-            case DECRBY:
-                redisFuture =
-                        this.redisCommandsContainer.decrBy(params[0], -Long.valueOf(params[1]));
                 break;
         }
         return redisFuture;
@@ -403,14 +402,13 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     public void open(Configuration parameters) throws Exception {
         Preconditions.checkArgument(
                 redisCommand.getInsertCommand() != RedisInsertCommand.NONE,
-                String.format("the command %s do not support insert.", redisCommand.name()));
+                "the command %s do not support insert.",
+                redisCommand.name());
 
         try {
             this.redisCommandsContainer = RedisCommandsContainerBuilder.build(this.flinkConfigBase);
             this.redisCommandsContainer.open();
-            LOG.info(
-                    "{} success to create redis container for sink",
-                    Thread.currentThread().getId());
+            LOG.info("success to create redis container for sink");
         } catch (Exception e) {
             LOG.error("Redis has not been properly initialized: ", e);
             throw e;

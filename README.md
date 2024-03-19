@@ -76,8 +76,8 @@
 | hset                  | hset                  | hget            | hget    | hdel                             |
 | get                   | set                   | get             | get     | del                              |
 | hset                  | hset                  | hget            | hget    | hdel                             | 
-| rpush                 | rpush                 | lrange(-1, -1)  |         | lrem -1                          |
-| lpush                 | lpush                 | lrange(0, 0)    |         | lrem  1                          |
+| rpush                 | rpush                 | lrange(-1, -1)  |         |                                  |
+| lpush                 | lpush                 | lrange(0, 0)    |         |                                  |
 | incrBy incrByFloat    | incrBy incrByFloat    | get             | get     | 写入相对值，如:incrby 2 -> incryby -2   | 
 | hincrBy hincryByFloat | hincrBy hincryByFloat | hget            | hget    | 写入相对值，如:hincrby 2 -> hincryby -2 |
 | zincrby               | zincrby               | zscore          | zscore  | 写入相对值，如:zincrby 2 -> zincryby -2 |

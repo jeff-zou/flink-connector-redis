@@ -19,7 +19,7 @@ public class TestRedisConfigBase {
 
     public static final String REDIS_HOST = "10.11.69.176";
     public static final int REDIS_PORT = 6379;
-    public static final String REDIS_PASSWORD = "******";
+    public static final String REDIS_PASSWORD = "test123";
     protected static StatefulRedisConnection<String, String> singleConnect;
     protected static RedisCommands singleRedisCommands;
 
