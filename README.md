@@ -281,7 +281,7 @@ result:
 
 - ## 5.4 redis-cluster写入示例 <br>
 
-  示例代码路径:  src/test/java/org.apache.flink.streaming.connectors.redis.table.SQLTest.java<br>
+  示例代码路径:  src/test/java/org.apache.flink.streaming.connectors.redis.table.SQLInsertTest.java<br>
   set示例，相当于redis命令： *set test test11*
 
 ```

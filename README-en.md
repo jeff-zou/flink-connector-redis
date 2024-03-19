@@ -271,7 +271,7 @@ env.execute("RedisSinkTest");
 
 - ##### redis-cluster write example <br>
 
-  Sample code path:  src/test/java/org.apache.flink.streaming.connectors.redis.table.SQLTest.java<br>
+  Sample code path:  src/test/java/org.apache.flink.streaming.connectors.redis.table.SQLInsertTest.java<br>
   set example, equivalent to redis command： *set test test11*
 
 ```

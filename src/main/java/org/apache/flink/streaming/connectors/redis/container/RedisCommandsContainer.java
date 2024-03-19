@@ -251,6 +251,21 @@ public interface RedisCommandsContainer extends Serializable {
     RedisFuture<Long> pfcount(String key);
 
     /**
+     * @param key
+     * @param member
+     * @return
+     */
+    RedisFuture<Double> zscore(String key, String member);
+
+    /**
+     * @param key
+     * @param start
+     * @param stop
+     * @return
+     */
+    RedisFuture<List> zrange(String key, long start, long stop);
+
+    /**
      * get redis async commands.
      *
      * @return

@@ -10,6 +10,7 @@ import org.apache.flink.table.factories.DynamicTableSinkFactory;
 import org.apache.flink.table.factories.DynamicTableSourceFactory;
 import org.apache.flink.table.factories.FactoryUtil;
 import org.apache.flink.table.types.DataType;
+import org.apache.flink.util.FlinkRuntimeException;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -101,12 +102,17 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.SCAN_ADDITION_KEY);
         options.add(RedisOptions.SCAN_RANGE_STOP);
         options.add(RedisOptions.SCAN_RANGE_START);
+        options.add(RedisOptions.SCAN_COUNTER);
         return options;
     }
 
     private RedisCommand parseCommand(ReadableConfig config) {
-        RedisCommand redisCommand =
-                RedisCommand.valueOf(config.get(RedisOptions.COMMAND).toUpperCase());
-        return redisCommand;
+        try {
+            return RedisCommand.valueOf(config.get(RedisOptions.COMMAND).toUpperCase());
+        } catch (Exception e) {
+            throw new FlinkRuntimeException(
+                    String.format(
+                            "do not support redis command: %s", config.get(RedisOptions.COMMAND)));
+        }
     }
 }

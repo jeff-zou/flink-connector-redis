@@ -401,6 +401,10 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      */
     @Override
     public void open(Configuration parameters) throws Exception {
+        Preconditions.checkArgument(
+                redisCommand.getInsertCommand() != RedisInsertCommand.NONE,
+                String.format("the command %s do not support insert.", redisCommand.name()));
+
         try {
             this.redisCommandsContainer = RedisCommandsContainerBuilder.build(this.flinkConfigBase);
             this.redisCommandsContainer.open();

@@ -6,6 +6,8 @@ import org.apache.flink.calcite.shaded.com.google.common.cache.Cache;
 import org.apache.flink.calcite.shaded.com.google.common.cache.CacheBuilder;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommandBaseDescription;
+import org.apache.flink.streaming.connectors.redis.command.RedisJoinCommand;
+import org.apache.flink.streaming.connectors.redis.command.RedisSelectCommand;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.config.RedisQueryOptions;
 import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
@@ -18,6 +20,7 @@ import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.functions.AsyncTableFunction;
 import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.types.DataType;
+import org.apache.flink.table.types.logical.DoubleType;
 import org.apache.flink.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,23 +65,10 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
         this.loadAll = redisQueryOptions.getLoadAll();
         this.redisValueDataStructure = redisQueryOptions.getRedisValueDataStructure();
 
-        if (this.loadAll) {
-            Preconditions.checkArgument(
-                    cacheMaxSize != -1 && cacheTtl != -1,
-                    "cache must be opened by cacheMaxSize and cacheTtl when u want to load all elements to cache.");
-            Preconditions.checkArgument(
-                    this.loadAll && redisCommand == RedisCommand.HSET,
-                    "just hget support load all.");
-        }
-
         RedisCommandBaseDescription redisCommandDescription = redisMapper.getCommandDescription();
         Preconditions.checkNotNull(
                 redisCommandDescription, "Redis Mapper data type description can not be null");
         this.redisCommand = redisCommandDescription.getRedisCommand();
-        Preconditions.checkArgument(
-                redisCommand == RedisCommand.HGET || redisCommand == RedisCommand.GET,
-                "unsupport command for query redis: %s, just get hget.",
-                redisCommand.name());
 
         this.dataTypes = resolvedSchema.getColumnDataTypes();
     }
@@ -89,7 +79,7 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
         // when use cache.
         if (cache != null) {
             GenericRowData genericRowData = null;
-            switch (redisCommand) {
+            switch (redisCommand.getJoinCommand()) {
                 case GET:
                     genericRowData = (GenericRowData) cache.getIfPresent(String.valueOf(keys[0]));
                     break;
@@ -116,6 +106,16 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
                         genericRowData = (GenericRowData) cache.getIfPresent(key);
                     }
                     break;
+                case ZSCORE:
+                    {
+                        String key =
+                                new StringBuilder(String.valueOf(keys[0]))
+                                        .append(CACHE_SEPERATOR)
+                                        .append(String.valueOf(keys[1]))
+                                        .toString();
+                        genericRowData = (GenericRowData) cache.getIfPresent(key);
+                        break;
+                    }
                 default:
             }
 
@@ -148,53 +148,78 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
      * @throws Exception
      */
     private void query(CompletableFuture<Collection<GenericRowData>> resultFuture, Object... keys) {
-        switch (redisCommand) {
+        switch (redisCommand.getJoinCommand()) {
             case GET:
-                this.redisCommandsContainer
-                        .get(String.valueOf(keys[0]))
-                        .thenAccept(
-                                result -> {
-                                    GenericRowData rowData =
-                                            RedisResultWrapper.createRowDataForString(
-                                                    keys,
-                                                    result,
-                                                    redisValueDataStructure,
-                                                    dataTypes);
-                                    resultFuture.complete(Collections.singleton(rowData));
-                                    if (cache != null && result != null) {
-                                        cache.put(String.valueOf(keys[0]), rowData);
-                                    }
-                                });
+                {
+                    this.redisCommandsContainer
+                            .get(String.valueOf(keys[0]))
+                            .thenAccept(
+                                    result -> {
+                                        GenericRowData rowData =
+                                                RedisResultWrapper.createRowDataForString(
+                                                        keys,
+                                                        result,
+                                                        redisValueDataStructure,
+                                                        dataTypes);
+                                        resultFuture.complete(Collections.singleton(rowData));
+                                        if (cache != null && result != null) {
+                                            cache.put(String.valueOf(keys[0]), rowData);
+                                        }
+                                    });
 
-                break;
-            case HGET:
-                if (loadAll) {
-                    loadAllElements(resultFuture, keys);
-                    return;
+                    break;
                 }
+            case HGET:
+                {
+                    if (loadAll) {
+                        loadAllElementsForMap(resultFuture, keys);
+                        return;
+                    }
 
-                this.redisCommandsContainer
-                        .hget(String.valueOf(keys[0]), String.valueOf(keys[1]))
-                        .thenAccept(
-                                result -> {
-                                    GenericRowData rowData =
-                                            RedisResultWrapper.createRowDataForHash(
-                                                    keys,
-                                                    result,
-                                                    redisValueDataStructure,
-                                                    dataTypes);
-                                    resultFuture.complete(Collections.singleton(rowData));
-                                    if (cache != null && result != null) {
-                                        String key =
-                                                new StringBuilder(String.valueOf(keys[0]))
-                                                        .append(CACHE_SEPERATOR)
-                                                        .append(String.valueOf(keys[1]))
-                                                        .toString();
-                                        cache.put(key, rowData);
-                                    }
-                                });
+                    this.redisCommandsContainer
+                            .hget(String.valueOf(keys[0]), String.valueOf(keys[1]))
+                            .thenAccept(
+                                    result -> {
+                                        GenericRowData rowData =
+                                                RedisResultWrapper.createRowDataForHash(
+                                                        keys,
+                                                        result,
+                                                        redisValueDataStructure,
+                                                        dataTypes);
+                                        resultFuture.complete(Collections.singleton(rowData));
+                                        if (cache != null && result != null) {
+                                            String key =
+                                                    new StringBuilder(String.valueOf(keys[0]))
+                                                            .append(CACHE_SEPERATOR)
+                                                            .append(String.valueOf(keys[1]))
+                                                            .toString();
+                                            cache.put(key, rowData);
+                                        }
+                                    });
 
-                break;
+                    break;
+                }
+            case ZSCORE:
+                {
+                    this.redisCommandsContainer
+                            .zscore(String.valueOf(keys[0]), String.valueOf(keys[1]))
+                            .thenAccept(
+                                    result -> {
+                                        GenericRowData rowData =
+                                                RedisResultWrapper.createRowDataForSortedSet(
+                                                        keys, result, dataTypes);
+                                        resultFuture.complete(Collections.singleton(rowData));
+                                        if (cache != null && result != null) {
+                                            String key =
+                                                    new StringBuilder(String.valueOf(keys[0]))
+                                                            .append(CACHE_SEPERATOR)
+                                                            .append(String.valueOf(keys[1]))
+                                                            .toString();
+                                            cache.put(key, rowData);
+                                        }
+                                    });
+                    break;
+                }
             default:
         }
     }
@@ -204,7 +229,7 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
      *
      * @param keys
      */
-    private void loadAllElements(
+    private void loadAllElementsForMap(
             CompletableFuture<Collection<GenericRowData>> resultFuture, Object... keys) {
         this.redisCommandsContainer
                 .hgetAll(String.valueOf(keys[0]))
@@ -224,11 +249,30 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
     @Override
     public void open(FunctionContext context) throws Exception {
         super.open(context);
-        try {
 
+        Preconditions.checkArgument(
+                redisCommand.getJoinCommand() != RedisJoinCommand.NONE,
+                String.format("the command %s do not support join.", redisCommand.name()));
+
+        if (this.loadAll) {
+            Preconditions.checkArgument(
+                    cacheMaxSize != -1 && cacheTtl != -1,
+                    "cache must be opened by cacheMaxSize and cacheTtl when you want to load all elements to cache.");
+            Preconditions.checkArgument(
+                    redisCommand.getJoinCommand() == RedisJoinCommand.HGET,
+                    "just data structure is Map of redis support load all.");
+        }
+
+        if (redisCommand.getSelectCommand() == RedisSelectCommand.ZSCORE) {
+            Preconditions.checkArgument(
+                    dataTypes.get(1).getLogicalType() instanceof DoubleType,
+                    "the second column's type of join table must be double. the type of score is double when the data structure in redis is SortedSet.");
+        }
+
+        try {
             this.redisCommandsContainer = RedisCommandsContainerBuilder.build(this.flinkConfigBase);
             this.redisCommandsContainer.open();
-            LOG.info("{} success to create redis container:{}", Thread.currentThread().getId());
+            LOG.info("success to create redis container.");
         } catch (Exception e) {
             LOG.error("Redis has not been properly initialized: ", e);
             throw e;

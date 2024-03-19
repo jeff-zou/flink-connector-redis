@@ -100,4 +100,23 @@ public class RedisResultWrapper {
         }
         return createRowDataForRow(value, dataTypes);
     }
+
+    public static GenericRowData createRowDataForSortedSet(
+            Object[] keys, Double value, List<DataType> dataTypes) {
+        GenericRowData genericRowData = new GenericRowData(3);
+        genericRowData.setField(
+                0,
+                RedisRowConverter.dataTypeFromString(
+                        dataTypes.get(0).getLogicalType(), String.valueOf(keys[0])));
+        genericRowData.setField(
+                2,
+                RedisRowConverter.dataTypeFromString(
+                        dataTypes.get(2).getLogicalType(), String.valueOf(keys[1])));
+
+        if (value == null) {
+            return genericRowData;
+        }
+        genericRowData.setField(1, value);
+        return genericRowData;
+    }
 }

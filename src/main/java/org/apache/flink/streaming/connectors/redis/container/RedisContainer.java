@@ -483,4 +483,37 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             throw e;
         }
     }
+
+    @Override
+    public RedisFuture<Double> zscore(String key, String member) {
+        try {
+            return asyncCommands.zscore(key, member);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command zscore to key {} member {} error message {}",
+                        key,
+                        member,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<List> zrange(String key, long start, long stop) {
+        try {
+            return asyncCommands.zrange(key, start, stop);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command zrange to key {} start {} stop {} error message {}",
+                        key,
+                        start,
+                        stop,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
 }

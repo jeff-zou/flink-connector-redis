@@ -75,7 +75,8 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
         RedisSourceFunction redisSourceFunction =
                 new RedisSourceFunction<>(
                         redisMapper, config, flinkConfigBase, redisQueryOptions, resolvedSchema);
-        return SourceFunctionProvider.of(redisSourceFunction, true);
+        return SourceFunctionProvider.of(
+                redisSourceFunction, this.redisCommand.isCommandBoundedness());
     }
 
     @Override

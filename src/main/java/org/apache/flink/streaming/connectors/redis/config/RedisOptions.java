@@ -217,4 +217,10 @@ public class RedisOptions {
                     .intType()
                     .defaultValue(1)
                     .withDescription("Optional set range stop for query");
+
+    public static final ConfigOption<Integer> SCAN_COUNTER =
+            ConfigOptions.key("scan.counter")
+                    .intType()
+                    .defaultValue(1)
+                    .withDescription("Optional set counter for query");
 }
