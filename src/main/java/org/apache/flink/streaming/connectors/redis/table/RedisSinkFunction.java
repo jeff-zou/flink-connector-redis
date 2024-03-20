@@ -3,12 +3,13 @@ package org.apache.flink.streaming.connectors.redis.table;
 import io.lettuce.core.RedisFuture;
 
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.command.RedisInsertCommand;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.config.RedisSinkOptions;
+import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainerBuilder;
@@ -52,6 +53,8 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private final int maxRetryTimes;
     private List<DataType> columnDataTypes;
 
+    private ReadableConfig readableConfig;
+
     private RedisValueDataStructure redisValueDataStructure;
 
     /**
@@ -64,13 +67,13 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     public RedisSinkFunction(
             FlinkConfigBase flinkConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
-            RedisSinkOptions redisSinkOptions,
-            ResolvedSchema resolvedSchema) {
+            ResolvedSchema resolvedSchema,
+            ReadableConfig readableConfig) {
         Objects.requireNonNull(flinkConfigBase, "Redis connection pool config should not be null");
         Objects.requireNonNull(redisSinkMapper, "Redis Mapper can not be null");
 
         this.flinkConfigBase = flinkConfigBase;
-        this.maxRetryTimes = redisSinkOptions.getMaxRetryTimes();
+        this.maxRetryTimes = readableConfig.get(RedisOptions.MAX_RETRIES);
         this.redisSinkMapper = redisSinkMapper;
         RedisCommandDescription redisCommandDescription =
                 (RedisCommandDescription) redisSinkMapper.getCommandDescription();
@@ -86,7 +89,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         }
 
         this.columnDataTypes = resolvedSchema.getColumnDataTypes();
-        this.redisValueDataStructure = redisSinkOptions.getRedisValueDataStructure();
+        this.redisValueDataStructure = readableConfig.get(RedisOptions.VALUE_DATA_STRUCTURE);
     }
 
     /**

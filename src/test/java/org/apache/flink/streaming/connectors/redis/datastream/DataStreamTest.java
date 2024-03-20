@@ -11,7 +11,6 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.config.FlinkSingleConfig;
-import org.apache.flink.streaming.connectors.redis.config.RedisSinkOptions;
 import org.apache.flink.streaming.connectors.redis.mapper.RedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.mapper.RowRedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.table.RedisSinkFunction;
@@ -56,8 +55,6 @@ public class DataStreamTest extends TestRedisConfigBase {
                 Arrays.asList(DataTypes.STRING(), DataTypes.STRING(), DataTypes.STRING());
         ResolvedSchema resolvedSchema = ResolvedSchema.physical(columnNames, columnDataTypes);
 
-        RedisSinkOptions redisSinkOptions =
-                new RedisSinkOptions.Builder().setMaxRetryTimes(3).build();
         FlinkConfigBase conf =
                 new FlinkSingleConfig.Builder()
                         .setHost(REDIS_HOST)
@@ -66,7 +63,7 @@ public class DataStreamTest extends TestRedisConfigBase {
                         .build();
 
         RedisSinkFunction redisSinkFunction =
-                new RedisSinkFunction<>(conf, redisMapper, redisSinkOptions, resolvedSchema);
+                new RedisSinkFunction<>(conf, redisMapper, resolvedSchema, configuration);
 
         dataStream.addSink(redisSinkFunction).setParallelism(1);
         env.execute("RedisSinkTest");

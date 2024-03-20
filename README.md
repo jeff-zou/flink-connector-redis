@@ -43,54 +43,55 @@
 # 3 参数说明：
 ## 3.1 主要参数：
 
-| 字段                    | 默认值    | 类型      | 说明                                                                                               |
-|-----------------------|--------|---------|--------------------------------------------------------------------------------------------------|
-| connector             | (none) | String  | `redis`                                                                                          |
-| host                  | (none) | String  | Redis IP                                                                                         |
-| port                  | 6379   | Integer | Redis 端口                                                                                         |
-| password              | null   | String  | 如果没有设置，则为 null                                                                                   |
-| database              | 0      | Integer | 默认使用 db0                                                                                         |
-| timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                               |
-| cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
-| command               | (none) | String  | 对应上文中的redis命令                                                                                    |
-| redis-mode            | (none) | Integer | mode类型： single cluster sentinel                                                                  |
-| lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                                                                          |
-| lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                                       |
-| lookup.max-retries    | 1      | Integer | 查询失败重试次数                                                                                         |
-| lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
-| sink.max-retries      | 1      | Integer | 写入失败重试次数                                                                                         |
-| value.data.structure  | column | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
-| set.if.absent         | false  | Boolean | 在key不存在时才写入,只对set hset有效                                                                         |
-| io.pool.size          | (none) | Integer | Lettuce内netty的io线程池大小,默认情况下该值为当前JVM可用线程数，并且大于2                                                   |
-| event.pool.size       | (none) | Integer | Lettuce内netty的event线程池大小 ,默认情况下该值为当前JVM可用线程数，并且大于2                                               |
-| scan.key              | (none) | String  | 查询时redis key                                                                                     |
-| scan.addition.key     | (none) | String | 查询时限定redis key,如map结构时的hashfield                                                                 |
-| scan.range.start      | 0/-1   | Integer | 查询list等结构时指定range start                                                                          |
-| scan.range.stop       | 0/-1   | Integer | 查询list等结构时指定range start                                                                          |
+| 字段                    | 默认值    | 类型       | 说明                                                                                               |
+|-----------------------|--------|----------|--------------------------------------------------------------------------------------------------|
+| connector             | (none) | String   | `redis`                                                                                          |
+| host                  | (none) | String   | Redis IP                                                                                         |
+| port                  | 6379   | Integer  | Redis 端口                                                                                         |
+| password              | null   | String   | 如果没有设置，则为 null                                                                                   |
+| database              | 0      | Integer  | 默认使用 db0                                                                                         |
+| timeout               | 2000   | Integer  | 连接超时时间，单位 ms，默认 1s                                                                               |
+| cluster-nodes         | (none) | String   | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
+| command               | (none) | String   | 对应上文中的redis命令                                                                                    |
+| redis-mode            | (none) | Integer  | mode类型： single cluster sentinel                                                                  |
+| lookup.cache.max-rows | -1     | Integer  | 查询缓存大小,减少对redis重复key的查询                                                                          |
+| lookup.cache.ttl      | -1     | Integer  | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                                       |
+| lookup.max-retries    | 1      | Integer  | 查询失败重试次数                                                                                         |
+| lookup.cache.load-all | false  | Boolean  | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
+| sink.max-retries      | 1      | Integer  | 写入失败重试次数                                                                                         |
+| value.data.structure  | column | String   | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
+| set.if.absent         | false  | Boolean  | 在key不存在时才写入,只对set hset有效                                                                         |
+| io.pool.size          | (none) | Integer  | Lettuce内netty的io线程池大小,默认情况下该值为当前JVM可用线程数，并且大于2                                                   |
+| event.pool.size       | (none) | Integer  | Lettuce内netty的event线程池大小 ,默认情况下该值为当前JVM可用线程数，并且大于2                                               |
+| scan.key              | (none) | String   | 查询时redis key                                                                                     |
+| scan.addition.key     | (none) | String   | 查询时限定redis key,如map结构时的hashfield                                                                 |
+| scan.range.start      | (none) | Integer  | 查询list结构时指定lrange start                                                                          |
+| scan.range.stop       | (none) | Integer  | 查询list结构时指定lrange start                                                                          |
+| scan.counter          | (none) | Integer  | 查询set结构时指定srandmember counter                                                                    |
 
 ### 3.1.1 command值与redis命令对应关系：
 
-| command值              | 写入                    | 查询              | 维表关联    | 删除(Flink CDC等产生的RowKind.delete)  |
-|-----------------------|-----------------------|-----------------|---------|----------------------------------|
-| set                   | set                   | get             | get     | del                              |
-| hset                  | hset                  | hget            | hget    | hdel                             |
-| get                   | set                   | get             | get     | del                              |
-| hset                  | hset                  | hget            | hget    | hdel                             | 
-| rpush                 | rpush                 | lrange(-1, -1)  |         |                                  |
-| lpush                 | lpush                 | lrange(0, 0)    |         |                                  |
-| incrBy incrByFloat    | incrBy incrByFloat    | get             | get     | 写入相对值，如:incrby 2 -> incryby -2   | 
-| hincrBy hincryByFloat | hincrBy hincryByFloat | hget            | hget    | 写入相对值，如:hincrby 2 -> hincryby -2 |
-| zincrby               | zincrby               | zscore          | zscore  | 写入相对值，如:zincrby 2 -> zincryby -2 |
-| sadd                  | sadd                  | srandmember 10  |         | srem                             |   
-| zadd                  | zadd                  | zscore          | zscore  | zrem                             |   
-| pfadd(hyperloglog)    | pfadd(hyperloglog)    |                 |         |                                  |   
-| publish               | publish               | subscribe       |         |                                  |
-| subscribe             | publish               | subscribe       |         |                                  |
-| zrem                  | zrem                  | zscore          | zscore  |                                  |
-| srem                  | srem                  | srandmember 10  |         |                                  |
-| del                   | del                   | get             | get     |                                  |
-| hdel                  | hdel                  | hget            | hget    |                                  |
-| decrBy                | decrBy                | get             | get     |                                  | 
+| command值              | 写入                    | 查询             | 维表关联    | 删除(Flink CDC等产生的RowKind.delete)  |
+|-----------------------|-----------------------|----------------|---------|----------------------------------|
+| set                   | set                   | get            | get     | del                              |
+| hset                  | hset                  | hget           | hget    | hdel                             |
+| get                   | set                   | get            | get     | del                              |
+| hset                  | hset                  | hget           | hget    | hdel                             | 
+| rpush                 | rpush                 | lrange         |         |                                  |
+| lpush                 | lpush                 | lrange         |         |                                  |
+| incrBy incrByFloat    | incrBy incrByFloat    | get            | get     | 写入相对值，如:incrby 2 -> incryby -2   | 
+| hincrBy hincryByFloat | hincrBy hincryByFloat | hget           | hget    | 写入相对值，如:hincrby 2 -> hincryby -2 |
+| zincrby               | zincrby               | zscore         | zscore  | 写入相对值，如:zincrby 2 -> zincryby -2 |
+| sadd                  | sadd                  | srandmember 10 |         | srem                             |   
+| zadd                  | zadd                  | zscore         | zscore  | zrem                             |   
+| pfadd(hyperloglog)    | pfadd(hyperloglog)    |                |         |                                  |   
+| publish               | publish               | subscribe      |         |                                  |
+| subscribe             | publish               | subscribe      |         |                                  |
+| zrem                  | zrem                  | zscore         | zscore  |                                  |
+| srem                  | srem                  | srandmember 10 |         |                                  |
+| del                   | del                   | get            | get     |                                  |
+| hdel                  | hdel                  | hget           | hget    |                                  |
+| decrBy                | decrBy                | get            | get     |                                  | 
 
 注：**为空表示不支持**
 

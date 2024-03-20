@@ -4,8 +4,8 @@ import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigHandler;
+import org.apache.flink.streaming.connectors.redis.config.RedisJoinConfig;
 import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
-import org.apache.flink.streaming.connectors.redis.config.RedisQueryOptions;
 import org.apache.flink.streaming.connectors.redis.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.mapper.RedisMapper;
 import org.apache.flink.streaming.connectors.redis.mapper.RowRedisQueryMapper;
@@ -29,7 +29,7 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
     private ResolvedSchema resolvedSchema;
     private ReadableConfig config;
     private RedisMapper redisMapper;
-    private RedisQueryOptions redisQueryOptions;
+    private RedisJoinConfig redisJoinConfig;
 
     protected DataType producedDataType;
 
@@ -55,13 +55,11 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
         flinkConfigBase =
                 RedisHandlerServices.findRedisHandler(FlinkConfigHandler.class, properties)
                         .createFlinkConfig(config);
-        redisQueryOptions =
-                new RedisQueryOptions.Builder()
+        redisJoinConfig =
+                new RedisJoinConfig.Builder()
                         .setCacheTTL(config.get(RedisOptions.LOOKUP_CHCHE_TTL))
                         .setCacheMaxSize(config.get(RedisOptions.LOOKUP_CACHE_MAX_ROWS))
-                        .setMaxRetryTimes(config.get(RedisOptions.LOOKUP_MAX_RETRIES))
                         .setLoadAll(config.get(RedisOptions.LOOKUP_CACHE_LOAD_ALL))
-                        .setRedisValueDataStructure(config.get(RedisOptions.VALUE_DATA_STRUCTURE))
                         .build();
     }
 
@@ -74,7 +72,7 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
     public ScanRuntimeProvider getScanRuntimeProvider(ScanContext runtimeProviderContext) {
         RedisSourceFunction redisSourceFunction =
                 new RedisSourceFunction<>(
-                        redisMapper, config, flinkConfigBase, redisQueryOptions, resolvedSchema);
+                        redisMapper, config, flinkConfigBase, redisJoinConfig, resolvedSchema);
         return SourceFunctionProvider.of(
                 redisSourceFunction, this.redisCommand.isCommandBoundedness());
     }
@@ -83,7 +81,7 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
     public LookupRuntimeProvider getLookupRuntimeProvider(LookupContext context) {
         return AsyncTableFunctionProvider.of(
                 new RedisLookupFunction(
-                        flinkConfigBase, redisMapper, redisQueryOptions, resolvedSchema));
+                        flinkConfigBase, redisMapper, redisJoinConfig, resolvedSchema, config));
     }
 
     @Override

@@ -110,20 +110,14 @@ public class RedisOptions {
                     .defaultValue(-1L)
                     .withDescription("Optional ttl of cache for query redis");
 
-    public static final ConfigOption<Integer> LOOKUP_MAX_RETRIES =
-            ConfigOptions.key("lookup.max-retries")
-                    .intType()
-                    .defaultValue(1)
-                    .withDescription("Optional max retries of cache for query redis");
-
     public static final ConfigOption<Boolean> LOOKUP_CACHE_LOAD_ALL =
             ConfigOptions.key("lookup.cache.load-all")
                     .booleanType()
                     .defaultValue(false)
                     .withDescription("Optional if load all elements into cache for query");
 
-    public static final ConfigOption<Integer> SINK_MAX_RETRIES =
-            ConfigOptions.key("sink.max-retries")
+    public static final ConfigOption<Integer> MAX_RETRIES =
+            ConfigOptions.key("max.retries")
                     .intType()
                     .defaultValue(1)
                     .withDescription("Optional max retries of cache sink");
@@ -210,17 +204,17 @@ public class RedisOptions {
     public static final ConfigOption<Integer> SCAN_RANGE_START =
             ConfigOptions.key("scan.range.start")
                     .intType()
-                    .defaultValue(0)
-                    .withDescription("Optional set range start for query");
+                    .defaultValue(null)
+                    .withDescription("Optional set range start for lrange query");
     public static final ConfigOption<Integer> SCAN_RANGE_STOP =
             ConfigOptions.key("scan.range.stop")
                     .intType()
-                    .defaultValue(1)
-                    .withDescription("Optional set range stop for query");
+                    .defaultValue(null)
+                    .withDescription("Optional set range stop for lrange query");
 
-    public static final ConfigOption<Integer> SCAN_COUNTER =
-            ConfigOptions.key("scan.counter")
+    public static final ConfigOption<Integer> SCAN_COUNT =
+            ConfigOptions.key("scan.count")
                     .intType()
-                    .defaultValue(1)
-                    .withDescription("Optional set counter for query");
+                    .defaultValue(null)
+                    .withDescription("Optional set count for srandmember query");
 }

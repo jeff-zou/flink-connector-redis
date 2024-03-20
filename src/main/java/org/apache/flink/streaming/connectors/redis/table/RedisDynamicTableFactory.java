@@ -81,8 +81,7 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.TTL);
         options.add(RedisOptions.LOOKUP_CACHE_MAX_ROWS);
         options.add(RedisOptions.LOOKUP_CHCHE_TTL);
-        options.add(RedisOptions.LOOKUP_MAX_RETRIES);
-        options.add(RedisOptions.SINK_MAX_RETRIES);
+        options.add(RedisOptions.MAX_RETRIES);
         options.add(RedisOptions.SINK_PARALLELISM);
         options.add(RedisOptions.LOOKUP_CACHE_LOAD_ALL);
         options.add(RedisOptions.SINK_LIMIT);
@@ -102,7 +101,7 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.SCAN_ADDITION_KEY);
         options.add(RedisOptions.SCAN_RANGE_STOP);
         options.add(RedisOptions.SCAN_RANGE_START);
-        options.add(RedisOptions.SCAN_COUNTER);
+        options.add(RedisOptions.SCAN_COUNT);
         return options;
     }
 

@@ -4,12 +4,14 @@ import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTabl
 
 import org.apache.flink.calcite.shaded.com.google.common.cache.Cache;
 import org.apache.flink.calcite.shaded.com.google.common.cache.CacheBuilder;
+import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommandBaseDescription;
 import org.apache.flink.streaming.connectors.redis.command.RedisJoinCommand;
 import org.apache.flink.streaming.connectors.redis.command.RedisSelectCommand;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.config.RedisQueryOptions;
+import org.apache.flink.streaming.connectors.redis.config.RedisJoinConfig;
+import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainerBuilder;
@@ -52,18 +54,19 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
     public RedisLookupFunction(
             FlinkConfigBase flinkConfigBase,
             RedisMapper redisMapper,
-            RedisQueryOptions redisQueryOptions,
-            ResolvedSchema resolvedSchema) {
+            RedisJoinConfig redisJoinConfig,
+            ResolvedSchema resolvedSchema,
+            ReadableConfig readableConfig) {
         Preconditions.checkNotNull(
                 flinkConfigBase, "Redis connection pool config should not be null");
         Preconditions.checkNotNull(redisMapper, "Redis Mapper can not be null");
 
         this.flinkConfigBase = flinkConfigBase;
-        this.cacheTtl = redisQueryOptions.getCacheTtl();
-        this.cacheMaxSize = redisQueryOptions.getCacheMaxSize();
-        this.maxRetryTimes = redisQueryOptions.getMaxRetryTimes();
-        this.loadAll = redisQueryOptions.getLoadAll();
-        this.redisValueDataStructure = redisQueryOptions.getRedisValueDataStructure();
+        this.cacheTtl = redisJoinConfig.getCacheTtl();
+        this.cacheMaxSize = redisJoinConfig.getCacheMaxSize();
+        this.maxRetryTimes = readableConfig.get(RedisOptions.MAX_RETRIES);
+        this.loadAll = redisJoinConfig.getLoadAll();
+        this.redisValueDataStructure = readableConfig.get(RedisOptions.VALUE_DATA_STRUCTURE);
 
         RedisCommandBaseDescription redisCommandDescription = redisMapper.getCommandDescription();
         Preconditions.checkNotNull(

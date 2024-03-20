@@ -266,6 +266,13 @@ public interface RedisCommandsContainer extends Serializable {
     RedisFuture<List> zrange(String key, long start, long stop);
 
     /**
+     * @param key
+     * @param count
+     * @return
+     */
+    public RedisFuture<List> srandmember(String key, long count);
+
+    /**
      * get redis async commands.
      *
      * @return

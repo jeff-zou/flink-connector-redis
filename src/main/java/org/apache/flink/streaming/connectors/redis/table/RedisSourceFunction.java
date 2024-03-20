@@ -7,8 +7,8 @@ import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommandBaseDescription;
 import org.apache.flink.streaming.connectors.redis.command.RedisSelectCommand;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
+import org.apache.flink.streaming.connectors.redis.config.RedisJoinConfig;
 import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
-import org.apache.flink.streaming.connectors.redis.config.RedisQueryOptions;
 import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainerBuilder;
@@ -40,19 +40,19 @@ public class RedisSourceFunction<T> extends RichSourceFunction<T> {
 
     private final List<DataType> dataTypes;
 
-    private final String[] queryParameter;
+    private String[] queryParameter;
 
     public RedisSourceFunction(
             RedisMapper redisMapper,
             ReadableConfig readableConfig,
             FlinkConfigBase flinkConfigBase,
-            RedisQueryOptions redisQueryOptions,
+            RedisJoinConfig redisJoinConfig,
             ResolvedSchema resolvedSchema) {
         this.readableConfig = readableConfig;
         this.flinkConfigBase = flinkConfigBase;
-        this.maxRetryTimes = redisQueryOptions.getMaxRetryTimes();
-        this.redisValueDataStructure = redisQueryOptions.getRedisValueDataStructure();
-        this.queryParameter = new String[2];
+        this.maxRetryTimes = readableConfig.get(RedisOptions.MAX_RETRIES);
+        this.redisValueDataStructure = readableConfig.get(RedisOptions.VALUE_DATA_STRUCTURE);
+
         RedisCommandBaseDescription redisCommandDescription = redisMapper.getCommandDescription();
         Preconditions.checkNotNull(
                 redisCommandDescription, "Redis Mapper data type description can not be null");
@@ -62,27 +62,13 @@ public class RedisSourceFunction<T> extends RichSourceFunction<T> {
 
     @Override
     public void open(Configuration parameters) throws Exception {
-        Preconditions.checkNotNull(
-                this.readableConfig.get(RedisOptions.SCAN_KEY),
-                "the scan.key for source can not be null");
+        validator();
+        this.queryParameter = new String[2];
         this.queryParameter[0] = this.readableConfig.get(RedisOptions.SCAN_KEY);
 
-        Preconditions.checkArgument(
-                redisCommand.getSelectCommand() != RedisSelectCommand.NONE,
-                String.format("the command %s do not support query.", redisCommand.name()));
-
         if (redisCommand.getSelectCommand() == RedisSelectCommand.HGET) {
-            Preconditions.checkNotNull(
-                    this.readableConfig.get(RedisOptions.SCAN_ADDITION_KEY),
-                    "must set field value of Map to scan.addition.key");
             this.queryParameter[1] = this.readableConfig.get(RedisOptions.SCAN_ADDITION_KEY);
         } else if (redisCommand.getSelectCommand() == RedisSelectCommand.ZSCORE) {
-            Preconditions.checkNotNull(
-                    this.readableConfig.get(RedisOptions.SCAN_ADDITION_KEY),
-                    "must set member value of SortedSet to scan.addition.key");
-            Preconditions.checkArgument(
-                    dataTypes.get(1).getLogicalType() instanceof DoubleType,
-                    "the second column's type of source table must be double. the type of score is double when the data structure in redis is SortedSet.");
             this.queryParameter[1] = this.readableConfig.get(RedisOptions.SCAN_ADDITION_KEY);
         }
 
@@ -149,6 +135,52 @@ public class RedisSourceFunction<T> extends RichSourceFunction<T> {
                     ctx.collect(rowData);
                     break;
                 }
+            case LRANGE:
+                {
+                    List list =
+                            this.redisCommandsContainer
+                                    .lRange(
+                                            queryParameter[0],
+                                            this.readableConfig.get(RedisOptions.SCAN_RANGE_START),
+                                            this.readableConfig.get(RedisOptions.SCAN_RANGE_STOP))
+                                    .get();
+                    list.forEach(
+                            result -> {
+                                GenericRowData rowData =
+                                        RedisResultWrapper.createRowDataForString(
+                                                queryParameter,
+                                                String.valueOf(result),
+                                                redisValueDataStructure,
+                                                dataTypes);
+                                ctx.collect(rowData);
+                            });
+
+                    break;
+                }
+            case SRANDMEMBER:
+                {
+                    List list =
+                            this.redisCommandsContainer
+                                    .srandmember(
+                                            String.valueOf(queryParameter[0]),
+                                            readableConfig.get(RedisOptions.SCAN_COUNT))
+                                    .get();
+
+                    list.forEach(
+                            result -> {
+                                GenericRowData rowData =
+                                        RedisResultWrapper.createRowDataForString(
+                                                queryParameter,
+                                                String.valueOf(result),
+                                                redisValueDataStructure,
+                                                dataTypes);
+                                ctx.collect(rowData);
+                            });
+                    break;
+                }
+            case SUBSCRIBE:
+                {
+                }
             default:
         }
     }
@@ -163,4 +195,45 @@ public class RedisSourceFunction<T> extends RichSourceFunction<T> {
 
     @Override
     public void cancel() {}
+
+    private void validator() {
+        Preconditions.checkNotNull(
+                this.readableConfig.get(RedisOptions.SCAN_KEY),
+                "the %s for source can not be null",
+                RedisOptions.SCAN_KEY.key());
+
+        Preconditions.checkArgument(
+                redisCommand.getSelectCommand() != RedisSelectCommand.NONE,
+                String.format("the command %s do not support query.", redisCommand.name()));
+
+        if (redisCommand.getSelectCommand() == RedisSelectCommand.HGET) {
+            Preconditions.checkNotNull(
+                    this.readableConfig.get(RedisOptions.SCAN_ADDITION_KEY),
+                    "must set field value of Map to %s",
+                    RedisOptions.SCAN_ADDITION_KEY.key());
+        } else if (redisCommand.getSelectCommand() == RedisSelectCommand.ZSCORE) {
+            Preconditions.checkNotNull(
+                    this.readableConfig.get(RedisOptions.SCAN_ADDITION_KEY),
+                    "must set member value of SortedSet to %s",
+                    RedisOptions.SCAN_ADDITION_KEY.key());
+            Preconditions.checkArgument(
+                    dataTypes.get(1).getLogicalType() instanceof DoubleType,
+                    "the second column's type of source table must be double. the type of score is double when the data structure in redis is SortedSet.");
+        } else if (redisCommand.getSelectCommand() == RedisSelectCommand.LRANGE) {
+            Preconditions.checkNotNull(
+                    this.readableConfig.get(RedisOptions.SCAN_RANGE_START),
+                    "the %s must not be null when query list",
+                    RedisOptions.SCAN_RANGE_START.key());
+
+            Preconditions.checkNotNull(
+                    this.readableConfig.get(RedisOptions.SCAN_RANGE_STOP),
+                    "the %s must not be null when query list",
+                    RedisOptions.SCAN_RANGE_STOP.key());
+        } else if (redisCommand.getSelectCommand() == RedisSelectCommand.SRANDMEMBER) {
+            Preconditions.checkNotNull(
+                    this.readableConfig.get(RedisOptions.SCAN_COUNT),
+                    "the %s must not be null when query set",
+                    RedisOptions.SCAN_COUNT.key());
+        }
+    }
 }

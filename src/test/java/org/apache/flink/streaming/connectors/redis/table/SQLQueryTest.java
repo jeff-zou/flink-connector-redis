@@ -137,4 +137,62 @@ public class SQLQueryTest extends TestRedisConfigBase {
         tableResult.getJobClient().get().getJobExecutionResult().get();
         Preconditions.checkArgument(singleRedisCommands.zscore("test_sorted_set", "test") == 2);
     }
+
+    @Test
+    public void testLrangeQuery() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+        singleRedisCommands.del("test_list");
+        singleRedisCommands.lpush("test_list", "2", "test2");
+        String source =
+                "create table source_redis(username VARCHAR, passport VARCHAR) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','scan.key'='test_list', 'scan.range.start'='0', 'scan.range.stop'='1', 'password'='"
+                        + REDIS_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.LPUSH
+                        + "')";
+        tEnv.executeSql(source);
+        String sink =
+                "create table sink_table(username varchar, passport VARCHAR) with ( 'connector'='print')";
+        tEnv.executeSql(sink);
+        TableResult tableResult =
+                tEnv.executeSql("insert into sink_table select * from source_redis ");
+
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+    }
+
+    @Test
+    public void testSrandmemberQuery() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+        singleRedisCommands.del("test_set");
+        singleRedisCommands.sadd("test_set", "2", "test2");
+        String source =
+                "create table source_redis(username VARCHAR, passport VARCHAR) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','scan.key'='test_set', 'scan.count'='2', 'password'='"
+                        + REDIS_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.SADD
+                        + "')";
+        tEnv.executeSql(source);
+        String sink =
+                "create table sink_table(username varchar, passport VARCHAR) with ( 'connector'='print')";
+        tEnv.executeSql(sink);
+        TableResult tableResult =
+                tEnv.executeSql("insert into sink_table select * from source_redis ");
+
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+    }
 }

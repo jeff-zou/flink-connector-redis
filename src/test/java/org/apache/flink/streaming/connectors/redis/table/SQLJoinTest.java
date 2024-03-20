@@ -315,7 +315,7 @@ public class SQLJoinTest extends TestRedisConfigBase {
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.HGET
-                        + "',   'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'lookup.max-retries'='3'  )";
+                        + "',   'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'max.retries'='3'  )";
 
         String source =
                 "create table source_table(username varchar, level varchar, proctime as procTime()) "
@@ -377,7 +377,7 @@ public class SQLJoinTest extends TestRedisConfigBase {
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.HGET
-                        + "',   'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'lookup.max-retries'='3'  )";
+                        + "',   'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'max.retries'='3'  )";
 
         String source =
                 "create table source_table(username varchar, level varchar, proctime as procTime()) "
@@ -435,7 +435,7 @@ public class SQLJoinTest extends TestRedisConfigBase {
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.GET
-                        + "',   'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'lookup.max-retries'='3'  )";
+                        + "',   'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'max.retries'='3'  )";
 
         String source =
                 "create table source_table(username varchar, level varchar, proctime as procTime()) "

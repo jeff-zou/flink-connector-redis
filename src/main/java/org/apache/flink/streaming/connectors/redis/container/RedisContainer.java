@@ -516,4 +516,20 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             throw e;
         }
     }
+
+    @Override
+    public RedisFuture<List> srandmember(String key, long count) {
+        try {
+            return asyncCommands.srandmember(key, count);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command srandmember to key {} count {}error message {}",
+                        key,
+                        count,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
 }
