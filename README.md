@@ -4,14 +4,14 @@
 基于[bahir-flink](https://github.com/apache/bahir-flink.git)二次开发，相对bahir调整的内容有：
 ```
 1.使用Lettuce替换Jedis,同步读写改为异步读写，大幅度提升了性能 
-2.增加了Table/SQL API，增加维表join查询支持
-3.增加查询缓存(支持增量与全量)
+2.增加了Table/SQL API，增加select/维表join查询支持
+3.增加关联查询缓存(支持增量与全量)
 4.增加支持整行保存功能，用于多字段的维表关联查询
 5.增加限流功能，用于Flink SQL在线调试功能
 6.增加支持Flink高版本（包括1.12,1.13,1.14+）
 7.统一过期策略等
 8.支持flink cdc删除及其它RowKind.DELETE
-9.支持查询
+9.支持select查询
 ```
 
 因bahir使用的flink接口版本较老，所以改动较大，开发过程中参考了腾讯云与阿里云两家产商的流计算产品，取两家之长，并增加了更丰富的功能。
@@ -26,7 +26,7 @@
 
 <br/>
   项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.3.2.jar，
-否则使用flink-connector-redis-1.3.2-jar-with-dependencies.jar。
+否则使用flink-connector-redis-1.4.0-jar-with-dependencies.jar。
 <br/>
 
 开发环境工程直接引用：
@@ -37,37 +37,36 @@
     <artifactId>flink-connector-redis</artifactId>
     <!-- 没有单独引入项目依赖Lettuce netty-transport-native-epoll依赖时 -->
     <!--            <classifier>jar-with-dependencies</classifier>-->
-    <version>1.3.2</version>
+    <version>1.4.0</version>
 </dependency>
 ```
 # 3 参数说明：
 ## 3.1 主要参数：
 
-| 字段                    | 默认值    | 类型       | 说明                                                                                               |
-|-----------------------|--------|----------|--------------------------------------------------------------------------------------------------|
-| connector             | (none) | String   | `redis`                                                                                          |
-| host                  | (none) | String   | Redis IP                                                                                         |
-| port                  | 6379   | Integer  | Redis 端口                                                                                         |
-| password              | null   | String   | 如果没有设置，则为 null                                                                                   |
-| database              | 0      | Integer  | 默认使用 db0                                                                                         |
-| timeout               | 2000   | Integer  | 连接超时时间，单位 ms，默认 1s                                                                               |
-| cluster-nodes         | (none) | String   | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
-| command               | (none) | String   | 对应上文中的redis命令                                                                                    |
-| redis-mode            | (none) | Integer  | mode类型： single cluster sentinel                                                                  |
-| lookup.cache.max-rows | -1     | Integer  | 查询缓存大小,减少对redis重复key的查询                                                                          |
-| lookup.cache.ttl      | -1     | Integer  | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                                       |
-| lookup.max-retries    | 1      | Integer  | 查询失败重试次数                                                                                         |
-| lookup.cache.load-all | false  | Boolean  | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
-| sink.max-retries      | 1      | Integer  | 写入失败重试次数                                                                                         |
-| value.data.structure  | column | String   | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
-| set.if.absent         | false  | Boolean  | 在key不存在时才写入,只对set hset有效                                                                         |
-| io.pool.size          | (none) | Integer  | Lettuce内netty的io线程池大小,默认情况下该值为当前JVM可用线程数，并且大于2                                                   |
-| event.pool.size       | (none) | Integer  | Lettuce内netty的event线程池大小 ,默认情况下该值为当前JVM可用线程数，并且大于2                                               |
-| scan.key              | (none) | String   | 查询时redis key                                                                                     |
-| scan.addition.key     | (none) | String   | 查询时限定redis key,如map结构时的hashfield                                                                 |
-| scan.range.start      | (none) | Integer  | 查询list结构时指定lrange start                                                                          |
-| scan.range.stop       | (none) | Integer  | 查询list结构时指定lrange start                                                                          |
-| scan.counter          | (none) | Integer  | 查询set结构时指定srandmember counter                                                                    |
+| 字段                    | 默认值    | 类型      | 说明                                                                                               |
+|-----------------------|--------|---------|--------------------------------------------------------------------------------------------------|
+| connector             | (none) | String  | `redis`                                                                                          |
+| host                  | (none) | String  | Redis IP                                                                                         |
+| port                  | 6379   | Integer | Redis 端口                                                                                         |
+| password              | null   | String  | 如果没有设置，则为 null                                                                                   |
+| database              | 0      | Integer | 默认使用 db0                                                                                         |
+| timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                               |
+| cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
+| command               | (none) | String  | 对应上文中的redis命令                                                                                    |
+| redis-mode            | (none) | Integer | mode类型： single cluster sentinel                                                                  |
+| lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                                                                          |
+| lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                                       |
+| lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
+| max.retries           | 1      | Integer | 写入失败重试次数                                                                                         |
+| value.data.structure  | column | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
+| set.if.absent         | false  | Boolean | 在key不存在时才写入,只对set hset有效                                                                         |
+| io.pool.size          | (none) | Integer | Lettuce内netty的io线程池大小,默认情况下该值为当前JVM可用线程数，并且大于2                                                   |
+| event.pool.size       | (none) | Integer | Lettuce内netty的event线程池大小 ,默认情况下该值为当前JVM可用线程数，并且大于2                                               |
+| scan.key              | (none) | String  | 查询时redis key                                                                                     |
+| scan.addition.key     | (none) | String  | 查询时限定redis key,如map结构时的hashfield                                                                 |
+| scan.range.start      | (none) | Integer | 查询list结构时指定lrange start                                                                          |
+| scan.range.stop       | (none) | Integer | 查询list结构时指定lrange start                                                                          |
+| scan.count            | (none) | Integer | 查询set结构时指定srandmember count                                                                      |
 
 ### 3.1.1 command值与redis命令对应关系：
 
@@ -85,8 +84,7 @@
 | sadd                  | sadd                  | srandmember 10 |         | srem                             |   
 | zadd                  | zadd                  | zscore         | zscore  | zrem                             |   
 | pfadd(hyperloglog)    | pfadd(hyperloglog)    |                |         |                                  |   
-| publish               | publish               | subscribe      |         |                                  |
-| subscribe             | publish               | subscribe      |         |                                  |
+| publish               | publish               |                |         |                                  |
 | zrem                  | zrem                  | zscore         | zscore  |                                  |
 | srem                  | srem                  | srandmember 10 |         |                                  |
 | del                   | del                   | get            | get     |                                  |

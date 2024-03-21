@@ -14,31 +14,29 @@ Based on the  [bahir-flink](https://github.com/apache/bahir-flink.git)，the con
 Because the version of the flink interface used by bahir is relatively old, the changes are relatively large. During the development process, the stream computing products of Tencent Cloud and Alibaba Cloud were referenced, taking the advantages of the two, and adding richer functions.
 
 ### Redis Command
-The operation commands corresponding to the supported functions of redis are:
+The command value corresponds to the redis command:
 
-| insert                         | Dimension table query |
-| ------------------------------ |-----------------------|
-| set                            | get                   |
-| hset                           | hget                  |
-| rpush lpush                    |                       |
-| incrBy decrBy hincrBy  zincrby |                       |
-| sadd zadd pfadd(hyperloglog)   |                       |
-| publish                        |                       |
-| zrem decrby srem               |                       |
-| del hdel                       |                       |
+| command               | insert                | select         | join   | delete(Flink CDC's RowKind.delete) |
+|-----------------------|-----------------------|----------------|--------|------------------------------------|
+| set                   | set                   | get            | get    | del                                |
+| hset                  | hset                  | hget           | hget   | hdel                               |
+| get                   | set                   | get            | get    | del                                |
+| hset                  | hset                  | hget           | hget   | hdel                               | 
+| rpush                 | rpush                 | lrange         |        |                                    |
+| lpush                 | lpush                 | lrange         |        |                                    |
+| incrBy incrByFloat    | incrBy incrByFloat    | get            | get    | eg:incrby 2 -> incryby -2          | 
+| hincrBy hincryByFloat | hincrBy hincryByFloat | hget           | hget   | eg:hincrby 2 -> hincryby -2        |
+| zincrby               | zincrby               | zscore         | zscore | eg:zincrby 2 -> zincryby -2        |
+| sadd                  | sadd                  | srandmember 10 |        | srem                               |   
+| zadd                  | zadd                  | zscore         | zscore | zrem                               |   
+| pfadd(hyperloglog)    | pfadd(hyperloglog)    |                |        |                                    |   
+| publish               | publish               |                |        |                                    |
+| zrem                  | zrem                  | zscore         | zscore |                                    |
+| srem                  | srem                  | srandmember 10 |        |                                    |
+| del                   | del                   | get            | get    |                                    |
+| hdel                  | hdel                  | hget           | hget   |                                    |
+| decrBy                | decrBy                | get            | get    |                                    | 
 
-### Command for CDC 
-| CDC INSERT/UPDATE                                       | CDC DELETE                                    |  
-|---------------------------------------------------------|-----------------------------------------------|
-| set                                                     | del                                           |
-| hset                                                    | hdel                                          | 
-| rpush lpush                                             | no response                                   |
-| incrBy incrByFloat decrBy hincrBy hincryByFloat zincrby | write relative value，如:incrby 2 -> incryby -2 |
-| sadd zadd                                               | srem zrem                                     |
-| pfadd(hyperloglog)                                      | no response                                   |
-| publish                                                 | no response                                   |
-| zrem srem                                               | no response                                   |
-| del hdel                                                | no response                                   |
 Note: The cdc update operation has the same effect as the cdc insert.
 
 ### Instructions: 
@@ -47,8 +45,8 @@ After executing mvn package -DskipTests on the command line, import the generate
 
 
 <br/>
- The project depends on Lettuce(6.2.1) and netty-transport-native-epoll(4.1.82.Final),flink-connection-redis-1.3.2.jar if these packages are available.
-Otherwise, use flink-connector-redis-1.3.2-jar-with-dependencies.jar.
+ The project depends on Lettuce(6.2.1) and netty-transport-native-epoll(4.1.82.Final),flink-connection-redis-1.4.0.jar if these packages are available.
+Otherwise, use flink-connector-redis-1.4.0-jar-with-dependencies.jar.
 <br/>
 
 Development environment engineering direct reference:
@@ -57,7 +55,7 @@ Development environment engineering direct reference:
 <dependency>
   <groupId>io.github.jeff-zou</groupId>
   <artifactId>flink-connector-redis</artifactId>
-  <version>1.3.2</version>
+  <version>1.4.0</version>
   <!-- When the Lettuce netty-transport-native-epoll dependency is not imported separately -->
     <!--            <classifier>jar-with-dependencies</classifier>-->
 </dependency>
@@ -89,26 +87,31 @@ key: name, field:subject, value: name\01subject\01score.
 
 ##### with parameter description:
 
-| Field                | Default | Type    | Description                                                                                                                                                                                        |
-|----------------------|---------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| connector            | (none)  | String  | `redis`                                                                                                                                                                                            |
-| host                 | (none)  | String  | Redis IP                                                                                                                                                                                           |
-| port                 | 6379    | Integer | Redis port                                                                                                                                                                                         |
-| password             | null    | String  | null if not set                                                                                                                                                                                    |
-| database             | 0       | Integer | db0 is used by default                                                                                                                                                                             |
-| timeout              | 2000    | Integer | Connection timeout, in ms, default 1s                                                                                                                                                              |
-| cluster-nodes        | (none)  | String  | Cluster ip and port, not empty when redis-mode is cluster, such as:10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000                                                                           |
-| command              | (none)  | String  | Corresponds to the redis command above                                                                                                                                                             |
-| redis-mode           | (none)  | Integer | mode type： single cluster                                                                                                                                                                          |
-| lookup.cache.max-rows | -1      | Integer | Query cache size, reduce the query for redis duplicate keys                                                                                                                                        |
-| lookup.cache.ttl     | -1      | Integer | Query cache expiration time, in seconds. The condition for enabling query cache is that neither max-rows nor ttl can be -1                                                                         |
-| lookup.max-retries   | 1       | Integer | Number of retries on failed query                                                                                                                                                                  |
-| lookup.cache.load-all | false   | Boolean | when command is hget, query all elements from redis map to cache,help to resolve cache penetration issues                                                                                          |
-| sink.max-retries     | 1       | Integer | Number of retries for write failures                                                                                                                                                               |
-| value.data.structure      | column  | String  | column: The value will come from a field (for example, set: key is the first field defined by DDL, and value is the second field)<br/> row: value is taken from the entire row, separated by '\01' |
-| set.if.absent         | false  | Boolean | set/hset only when the key absent                                                                                                                                                                  |
-| io.pool.size    | (none)  | Integer | the size of io thread pool for Lettuce's netty. By default, this is the number of threads currently available to the JVM and is greater than 2                                                     |
-| event.pool.size | (none)  | Integer | the size of event thread pool for Lettuce's netty. By default, this is the number of threads currently available to the JVM and is greater than 2                                                  |
+| Field                 | Default  | Type    | Description                                                                                                                                                                                        |
+|-----------------------|----------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| connector             | (none)   | String  | `redis`                                                                                                                                                                                            |
+| host                  | (none)   | String  | Redis IP                                                                                                                                                                                           |
+| port                  | 6379     | Integer | Redis port                                                                                                                                                                                         |
+| password              | null     | String  | null if not set                                                                                                                                                                                    |
+| database              | 0        | Integer | db0 is used by default                                                                                                                                                                             |
+| timeout               | 2000     | Integer | Connection timeout, in ms, default 1s                                                                                                                                                              |
+| cluster-nodes         | (none)   | String  | Cluster ip and port, not empty when redis-mode is cluster, such as:10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000                                                                           |
+| command               | (none)   | String  | Corresponds to the redis command above                                                                                                                                                             |
+| redis-mode            | (none)   | Integer | mode type： single cluster                                                                                                                                                                          |
+| lookup.cache.max-rows | -1       | Integer | Query cache size, reduce the query for redis duplicate keys                                                                                                                                        |
+| lookup.cache.ttl      | -1       | Integer | Query cache expiration time, in seconds. The condition for enabling query cache is that neither max-rows nor ttl can be -1                                                                         |
+| lookup.max-retries    | 1        | Integer | Number of retries on failed query                                                                                                                                                                  |
+| lookup.cache.load-all | false    | Boolean | when command is hget, query all elements from redis map to cache,help to resolve cache penetration issues                                                                                          |
+| sink.max-retries      | 1        | Integer | Number of retries for write failures                                                                                                                                                               |
+| value.data.structure  | column   | String  | column: The value will come from a field (for example, set: key is the first field defined by DDL, and value is the second field)<br/> row: value is taken from the entire row, separated by '\01' |
+| set.if.absent         | false    | Boolean | set/hset only when the key absent                                                                                                                                                                  |
+| io.pool.size          | (none)   | Integer | the size of io thread pool for Lettuce's netty. By default, this is the number of threads currently available to the JVM and is greater than 2                                                     |
+| event.pool.size       | (none)   | Integer | the size of event thread pool for Lettuce's netty. By default, this is the number of threads currently available to the JVM and is greater than 2                                                  |
+| scan.key              | (none)   | String  | redis key                                                                                                                                                                                          |
+| scan.addition.key     | (none)   | String  | redis addition key,eg: map hashfield                                                                                                                                                               |
+| scan.range.start      | (none)   | Integer | lrange start                                                                                                                                                                                       |
+| scan.range.stop       | (none)   | Integer | lrange start                                                                                                                                                                                       |
+| scan.count            | (none)   | Integer | srandmember count                                                                                                                                                                                  |
 
 
 ##### sink with ttl parameters

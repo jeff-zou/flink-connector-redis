@@ -7,7 +7,6 @@ import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommandBaseDescription;
 import org.apache.flink.streaming.connectors.redis.command.RedisSelectCommand;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.config.RedisJoinConfig;
 import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainer;
@@ -46,7 +45,6 @@ public class RedisSourceFunction<T> extends RichSourceFunction<T> {
             RedisMapper redisMapper,
             ReadableConfig readableConfig,
             FlinkConfigBase flinkConfigBase,
-            RedisJoinConfig redisJoinConfig,
             ResolvedSchema resolvedSchema) {
         this.readableConfig = readableConfig;
         this.flinkConfigBase = flinkConfigBase;
