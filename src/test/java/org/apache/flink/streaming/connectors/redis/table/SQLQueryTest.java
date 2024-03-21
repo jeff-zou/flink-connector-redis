@@ -18,37 +18,23 @@ public class SQLQueryTest extends TestRedisConfigBase {
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
         singleRedisCommands.del("test");
         singleRedisCommands.set("test", "1");
-        String source =
-                "create table source_redis(username VARCHAR, passport int) with ( 'connector'='redis', "
+        String redis_table =
+                "create table redis_table(username VARCHAR, age int) with ( 'connector'='redis', "
                         + "'host'='"
                         + REDIS_HOST
                         + "','port'='"
                         + REDIS_PORT
-                        + "', 'redis-mode'='single','scan.key'='test', 'password'='"
+                        + "', 'redis-mode'='single', 'password'='"
                         + REDIS_PASSWORD
                         + "','"
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.GET
                         + "')";
-        tEnv.executeSql(source);
-        String sink =
-                "create table sink_table(username varchar, passport int) with ( 'connector'='redis', "
-                        + "'host'='"
-                        + REDIS_HOST
-                        + "','port'='"
-                        + REDIS_PORT
-                        + "', 'redis-mode'='single','password'='"
-                        + REDIS_PASSWORD
-                        + "','"
-                        + REDIS_COMMAND
-                        + "'='"
-                        + RedisCommand.SET
-                        + "')";
-        tEnv.executeSql(sink);
+        tEnv.executeSql(redis_table);
         TableResult tableResult =
                 tEnv.executeSql(
-                        "insert into sink_table select username,passport + 1 from source_redis ");
+                        "insert into redis_table select username,age + 1 from redis_table /*+ options('scan.key'='test') */");
 
         tableResult.getJobClient().get().getJobExecutionResult().get();
         Preconditions.checkArgument(singleRedisCommands.get("test").equals("2"));

@@ -21,16 +21,10 @@
 
 
 # 2 使用方法: 
-1.打包命令： mvn package -DskipTests</br>
-2.将生成的包放入flink lib中即可，无需其它设置。
-
-<br/>
-  项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.3.2.jar，
+## 2.1 工程直接引用
+项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.3.2.jar，
 否则使用flink-connector-redis-1.4.0-jar-with-dependencies.jar。
 <br/>
-
-开发环境工程直接引用：
-
 ```
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
@@ -40,6 +34,31 @@
     <version>1.4.0</version>
 </dependency>
 ```
+## 2.2 自行打包
+打包命令： mvn package -DskipTests,将生成的包放入flink lib中即可，无需其它设置。
+
+## 2.3 使用示例 
+```
+-- 创建redis表示例
+create table redis_table (name varchar, age int) 
+  with ('connector'='redis', 'host'='10.11.69.176', 'port'='6379','password'='test123', 
+  'redis-mode'='single','command'='set');
+-- 写入  
+  insert into redis_table select * from (values('test', 1));
+
+-- 查询  
+  insert into redis_table select name,age + 1 from redis_table /*+ options('scan.key'='test') */
+  
+create table gen_table (age int , level int, proctime as procTime()) with ('connector'='datagen','fields.age.kind' = 'sequence',
+ 'fields.age.start' = '2','fields.age.end' = '2','fields.level.kind' = 'sequence','fields.level.start' = '10','fields.level.end' = '10'); 
+
+-- 关联查询 
+insert into redis_table select 'test', j.age + 10 from gen_table s left join redis_table  for system_time as of proctime as j
+on j.name = 'test'
+
+```
+
+
 # 3 参数说明：
 ## 3.1 主要参数：
 
@@ -299,9 +318,12 @@ tableResult.getJobClient().get()
 .get();
 ```
 
+## 联系我
+
+![img.png](img.png)
 
 
-## 5.5 开发与测试环境
+## 5.6 开发与测试环境
 
 ide: IntelliJ IDEA 
 
