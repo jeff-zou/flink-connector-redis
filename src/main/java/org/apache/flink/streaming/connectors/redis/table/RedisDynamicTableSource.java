@@ -16,7 +16,6 @@ import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.LookupTableSource;
 import org.apache.flink.table.connector.source.ScanTableSource;
 import org.apache.flink.table.connector.source.SourceFunctionProvider;
-import org.apache.flink.table.types.DataType;
 import org.apache.flink.util.Preconditions;
 
 import java.util.Map;
@@ -31,13 +30,10 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
     private RedisMapper redisMapper;
     private RedisJoinConfig redisJoinConfig;
 
-    protected DataType producedDataType;
-
     private RedisCommand redisCommand;
 
     public RedisDynamicTableSource(
             RedisCommand redisCommand,
-            DataType physicalDataType,
             Map<String, String> properties,
             ResolvedSchema resolvedSchema,
             ReadableConfig config) {
@@ -47,7 +43,6 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
         this.resolvedSchema = resolvedSchema;
         Preconditions.checkNotNull(resolvedSchema, "resolvedSchema should not be null");
         this.config = config;
-        this.producedDataType = physicalDataType;
         redisMapper = new RowRedisQueryMapper(redisCommand);
         this.properties = properties;
         this.resolvedSchema = resolvedSchema;
@@ -85,8 +80,7 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
 
     @Override
     public DynamicTableSource copy() {
-        return new RedisDynamicTableSource(
-                redisCommand, producedDataType, properties, resolvedSchema, config);
+        return new RedisDynamicTableSource(redisCommand, properties, resolvedSchema, config);
     }
 
     @Override

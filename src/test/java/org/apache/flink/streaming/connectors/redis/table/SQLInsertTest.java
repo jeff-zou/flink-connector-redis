@@ -287,7 +287,7 @@ public class SQLInsertTest extends TestRedisConfigBase {
                         + "' )";
 
         tEnv.executeSql(dim);
-        String sql = " insert into sink_redis select * from (values ('testIncryBy', 3));";
+        String sql = " insert into sink_redis select * from (values ('testIncryBy', 3))";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
 
