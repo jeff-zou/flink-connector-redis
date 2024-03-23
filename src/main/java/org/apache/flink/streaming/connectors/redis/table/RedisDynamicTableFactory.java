@@ -9,7 +9,6 @@ import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.factories.DynamicTableSinkFactory;
 import org.apache.flink.table.factories.DynamicTableSourceFactory;
 import org.apache.flink.table.factories.FactoryUtil;
-import org.apache.flink.table.types.DataType;
 import org.apache.flink.util.FlinkRuntimeException;
 
 import java.util.HashSet;
@@ -30,11 +29,8 @@ public class RedisDynamicTableFactory
         helper.validate();
         RedisCommand redisCommand = parseCommand(config);
 
-        final DataType physicalDataType = context.getPhysicalRowDataType();
-
         return new RedisDynamicTableSource(
                 redisCommand,
-                physicalDataType,
                 context.getCatalogTable().getOptions(),
                 context.getCatalogTable().getResolvedSchema(),
                 config);

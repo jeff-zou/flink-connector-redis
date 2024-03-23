@@ -36,7 +36,7 @@ public class TestRedisConfigBase {
         redisClient = RedisClient.create(redisURI);
         singleConnect = redisClient.connect();
         singleRedisCommands = singleConnect.sync();
-        LOG.info("connecto to the redis: {}", REDIS_HOST);
+        LOG.info("connect to the redis: {}", REDIS_HOST);
     }
 
     @AfterAll
