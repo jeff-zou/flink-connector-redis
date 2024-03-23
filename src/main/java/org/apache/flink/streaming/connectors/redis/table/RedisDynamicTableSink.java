@@ -64,7 +64,7 @@ public class RedisDynamicTableSink implements DynamicTableSink {
                         : new RedisSinkFunction(
                                 flinkConfigBase, redisMapper, resolvedSchema, config);
 
-        return SinkFunctionProvider.of(redisSinkFunction);
+        return SinkFunctionProvider.of(redisSinkFunction, sinkParallelism);
     }
 
     @Override
