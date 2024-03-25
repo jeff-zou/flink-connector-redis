@@ -318,12 +318,12 @@ tableResult.getJobClient().get()
 .get();
 ```
 
-## 5.5 解决问题联系我
+# 6 解决问题联系我
 
 ![img.png](img.png)
 
 
-## 5.6 开发与测试环境
+# 7 开发与测试环境
 
 ide: IntelliJ IDEA 
 
@@ -335,7 +335,7 @@ flink 1.12/1.13/1.14+
 
 jdk1.8 Lettuce 6.2.1
 
-## 5.6 如果需要flink 1.12版本支持，请切换到分支flink-1.12(注：1.12使用jedis)
+# 8 如果需要flink 1.12版本支持，请切换到分支flink-1.12(注：1.12使用jedis)
 ```
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
