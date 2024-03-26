@@ -22,7 +22,7 @@
 
 # 2 使用方法: 
 ## 2.1 工程直接引用
-项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.3.2.jar，
+项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.4.1.jar，
 否则使用flink-connector-redis-1.4.1-jar-with-dependencies.jar。
 <br/>
 ```
