@@ -22,7 +22,7 @@
 
 # 2 使用方法: 
 ## 2.1 工程直接引用
-项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.3.2.jar，
+项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.4.1.jar，
 否则使用flink-connector-redis-1.4.1-jar-with-dependencies.jar。
 <br/>
 ```
@@ -76,7 +76,7 @@ on j.name = 'test'
 | lookup.cache.max-rows | -1     | Integer | 查询缓存大小,减少对redis重复key的查询                                                                          |
 | lookup.cache.ttl      | -1     | Integer | 查询缓存过期时间，单位为秒， 开启查询缓存条件是max-rows与ttl都不能为-1                                                       |
 | lookup.cache.load-all | false  | Boolean | 开启全量缓存,当命令为hget时,将从redis map查询出所有元素并保存到cache中,用于解决缓存穿透问题                                         |
-| max.retries           | 1      | Integer | 写入失败重试次数                                                                                         |
+| max.retries           | 1      | Integer | 写入/查询失败重试次数                                                                                      |
 | value.data.structure  | column | String  | column: value值来自某一字段 (如, set: key值取自DDL定义的第一个字段, value值取自第二个字段)<br/> row: 将整行内容保存至value并以'\01'分割 |
 | set.if.absent         | false  | Boolean | 在key不存在时才写入,只对set hset有效                                                                         |
 | io.pool.size          | (none) | Integer | Lettuce内netty的io线程池大小,默认情况下该值为当前JVM可用线程数，并且大于2                                                   |
@@ -189,7 +189,7 @@ create table sink_redis(name varchar, level varchar, age varchar) with ( 'connec
 -- 先在redis中插入数据,相当于redis命令： hset 3 3 100 --
 insert into sink_redis select * from (values ('3', '3', '100'));
                 
-create table dim_table (name varchar, level varchar, age varchar) with ('connector'='redis', 'host'='10.11.80.147','port'='7001', 'redis-mode'='single', 'password'='*****','command'='hget', 'maxIdle'='2', 'minIdle'='1', 'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'lookup.max-retries'='3');
+create table dim_table (name varchar, level varchar, age varchar) with ('connector'='redis', 'host'='10.11.80.147','port'='7001', 'redis-mode'='single', 'password'='*****','command'='hget', 'maxIdle'='2', 'minIdle'='1', 'lookup.cache.max-rows'='10', 'lookup.cache.ttl'='10', 'max-retries'='3');
     
 -- 随机生成10以内的数据作为数据源 --
 -- 其中有一条数据会是： username = 3  level = 3, 会跟上面插入的数据关联 -- 
