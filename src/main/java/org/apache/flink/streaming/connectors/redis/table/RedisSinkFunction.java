@@ -26,7 +26,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -211,22 +213,50 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 redisFuture = this.redisCommandsContainer.srem(params[0], params[1]);
                 break;
             case HSET:
-                {
-                    if (!this.setIfAbsent) {
-                        redisFuture =
-                                this.redisCommandsContainer.hset(params[0], params[1], params[2]);
-                    } else {
-                        redisFuture = this.redisCommandsContainer.hexists(params[0], params[1]);
-                        redisFuture.whenComplete(
-                                (exist, throwable) -> {
-                                    if (!(Boolean) exist) {
-                                        this.redisCommandsContainer.hset(
-                                                params[0], params[1], params[2]);
-                                    }
-                                });
-                    }
+            {
+                if (!this.setIfAbsent) {
+                    redisFuture =
+                            this.redisCommandsContainer.hset(params[0], params[1], params[2]);
+                } else {
+                    redisFuture = this.redisCommandsContainer.hexists(params[0], params[1]);
+                    redisFuture.whenComplete(
+                            (exist, throwable) -> {
+                                if (!(Boolean) exist) {
+                                    this.redisCommandsContainer.hset(
+                                            params[0], params[1], params[2]);
+                                }
+                            });
                 }
-                break;
+            }
+            break;
+            case HMSET:
+            {
+                if (params.length < 2) {
+                    throw new RuntimeException("params length must be greater than 2");
+                }
+                if(params.length % 2 != 1){
+                    throw new RuntimeException("params length must be odd");
+                }
+                // 遍历把params第一个下标作为key，从第二个下标作为value，存进map中
+                Map<String, String> hashField = new HashMap<>();
+                for (int i = 1; i < params.length; i++) {
+                    hashField.put(params[i], params[++i]);
+                }
+                if (!this.setIfAbsent) {
+                    redisFuture =
+                            this.redisCommandsContainer.hmset(params[0], hashField);
+                } else {
+                    redisFuture = this.redisCommandsContainer.exists(params[0]);
+                    redisFuture.whenComplete(
+                            (exist, throwable) -> {
+                                if (!(Boolean) exist) {
+                                    this.redisCommandsContainer.hmset(
+                                            params[0], hashField);
+                                }
+                            });
+                }
+            }
+            break;
             case HINCRBY:
                 redisFuture =
                         this.redisCommandsContainer.hincrBy(

@@ -12,6 +12,7 @@ public enum RedisInsertCommand {
     ZREM,
     ZINCRBY,
     HSET,
+    HMSET,
     HINCRBY,
     HINCRBYFLOAT,
     INCRBY,

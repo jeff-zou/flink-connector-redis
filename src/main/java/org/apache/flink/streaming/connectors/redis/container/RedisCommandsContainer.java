@@ -30,6 +30,16 @@ public interface RedisCommandsContainer extends Serializable {
     RedisFuture<Boolean> hset(String key, String hashField, String value);
 
     /**
+     * Sets fields in the hash stored at key to value, with TTL, if needed. Setting expire time to
+     * key is optional. If key does not exist, a new key holding a hash is created. If key already
+     * exists, it is overwritten.
+     * @param key
+     * @param hashField
+     * @return
+     */
+    RedisFuture<Boolean> hmset(String key, Map hashField);
+
+    /**
      * @param key
      * @param hashField
      * @param value
