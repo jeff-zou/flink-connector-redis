@@ -108,8 +108,6 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         if (kind == RowKind.UPDATE_BEFORE) {
             return;
         }
-        rowData.getArity();
-
         String[] params = new String[calcParamNumByCommand(rowData.getArity())];
         for (int i = 0; i < params.length; i++) {
             params[i] =
