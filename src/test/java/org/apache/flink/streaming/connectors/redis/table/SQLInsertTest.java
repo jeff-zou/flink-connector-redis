@@ -73,7 +73,7 @@ public class SQLInsertTest extends TestRedisConfigBase {
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
 
         String ddl =
-                "create table sink_redis(username varchar, level varchar, age varchar) with ( 'connector'='redis', "
+                "create table sink_redis(username varchar, level varchar, age varchar, fieldkey varchar, fieldvalue varchar) with ( 'connector'='redis', "
                         + "'host'='"
                         + REDIS_HOST
                         + "','port'='"
@@ -87,10 +87,10 @@ public class SQLInsertTest extends TestRedisConfigBase {
                         + "',  'minIdle'='1'  )";
 
         tEnv.executeSql(ddl);
-        String sql = " insert into sink_redis select * from (values ('test_hash', '3', '18'))";
+        String sql = " insert into sink_redis select * from (values ('test_hash', '3', '18', 'city', '广州'))";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
-        Preconditions.condition(singleRedisCommands.hget("test_hash", "3").equals("18"), "");
+        Preconditions.condition(singleRedisCommands.hget("test_hash", "city").equals("广州"), "");
     }
 
     @Test
