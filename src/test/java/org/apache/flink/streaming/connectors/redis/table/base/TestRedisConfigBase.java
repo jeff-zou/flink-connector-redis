@@ -17,9 +17,9 @@ public class TestRedisConfigBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestRedisConfigBase.class);
 
-    public static final String REDIS_HOST = "10.11.69.176";
+    public static final String REDIS_HOST = "127.0.0.1";
     public static final int REDIS_PORT = 6379;
-    public static final String REDIS_PASSWORD = "test123";
+    public static final String REDIS_PASSWORD = "";
     protected static StatefulRedisConnection<String, String> singleConnect;
     protected static RedisCommands singleRedisCommands;
 

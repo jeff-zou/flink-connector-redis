@@ -108,8 +108,9 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         if (kind == RowKind.UPDATE_BEFORE) {
             return;
         }
+        rowData.getArity();
 
-        String[] params = new String[calcParamNumByCommand()];
+        String[] params = new String[calcParamNumByCommand(rowData.getArity())];
         for (int i = 0; i < params.length; i++) {
             params[i] =
                     redisSinkMapper.getKeyFromData(
@@ -410,7 +411,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      *
      * @return
      */
-    private int calcParamNumByCommand() {
+    private int calcParamNumByCommand(int rowDataNum) {
         if (redisCommand == RedisCommand.DEL) {
             return 1;
         }
@@ -421,7 +422,10 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 || redisCommand.getInsertCommand() == RedisInsertCommand.HINCRBYFLOAT
                 || redisCommand.getInsertCommand() == RedisInsertCommand.ZINCRBY) {
             return 3;
+        } else if (redisCommand.getInsertCommand() == RedisInsertCommand.HMSET) {
+            return rowDataNum;
         }
+
 
         return 2;
     }
