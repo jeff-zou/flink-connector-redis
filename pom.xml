@@ -156,12 +156,12 @@ under the License.
             <scope>provided</scope>
         </dependency>
 
- <!--       <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-test-utils_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
-            <scope>test</scope>
-        </dependency>-->
+        <!--       <dependency>
+                   <groupId>org.apache.flink</groupId>
+                   <artifactId>flink-test-utils_${scala.binary.version}</artifactId>
+                   <version>${flink.version}</version>
+                   <scope>test</scope>
+               </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/io.lettuce/lettuce-core -->
         <dependency>
@@ -310,22 +310,22 @@ under the License.
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
             </plugin>
-           <!-- <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>${maven.shade.version}</version>
-                <configuration>
-                    &lt;!&ndash; put your configurations here &ndash;&gt;
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
+            <!-- <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-shade-plugin</artifactId>
+                 <version>${maven.shade.version}</version>
+                 <configuration>
+                     &lt;!&ndash; put your configurations here &ndash;&gt;
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <phase>package</phase>
+                         <goals>
+                             <goal>shade</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+             </plugin>-->
         </plugins>
     </build>
 </project>

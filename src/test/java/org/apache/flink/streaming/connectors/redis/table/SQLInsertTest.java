@@ -68,6 +68,32 @@ public class SQLInsertTest extends TestRedisConfigBase {
     }
 
     @Test
+    public void testHmsetSQL() throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+
+        String ddl =
+                "create table sink_redis(username varchar, level varchar, age varchar, fieldkey varchar, fieldvalue varchar) with ( 'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "','"
+                        + REDIS_COMMAND
+                        + "'='"
+                        + RedisCommand.HMSET
+                        + "',  'minIdle'='1'  )";
+
+        tEnv.executeSql(ddl);
+        String sql = " insert into sink_redis select * from (values ('test_hash', '3', '18', 'city', '广州'))";
+        TableResult tableResult = tEnv.executeSql(sql);
+        tableResult.getJobClient().get().getJobExecutionResult().get();
+        Preconditions.condition(singleRedisCommands.hget("test_hash", "city").equals("广州"), "");
+    }
+
+    @Test
     public void testDel() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);

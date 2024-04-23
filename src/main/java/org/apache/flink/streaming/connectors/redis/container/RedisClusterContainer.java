@@ -75,6 +75,22 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     }
 
     @Override
+    public RedisFuture<Boolean> hmset(final String key, final Map hashField) {
+        try {
+            return clusterAsyncCommands.hmset(key, hashField);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command hmset to hash {} of key {} error message {}",
+                        hashField,
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
     public RedisFuture<Long> hincrBy(final String key, final String hashField, final long value) {
         try {
             return clusterAsyncCommands.hincrby(key, hashField, value);

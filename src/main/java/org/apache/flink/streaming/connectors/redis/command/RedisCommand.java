@@ -27,6 +27,13 @@ public enum RedisCommand {
             RedisDeleteCommand.HDEL,
             true),
 
+    HMSET(
+            RedisInsertCommand.HMSET,
+            RedisSelectCommand.HGET,
+            RedisJoinCommand.HGET,
+            RedisDeleteCommand.HDEL,
+            true),
+
     /** get val from map. */
     HGET(
             RedisInsertCommand.HSET,
