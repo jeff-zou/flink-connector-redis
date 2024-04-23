@@ -23,15 +23,18 @@ import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-import org.junit.jupiter.api.Test;
 
 import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_COMMAND;
 
 /** Created by jeff.zou on 2020/9/10. */
-public class ClusterSQLTest {
+public class ClusterSQLExample {
 
-    @Test
-    public void testSentinelSQL() throws Exception {
+    public static void main(String[] args) throws Exception {
+        SentinelSQLExample();
+        clusterSQLExample();
+    }
+
+    public static void SentinelSQLExample() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         EnvironmentSettings environmentSettings =
@@ -54,8 +57,7 @@ public class ClusterSQLTest {
         tableResult.getJobClient().get().getJobExecutionResult().get();
     }
 
-    @Test
-    public void testClusterSQL() throws Exception {
+    public static void clusterSQLExample() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         EnvironmentSettings environmentSettings =

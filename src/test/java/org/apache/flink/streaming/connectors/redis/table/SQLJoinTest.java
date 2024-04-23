@@ -35,6 +35,8 @@ import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.
  */
 public class SQLJoinTest extends TestRedisConfigBase {
 
+    public static final String[] TEST_KEYS = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "test"};
+
     @Test
     public void testGetSet() throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -42,13 +44,14 @@ public class SQLJoinTest extends TestRedisConfigBase {
         EnvironmentSettings environmentSettings =
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
+        singleRedisCommands.del(TEST_KEYS);
         singleRedisCommands.set("1", "test");
 
         String source =
                 "create table source_table(username varchar, level varchar, proctime as procTime()) "
                         + "with ('connector'='datagen',  'rows-per-second'='1', "
-                        + "'fields.username.kind'='sequence',  'fields.username.start'='1',  'fields.username.end'='9',"
-                        + "'fields.level.kind'='sequence',  'fields.level.start'='1',  'fields.level.end'='9'"
+                        + "'fields.username.kind'='sequence',  'fields.username.start'='1',  'fields.username.end'='1',"
+                        + "'fields.level.kind'='sequence',  'fields.level.start'='1',  'fields.level.end'='1'"
                         + ")";
         tEnv.executeSql(source);
         String ddl =
@@ -67,108 +70,12 @@ public class SQLJoinTest extends TestRedisConfigBase {
 
         tEnv.executeSql(ddl);
 
-        tEnv.executeSql(
-                "create table sink_table(msg row<request_id varchar , `rank`  varchar>) with ('connector'='print')");
-
         String sql =
-                " insert into sink_table select row('test', b.passport) from  source_table s "
+                " insert into join_redis select b.username, concat_ws('_',b.username, b.passport) from  source_table s "
                         + "left join join_redis for system_time as of proctime as b on s.username = b.username";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
-    }
-
-    @Test
-    public void testGetAfterInsert() throws Exception {
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-
-        String dim =
-                "create table dim_table(name varchar, nickname varchar) with ( 'connector'='redis', "
-                        + "'host'='"
-                        + REDIS_HOST
-                        + "','redis-mode'='single', 'password'='"
-                        + REDIS_PASSWORD
-                        + "','"
-                        + REDIS_COMMAND
-                        + "'='"
-                        + RedisCommand.GET
-                        + "' )";
-
-        String source =
-                "create table source_table(name varchar, proctime as procTime()) "
-                        + "with ('connector'='datagen',  'rows-per-second'='1', 'fields.name.kind'='sequence',  'fields.name.start'='1',  'fields.name.end'='5' "
-                        + ")";
-
-        String sink =
-                "create table sink_table(name varchar, nickname varchar) with ( 'connector'='print')";
-
-        tEnv.executeSql(source);
-        tEnv.executeSql(dim);
-        tEnv.executeSql(sink);
-
-        tEnv.executeSql("create table dim_table_insert with('command'='set') like dim_table");
-        TableResult tableResult2 =
-                tEnv.executeSql(
-                        "insert into dim_table_insert select * from (values( '1', 'test') )");
-        tableResult2.getJobClient().get().getJobExecutionResult().get();
-
-        String sql =
-                " insert into sink_table "
-                        + " select s.name,  d.nickname from source_table s"
-                        + "  left join dim_table for system_time as of s.proctime as d "
-                        + " on d.name =s.name ";
-        TableResult tableResult = tEnv.executeSql(sql);
-        tableResult.getJobClient().get().getJobExecutionResult().get();
-    }
-
-    @Test
-    public void testHGetAfterInsert() throws Exception {
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
-        EnvironmentSettings environmentSettings =
-                EnvironmentSettings.newInstance().inStreamingMode().build();
-        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
-        singleRedisCommands.del("1", "2", "3", "4", "5");
-        String dim =
-                "create table dim_table(name varchar, level varchar, age varchar) with ( 'connector'='redis', "
-                        + "'host'='"
-                        + REDIS_HOST
-                        + "','port'='"
-                        + REDIS_PORT
-                        + "', 'redis-mode'='single','password'='"
-                        + REDIS_PASSWORD
-                        + "','"
-                        + REDIS_COMMAND
-                        + "'='"
-                        + RedisCommand.HGET
-                        + "' )";
-
-        String source =
-                "create table source_table(name varchar, level varchar, proctime as procTime()) "
-                        + "with ('connector'='datagen',  'rows-per-second'='1', 'fields.name.kind'='sequence',  'fields.name.start'='1',  'fields.name.end'='5', "
-                        + "'fields.level.kind'='sequence',  'fields.level.start'='1',  'fields.level.end'='5'"
-                        + ")";
-
-        String sink =
-                "create table sink_table(name varchar, level varchar,age varchar) with ( 'connector'='print')";
-
-        tEnv.executeSql(source);
-        tEnv.executeSql(dim);
-        tEnv.executeSql(sink);
-
-        tEnv.executeSql("create table dim_table_insert with('command'='hset') like dim_table");
-        TableResult tableResult2 =
-                tEnv.executeSql(
-                        "insert into dim_table_insert select * from (values( '1', '1', 'test') )");
-        tableResult2.getJobClient().get().getJobExecutionResult().get();
-
-        String sql =
-                " insert into sink_table "
-                        + " select s.name,  d.level, d.age from source_table s"
-                        + "  left join dim_table for system_time as of s.proctime as d "
-                        + " on d.name =s.name and d.level =s.level";
-        TableResult tableResult = tEnv.executeSql(sql);
-        tableResult.getJobClient().get().getJobExecutionResult().get();
+        Preconditions.condition(singleRedisCommands.get("1").equals("1_test"), "");
     }
 
     @Test

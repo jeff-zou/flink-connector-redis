@@ -51,6 +51,7 @@ public class DataStreamTest extends TestRedisConfigBase {
     @Test
     public void testDateStreamInsert() throws Exception {
 
+        singleRedisCommands.del("tom");
         Configuration configuration = new Configuration();
         configuration.setString(REDIS_MODE, REDIS_SINGLE);
         configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());

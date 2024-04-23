@@ -22,8 +22,8 @@
 
 # 2 使用方法: 
 ## 2.1 工程直接引用
-项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.4.1.jar，
-否则使用flink-connector-redis-1.4.1-jar-with-dependencies.jar。
+项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.4.2.jar，
+否则使用flink-connector-redis-1.4.2-jar-with-dependencies.jar。
 <br/>
 ```
 <dependency>
@@ -31,11 +31,11 @@
     <artifactId>flink-connector-redis</artifactId>
     <!-- 没有单独引入项目依赖Lettuce netty-transport-native-epoll依赖时 -->
     <!--            <classifier>jar-with-dependencies</classifier>-->
-    <version>1.4.1</version>
+    <version>1.4.2</version>
 </dependency>
 ```
 ## 2.2 自行打包
-打包命令： mvn package -DskipTests,将生成的包放入flink lib中即可，无需其它设置。
+打包命令： mvn package,将生成的包放入flink lib中即可，无需其它设置。
 
 ## 2.3 使用示例 
 ```
@@ -263,24 +263,28 @@ result:
   hset示例，相当于redis命令：*hset tom math 150*
 
 ```
-      Configuration configuration = new Configuration();
-      configuration.setString(REDIS_MODE, REDIS_CLUSTER);
-      configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
-      
-      RedisSinkMapper redisMapper = (RedisSinkMapper)RedisHandlerServices
-      .findRedisHandler(RedisMapperHandler.class, configuration.toMap())
-      .createRedisMapper(configuration);
-      
-      StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-      
-      GenericRowData genericRowData = new GenericRowData(3);
-      genericRowData.setField(0, "tom");
-      genericRowData.setField(1, "math");
-      genericRowData.setField(2, "152");
-      DataStream<GenericRowData> dataStream = env.fromElements(genericRowData, genericRowData);
+        Configuration configuration = new Configuration();
+        configuration.setString(REDIS_MODE, REDIS_SINGLE);
+        configuration.setString(REDIS_COMMAND, RedisCommand.HSET.name());
+        configuration.setInteger(TTL, 10);
 
-      RedisSinkOptions redisSinkOptions =
-                new RedisSinkOptions.Builder().setMaxRetryTimes(3).build();
+        RedisSinkMapper redisMapper = new RowRedisSinkMapper(RedisCommand.HSET, configuration);
+
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        BinaryRowData binaryRowData = new BinaryRowData(3);
+        BinaryRowWriter binaryRowWriter = new BinaryRowWriter(binaryRowData);
+        binaryRowWriter.writeString(0, StringData.fromString("tom"));
+        binaryRowWriter.writeString(1, StringData.fromString("math"));
+        binaryRowWriter.writeString(2, StringData.fromString("152"));
+
+        DataStream<BinaryRowData> dataStream = env.fromElements(binaryRowData, binaryRowData);
+
+        List<String> columnNames = Arrays.asList("name", "subject", "scope");
+        List<DataType> columnDataTypes =
+                Arrays.asList(DataTypes.STRING(), DataTypes.STRING(), DataTypes.STRING());
+        ResolvedSchema resolvedSchema = ResolvedSchema.physical(columnNames, columnDataTypes);
+
         FlinkConfigBase conf =
                 new FlinkSingleConfig.Builder()
                         .setHost(REDIS_HOST)
@@ -289,7 +293,7 @@ result:
                         .build();
 
         RedisSinkFunction redisSinkFunction =
-                new RedisSinkFunction<>(conf, redisMapper, redisSinkOptions, resolvedSchema);
+                new RedisSinkFunction<>(conf, redisMapper, resolvedSchema, configuration);
 
         dataStream.addSink(redisSinkFunction).setParallelism(1);
         env.execute("RedisSinkTest");
@@ -335,9 +339,10 @@ jdk1.8 Lettuce 6.2.1
 
 # 8 贡献
 Pull Request需要提交至dev分支
-提交前请使用mvn spotless:apply进行代码格式化
+提交前请使用mvn spotless:apply进行代码格式化,然后使用maven package打包确认所有测试用例能通过。
 
-# 9 如果需要flink 1.12版本支持，请切换到分支flink-1.12(注：1.12使用jedis)
+# 9 flink 1.12支持
+请切换到分支flink-1.12(注：1.12使用jedis)
 ```
 <dependency>
     <groupId>io.github.jeff-zou</groupId>

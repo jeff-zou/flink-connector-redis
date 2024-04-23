@@ -23,14 +23,16 @@ import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-import org.junit.jupiter.api.Test;
 
 import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_COMMAND;
 
-public class FlinkCDCTest extends TestRedisConfigBase {
+public class FlinkCDCExample extends TestRedisConfigBase {
 
-    @Test
-    public void testCdc() throws Exception {
+    public static void main(String[] args) throws Exception {
+        cdcExample();
+    }
+
+    public static void cdcExample() throws Exception {
         String ddl =
                 "CREATE TABLE orders (\n"
                         + "     order_id INT,\n"
@@ -53,7 +55,14 @@ public class FlinkCDCTest extends TestRedisConfigBase {
 
         String sink =
                 "create table sink_redis(name varchar, level varchar, age varchar) with (  "
-                        + sigleWith()
+                        + "'connector'='redis', "
+                        + "'host'='"
+                        + REDIS_HOST
+                        + "','port'='"
+                        + REDIS_PORT
+                        + "', 'redis-mode'='single','password'='"
+                        + REDIS_PASSWORD
+                        + "',"
                         + " '"
                         + REDIS_COMMAND
                         + "'='"

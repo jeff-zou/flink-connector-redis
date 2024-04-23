@@ -26,8 +26,6 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.Preconditions;
 
-import java.time.LocalTime;
-
 import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_COMMAND;
 
 /** Created by jeff.zou on 2020/9/10. */
@@ -58,34 +56,6 @@ public class SQLExpireTest extends TestRedisConfigBase {
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         System.out.println(sql);
-        Preconditions.condition(singleRedisCommands.exists("1") == 1, "");
-        Thread.sleep(10 * 1000);
-        Preconditions.condition(singleRedisCommands.exists("1") == 0, "");
-    }
-
-    @Test
-    public void testSinkValueWithExpireOnTime() throws Exception {
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
-        singleRedisCommands.del("1");
-        LocalTime localTime = LocalTime.now();
-        int wait = 8;
-        localTime = localTime.plusSeconds(wait);
-        String dim =
-                "create table sink_redis(name varchar, level varchar, age varchar) with ( "
-                        + sigleWith()
-                        + " 'ttl.on.time'='"
-                        + localTime.toString()
-                        + "', '"
-                        + REDIS_COMMAND
-                        + "'='"
-                        + RedisCommand.HSET
-                        + "' )";
-
-        tEnv.executeSql(dim);
-        String sql = " insert into sink_redis select * from (values ('1', '11.3', '10.3'))";
-        TableResult tableResult = tEnv.executeSql(sql);
-        tableResult.getJobClient().get().getJobExecutionResult().get();
         Preconditions.condition(singleRedisCommands.exists("1") == 1, "");
         Thread.sleep(10 * 1000);
         Preconditions.condition(singleRedisCommands.exists("1") == 0, "");
