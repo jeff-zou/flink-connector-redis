@@ -17,18 +17,9 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>io.github.jeff-zou</groupId>
-    <artifactId>flink-connector-redis</artifactId>
-    <version>1.4.2</version>
-    <packaging>jar</packaging>
-    <name>flink-connector-redis</name>
-
-    <description>the redis connector for flink stream api and table/sql api</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -41,14 +32,60 @@ under the License.
         <scala.binary.version>2.12</scala.binary.version>
         <slf4j.version>1.7.15</slf4j.version>
         <maven.shade.version>3.2.4</maven.shade.version>
-        <spotless-maven-plugin.version>2.27.1</spotless-maven-plugin.version>
+
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-release-plugin.version>3.0.0-M1</maven-release-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+        <spotless-maven-plugin.version>2.27.1</spotless-maven-plugin.version>
     </properties>
+
+
+    <groupId>io.github.jeff-zou</groupId>
+    <artifactId>flink-connector-redis</artifactId>
+    <version>1.4.2</version>
+    <packaging>jar</packaging>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <description>the redis connector for flink stream api and table/sql api</description>
+    <url>https://github.com/jeff-zou/flink-connector-redis</url>
+    <name>flink-connector-redis</name>
+
+    <scm>
+        <url>https://github.com/jeff-zou/flink-connector-redis</url>
+        <connection>scm:git:git@github.com/jeff-zou/flink-connector-redis.git</connection>
+        <developerConnection>scm:git:https://github.com/jeff-zou/flink-connector-redis.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>jeff</id>
+            <name>jeff-zou</name>
+            <email>zilong0007@gmail.com</email>
+            <url>https://github.com/jeff-zou</url>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
 
     <dependencies>
         <dependency>
@@ -77,12 +114,13 @@ under the License.
             <scope>provided</scope>
         </dependency>
 
+
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-java</artifactId>
             <version>${flink.version}</version>
-            <type>test-jar</type>
             <scope>test</scope>
+            <type>test-jar</type>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-table-api-java -->
@@ -149,13 +187,13 @@ under the License.
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-kafka</artifactId>
             <version>${flink.version}</version>
-            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.kafka</groupId>
                     <artifactId>kafka-clients</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -167,10 +205,10 @@ under the License.
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
-                        <phase>package</phase>
                         <configuration>
                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
@@ -195,10 +233,10 @@ under the License.
                 <executions>
                     <execution>
                         <id>make-assembly</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
-                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -211,10 +249,10 @@ under the License.
                 <executions>
                     <execution>
                         <id>attach-sources</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
-                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -234,10 +272,10 @@ under the License.
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
-                        <phase>package</phase>
                         <configuration>
                             <doclint>none</doclint>
                         </configuration>
@@ -251,10 +289,10 @@ under the License.
                 <executions>
                     <execution>
                         <id>ossrh</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>sign</goal>
                         </goals>
-                        <phase>verify</phase>
                         <configuration>
                             <keyname>D8569E743AC67440</keyname>
                             <passphraseServerId>D8569E743AC67440</passphraseServerId>
@@ -294,21 +332,6 @@ under the License.
                         <removeUnusedImports />
 
                     </java>
-                    <pom>
-                        <sortPom>
-                            <encoding>UTF-8</encoding>
-                            <nrOfIndentSpace>4</nrOfIndentSpace>
-                            <keepBlankLines>true</keepBlankLines>
-                            <indentBlankLines>false</indentBlankLines>
-                            <indentSchemaLocation>true</indentSchemaLocation>
-                            <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
-                            <sortModules>false</sortModules>
-                            <sortExecutions>false</sortExecutions>
-                            <predefinedSortOrder>custom_1</predefinedSortOrder>
-                            <expandEmptyElements>false</expandEmptyElements>
-                            <sortProperties>false</sortProperties>
-                        </sortPom>
-                    </pom>
                 </configuration>
                 <executions>
                     <execution>
@@ -327,41 +350,4 @@ under the License.
             </plugin>
         </plugins>
     </build>
-    <url>https://github.com/jeff-zou/flink-connector-redis</url>
-
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>jeff</id>
-            <name>jeff-zou</name>
-            <email>zilong0007@gmail.com</email>
-            <url>https://github.com/jeff-zou</url>
-            <timezone>+8</timezone>
-        </developer>
-    </developers>
-
-    <scm>
-        <connection>scm:git:git@github.com/jeff-zou/flink-connector-redis.git</connection>
-        <developerConnection>scm:git:https://github.com/jeff-zou/flink-connector-redis.git</developerConnection>
-        <url>https://github.com/jeff-zou/flink-connector-redis</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 </project>
