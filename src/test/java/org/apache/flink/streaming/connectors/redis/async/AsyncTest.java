@@ -1,4 +1,25 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.flink.streaming.connectors.redis.async;
+
+import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
+import org.junit.jupiter.api.Test;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
@@ -11,9 +32,6 @@ import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.async.RedisAdvancedClusterAsyncCommands;
-
-import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
-import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -30,8 +48,8 @@ public class AsyncTest extends TestRedisConfigBase {
     public void testLettuceCluster() throws Exception {
         List<RedisURI> redisURIS = new ArrayList<>();
         Arrays.stream(
-                        "10.11.0.1:7000,10.11.0.1:7001,10.11.0.1:8000,10.11.0.1:8001,10.11.0.1:9000,10.11.0.1:9001"
-                                .split(","))
+                "10.11.0.1:7000,10.11.0.1:7001,10.11.0.1:8000,10.11.0.1:8001,10.11.0.1:9000,10.11.0.1:9001"
+                        .split(","))
                 .forEach(
                         node -> {
                             String[] redis = node.split(":");
@@ -68,7 +86,7 @@ public class AsyncTest extends TestRedisConfigBase {
             String a = sb.append("test").append(i).toString();
             future = clusterAsyncCommands.set(a, a);
         }
-        //        future.await(2L, TimeUnit.SECONDS);
+        // future.await(2L, TimeUnit.SECONDS);
 
         System.out.println(System.currentTimeMillis() - start);
         connection.close();
@@ -110,9 +128,9 @@ public class AsyncTest extends TestRedisConfigBase {
                         .build();
         RedisClient redisClient = RedisClient.create(redisURI);
         StatefulRedisConnection<String, String> connection = redisClient.connect();
-        //        RedisAsyncCommands async = connection.async();
+        // RedisAsyncCommands async = connection.async();
         RedisCommands redisCommands = connection.sync();
-        //        RedisFuture<String> future = null;
+        // RedisFuture<String> future = null;
         long start = System.currentTimeMillis();
 
         for (int i = 0; i < 100000; i++) {
@@ -121,7 +139,7 @@ public class AsyncTest extends TestRedisConfigBase {
             redisCommands.set(a, a);
         }
 
-        //        future.await(2L, TimeUnit.SECONDS);
+        // future.await(2L, TimeUnit.SECONDS);
 
         System.out.println(System.currentTimeMillis() - start);
         connection.close();

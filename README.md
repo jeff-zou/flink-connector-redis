@@ -323,19 +323,21 @@ tableResult.getJobClient().get()
 ![img.png](img.png)
 
 
-# 7 开发与测试环境
+# 7 开发环境
 
 ide: IntelliJ IDEA 
 
 code format: google-java-format + Save Actions
 
-code check: CheckStyle
-
 flink 1.12/1.13/1.14+
 
 jdk1.8 Lettuce 6.2.1
 
-# 8 如果需要flink 1.12版本支持，请切换到分支flink-1.12(注：1.12使用jedis)
+# 8 贡献
+Pull Request需要提交至dev分支
+提交前请使用mvn spotless:apply进行代码格式化
+
+# 9 如果需要flink 1.12版本支持，请切换到分支flink-1.12(注：1.12使用jedis)
 ```
 <dependency>
     <groupId>io.github.jeff-zou</groupId>
