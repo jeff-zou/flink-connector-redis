@@ -338,7 +338,7 @@ flink 1.12/1.13/1.14+
 jdk1.8 Lettuce 6.2.1
 
 # 8 贡献
-Pull Request需要提交至dev分支
+Pull Request需要提交至dev分支</br>
 提交前请使用mvn spotless:apply进行代码格式化,然后使用maven package打包确认所有测试用例能通过。
 
 # 9 flink 1.12支持
