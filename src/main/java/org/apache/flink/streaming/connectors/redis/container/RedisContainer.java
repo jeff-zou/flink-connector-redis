@@ -21,6 +21,7 @@ package org.apache.flink.streaming.connectors.redis.container;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.lettuce.core.Range;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.api.StatefulRedisConnection;
@@ -271,6 +272,51 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
             if (LOG.isErrorEnabled()) {
                 LOG.error(
                         "Cannot send Redis message with command ZREM to set {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<Long> zremRangeByScore(String key, Range<Double> range) {
+        try {
+            return asyncCommands.zremrangebyscore(key, range);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command zremrangebyscore to set {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<Long> zremRangeByLex(String key, Range<String> range) {
+        try {
+            return asyncCommands.zremrangebylex(key, range);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command zremrangebylex to set {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<Long> zremRangeByRank(String key, long start, long stop) {
+        try {
+            return asyncCommands.zremrangebyrank(key, start, stop);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command zremrangebyrank to set {} error message {}",
                         key,
                         e.getMessage());
             }

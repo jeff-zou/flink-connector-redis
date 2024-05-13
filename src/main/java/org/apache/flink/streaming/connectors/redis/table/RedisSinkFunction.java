@@ -27,6 +27,7 @@ import org.apache.flink.streaming.connectors.redis.command.RedisInsertCommand;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
+import org.apache.flink.streaming.connectors.redis.config.ZremType;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainerBuilder;
 import org.apache.flink.streaming.connectors.redis.converter.RedisRowConverter;
@@ -40,6 +41,7 @@ import org.apache.flink.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.lettuce.core.Range;
 import io.lettuce.core.RedisFuture;
 
 import java.io.IOException;
@@ -77,6 +79,8 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
     private RedisValueDataStructure redisValueDataStructure;
 
+    private String zremrangeby;
+
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
      *
@@ -110,6 +114,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
         this.columnDataTypes = resolvedSchema.getColumnDataTypes();
         this.redisValueDataStructure = readableConfig.get(RedisOptions.VALUE_DATA_STRUCTURE);
+        this.zremrangeby = readableConfig.get(RedisOptions.ZREM_RANGEBY);
     }
 
     /**
@@ -215,7 +220,28 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             case ZADD:
                 redisFuture =
                         this.redisCommandsContainer.zadd(
-                                params[0], Double.valueOf(params[1]), params[2]);
+                                params[0], Double.parseDouble(params[1]), params[2]);
+                if (zremrangeby != null) {
+                    redisFuture.whenComplete((ignore, throwable) -> {
+                        try {
+                            if (zremrangeby.equalsIgnoreCase(ZremType.SCORE.name())) {
+                                Range<Double> range =
+                                        Range.create(Double.parseDouble(params[3]), Double.parseDouble(params[4]));
+                                this.redisCommandsContainer.zremRangeByScore(params[0], range);
+                            } else if (zremrangeby.equalsIgnoreCase(ZremType.LEX.name())) {
+                                Range<String> range = Range.create(params[3], params[4]);
+                                this.redisCommandsContainer.zremRangeByLex(params[0], range);
+                            } else if (zremrangeby.equalsIgnoreCase(ZremType.RANK.name())) {
+                                this.redisCommandsContainer.zremRangeByRank(params[0], Long.parseLong(params[3]),
+                                        Long.parseLong(params[4]));
+                            } else {
+                                LOG.warn("Unrecognized zrem type:{}", zremrangeby);
+                            }
+                        } catch (Exception e) {
+                            LOG.error("{} zremRangeBy failed.", params[0], e);
+                        }
+                    });
+                }
                 break;
             case ZINCRBY:
                 redisFuture =
@@ -428,7 +454,9 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             return 1;
         }
 
-        if (redisCommand.getInsertCommand() == RedisInsertCommand.HSET
+        if (redisCommand.getInsertCommand() == RedisInsertCommand.ZADD && zremrangeby != null) {
+            return 5;
+        } else if (redisCommand.getInsertCommand() == RedisInsertCommand.HSET
                 || redisCommand.getInsertCommand() == RedisInsertCommand.ZADD
                 || redisCommand.getInsertCommand() == RedisInsertCommand.HINCRBY
                 || redisCommand.getInsertCommand() == RedisInsertCommand.HINCRBYFLOAT
