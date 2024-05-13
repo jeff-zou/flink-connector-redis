@@ -112,6 +112,7 @@ key: name, field:subject, value: name\01subject\01score.
 | scan.range.start      | (none)   | Integer | lrange start                                                                                                                                                                                       |
 | scan.range.stop       | (none)   | Integer | lrange start                                                                                                                                                                                       |
 | scan.count            | (none)   | Integer | srandmember count                                                                                                                                                                                  |
+| zset.zremrangeby      | (none)   | String  | After executing zadd, whether to execute zremrangeby,Valid values are:SCORE、LEX、RANK  |
 
 
 ##### sink with ttl parameters
