@@ -18,6 +18,7 @@
 
 package org.apache.flink.streaming.connectors.redis.container;
 
+import io.lettuce.core.Range;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
 
@@ -153,6 +154,31 @@ public interface RedisCommandsContainer extends Serializable {
      * @param element element to be removed
      */
     RedisFuture<Long> zrem(String key, String element);
+
+    /**
+     * Remove members from a specified score range
+     * @param key
+     * @param range
+     * @return
+     */
+    RedisFuture<Long> zremRangeByScore(String key, Range<Double> range);
+
+    /**
+     * Remove members from a specified lex range
+     * @param key
+     * @param range
+     * @return
+     */
+    RedisFuture<Long> zremRangeByLex(String key, Range<String> range);
+
+    /**
+     * Remove members from a specified rank
+     * @param key
+     * @param start
+     * @param stop
+     * @return
+     */
+    RedisFuture<Long> zremRangeByRank(String key, long start, long stop);
 
     /**
      * increase value to specified key.

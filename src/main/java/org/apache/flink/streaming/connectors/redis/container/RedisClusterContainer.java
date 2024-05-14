@@ -21,6 +21,7 @@ package org.apache.flink.streaming.connectors.redis.container;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.lettuce.core.Range;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
@@ -269,6 +270,51 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
             if (LOG.isDebugEnabled()) {
                 LOG.error(
                         "Cannot send Redis message with command ZREM to set {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<Long> zremRangeByScore(String key, Range<Double> range) {
+        try {
+            return clusterAsyncCommands.zremrangebyscore(key, range);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command zremrangebyscore to set {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<Long> zremRangeByLex(String key, Range<String> range) {
+        try {
+            return clusterAsyncCommands.zremrangebylex(key, range);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command zremrangebylex to set {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<Long> zremRangeByRank(String key, long start, long stop) {
+        try {
+            return clusterAsyncCommands.zremrangebyrank(key, start, stop);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command zremrangebyrank to set {} error message {}",
                         key,
                         e.getMessage());
             }

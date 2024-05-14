@@ -236,4 +236,10 @@ public class RedisOptions {
                     .intType()
                     .defaultValue(null)
                     .withDescription("Optional set count for srandmember query");
+
+    public static final ConfigOption<String> ZREM_RANGEBY =
+            ConfigOptions.key("zset.zremrangeby")
+                    .stringType()
+                    .defaultValue(null)
+                    .withDescription("Remove related elements，Valid values: LEX,RANK,SCORE");
 }
