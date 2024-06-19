@@ -42,12 +42,14 @@ import java.util.List;
 
 public class RedisSourceFunction<T> extends RichSourceFunction<T> {
 
+    private static final long serialVersionUID = 1L;
+
     private static final Logger LOG = LoggerFactory.getLogger(RedisSourceFunction.class);
 
     ReadableConfig readableConfig;
 
     private FlinkConfigBase flinkConfigBase;
-    private RedisCommandsContainer redisCommandsContainer;
+    private transient RedisCommandsContainer redisCommandsContainer;
 
     private final int maxRetryTimes;
 

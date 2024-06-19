@@ -56,6 +56,8 @@ import java.util.Objects;
  */
 public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
+    private static final long serialVersionUID = 1L;
+
     private static final Logger LOG = LoggerFactory.getLogger(RedisSinkFunction.class);
 
     protected Integer ttl;
@@ -70,13 +72,10 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private RedisCommand redisCommand;
 
     private FlinkConfigBase flinkConfigBase;
-    private RedisCommandsContainer redisCommandsContainer;
+    private transient RedisCommandsContainer redisCommandsContainer;
 
     private final int maxRetryTimes;
     private List<DataType> columnDataTypes;
-
-    private ReadableConfig readableConfig;
-
     private RedisValueDataStructure redisValueDataStructure;
 
     private String zremrangeby;
@@ -222,25 +221,32 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                         this.redisCommandsContainer.zadd(
                                 params[0], Double.parseDouble(params[1]), params[2]);
                 if (zremrangeby != null) {
-                    redisFuture.whenComplete((ignore, throwable) -> {
-                        try {
-                            if (zremrangeby.equalsIgnoreCase(ZremType.SCORE.name())) {
-                                Range<Double> range =
-                                        Range.create(Double.parseDouble(params[3]), Double.parseDouble(params[4]));
-                                this.redisCommandsContainer.zremRangeByScore(params[0], range);
-                            } else if (zremrangeby.equalsIgnoreCase(ZremType.LEX.name())) {
-                                Range<String> range = Range.create(params[3], params[4]);
-                                this.redisCommandsContainer.zremRangeByLex(params[0], range);
-                            } else if (zremrangeby.equalsIgnoreCase(ZremType.RANK.name())) {
-                                this.redisCommandsContainer.zremRangeByRank(params[0], Long.parseLong(params[3]),
-                                        Long.parseLong(params[4]));
-                            } else {
-                                LOG.warn("Unrecognized zrem type:{}", zremrangeby);
-                            }
-                        } catch (Exception e) {
-                            LOG.error("{} zremRangeBy failed.", params[0], e);
-                        }
-                    });
+                    redisFuture.whenComplete(
+                            (ignore, throwable) -> {
+                                try {
+                                    if (zremrangeby.equalsIgnoreCase(ZremType.SCORE.name())) {
+                                        Range<Double> range =
+                                                Range.create(
+                                                        Double.parseDouble(params[3]),
+                                                        Double.parseDouble(params[4]));
+                                        this.redisCommandsContainer.zremRangeByScore(
+                                                params[0], range);
+                                    } else if (zremrangeby.equalsIgnoreCase(ZremType.LEX.name())) {
+                                        Range<String> range = Range.create(params[3], params[4]);
+                                        this.redisCommandsContainer.zremRangeByLex(
+                                                params[0], range);
+                                    } else if (zremrangeby.equalsIgnoreCase(ZremType.RANK.name())) {
+                                        this.redisCommandsContainer.zremRangeByRank(
+                                                params[0],
+                                                Long.parseLong(params[3]),
+                                                Long.parseLong(params[4]));
+                                    } else {
+                                        LOG.warn("Unrecognized zrem type:{}", zremrangeby);
+                                    }
+                                } catch (Exception e) {
+                                    LOG.error("{} zremRangeBy failed.", params[0], e);
+                                }
+                            });
                 }
                 break;
             case ZINCRBY:
@@ -283,15 +289,13 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                     hashField.put(params[i], params[++i]);
                 }
                 if (!this.setIfAbsent) {
-                    redisFuture =
-                            this.redisCommandsContainer.hmset(params[0], hashField);
+                    redisFuture = this.redisCommandsContainer.hmset(params[0], hashField);
                 } else {
                     redisFuture = this.redisCommandsContainer.exists(params[0]);
                     redisFuture.whenComplete(
                             (exist, throwable) -> {
                                 if (!(Boolean) exist) {
-                                    this.redisCommandsContainer.hmset(
-                                            params[0], hashField);
+                                    this.redisCommandsContainer.hmset(params[0], hashField);
                                 }
                             });
                 }
