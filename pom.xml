@@ -293,10 +293,6 @@ under the License.
                         <goals>
                             <goal>sign</goal>
                         </goals>
-                        <configuration>
-                            <keyname>D8569E743AC67440</keyname>
-                            <passphraseServerId>D8569E743AC67440</passphraseServerId>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
