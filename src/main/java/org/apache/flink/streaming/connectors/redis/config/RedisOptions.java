@@ -69,6 +69,12 @@ public class RedisOptions {
                     .noDefaultValue()
                     .withDescription("Optional host for connect to redis");
 
+    public static final ConfigOption<Boolean> SSL =
+            ConfigOptions.key("ssl")
+                    .booleanType()
+                    .defaultValue(true)
+                    .withDescription("Optional ssl for connect to redis");
+
     public static final ConfigOption<String> CLUSTERNODES =
             ConfigOptions.key("cluster-nodes")
                     .stringType()

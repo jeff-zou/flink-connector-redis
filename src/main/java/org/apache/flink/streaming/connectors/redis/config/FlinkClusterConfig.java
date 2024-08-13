@@ -41,8 +41,8 @@ public class FlinkClusterConfig extends FlinkConfigBase {
      * @throws NullPointerException if parameter {@code nodes} is {@code null}
      */
     private FlinkClusterConfig(
-            String nodesInfo, int connectionTimeout, String password, LettuceConfig lettuceConfig) {
-        super(connectionTimeout, password, lettuceConfig);
+            String nodesInfo, int connectionTimeout, String password, Boolean ssl, LettuceConfig lettuceConfig) {
+        super(connectionTimeout, password, ssl, lettuceConfig);
 
         Objects.requireNonNull(nodesInfo, "nodesInfo information should be presented");
         this.nodesInfo = nodesInfo;
@@ -54,6 +54,7 @@ public class FlinkClusterConfig extends FlinkConfigBase {
         private String nodesInfo;
         private int timeout;
         private String password;
+        private Boolean ssl;
 
         private LettuceConfig lettuceConfig;
 
@@ -78,6 +79,17 @@ public class FlinkClusterConfig extends FlinkConfigBase {
             return this;
         }
 
+        /**
+         * Sets ssl.
+         *
+         * @param ssl whether enable ssl
+         * @return Builder itself
+         */
+        public Builder setSsl(Boolean ssl) {
+            this.ssl = ssl;
+            return this;
+        }
+
         public Builder setLettuceConfig(LettuceConfig lettuceConfig) {
             this.lettuceConfig = lettuceConfig;
             return this;
@@ -89,7 +101,7 @@ public class FlinkClusterConfig extends FlinkConfigBase {
          * @return ClusterConfig
          */
         public FlinkClusterConfig build() {
-            return new FlinkClusterConfig(nodesInfo, timeout, password, lettuceConfig);
+            return new FlinkClusterConfig(nodesInfo, timeout, password, ssl, lettuceConfig);
         }
     }
 }

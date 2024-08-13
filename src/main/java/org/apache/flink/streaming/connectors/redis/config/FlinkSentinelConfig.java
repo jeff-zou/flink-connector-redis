@@ -34,6 +34,7 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
     private final int soTimeout;
     private final int database;
     private final String masterName;
+    private final Boolean ssl;
 
     private final String sentinelsPassword;
 
@@ -57,8 +58,9 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
             int database,
             String password,
             String sentinelsPassword,
+            Boolean ssl,
             LettuceConfig lettuceConfig) {
-        super(connectionTimeout, password, lettuceConfig);
+        super(connectionTimeout, password, ssl, lettuceConfig);
         Objects.requireNonNull(masterName, "Master name should be presented");
         Objects.requireNonNull(sentinelsInfo, "Sentinels information should be presented");
         this.masterName = masterName;
@@ -66,6 +68,7 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
         this.soTimeout = soTimeout;
         this.database = database;
         this.sentinelsPassword = sentinelsPassword;
+        this.ssl = ssl;
     }
 
     /**
@@ -91,6 +94,15 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
     }
 
     /**
+     * Returns ssl.
+     *
+     * @return ssl
+     */
+    public Boolean getSsl() {
+        return ssl;
+    }
+
+    /**
      * Returns database index.
      *
      * @return database index
@@ -113,6 +125,7 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
         private int database;
         private String password;
         private String sentinelsPassword;
+        private Boolean ssl;
 
         private LettuceConfig lettuceConfig;
 
@@ -165,6 +178,17 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
             return this;
         }
 
+        /**
+         * Sets ssl.
+         *
+         * @param ssl whether enable ssl
+         * @return Builder itself
+         */
+        public Builder setSsl(Boolean ssl) {
+            this.ssl = ssl;
+            return this;
+        }
+
         public Builder setPassword(String password) {
             this.password = password;
             return this;
@@ -194,6 +218,7 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
                     database,
                     password,
                     sentinelsPassword,
+                    ssl,
                     lettuceConfig);
         }
     }

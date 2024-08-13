@@ -92,7 +92,8 @@ public class RedisClientBuilder {
                 RedisURI.builder()
                         .withHost(singleConfig.getHost())
                         .withPort(singleConfig.getPort())
-                        .withDatabase(singleConfig.getDatabase());
+                        .withDatabase(singleConfig.getDatabase())
+                        .withSsl(singleConfig.getSsl());
         if (!StringUtils.isNullOrWhitespaceOnly(singleConfig.getPassword())) {
             builder.withPassword(singleConfig.getPassword().toCharArray());
         }
@@ -119,7 +120,8 @@ public class RedisClientBuilder {
                                     RedisURI.Builder builder =
                                             RedisURI.builder()
                                                     .withHost(redis[0])
-                                                    .withPort(Integer.parseInt(redis[1]));
+                                                    .withPort(Integer.parseInt(redis[1]))
+                                                    .withSsl(clusterConfig.getSsl());;
                                     if (!StringUtils.isNullOrWhitespaceOnly(
                                             clusterConfig.getPassword())) {
                                         builder.withPassword(

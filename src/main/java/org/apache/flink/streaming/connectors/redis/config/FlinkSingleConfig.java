@@ -45,8 +45,9 @@ public class FlinkSingleConfig extends FlinkConfigBase {
             int connectionTimeout,
             String password,
             int database,
+            Boolean ssl,
             LettuceConfig lettuceConfig) {
-        super(connectionTimeout, password, lettuceConfig);
+        super(connectionTimeout, password, ssl, lettuceConfig);
         Objects.requireNonNull(host, "Host information should be presented");
         this.host = host;
         this.port = port;
@@ -80,6 +81,15 @@ public class FlinkSingleConfig extends FlinkConfigBase {
         return database;
     }
 
+    /**
+     * Returns ssl.
+     *
+     * @return ssl
+     */
+    public Boolean getSsl() {
+        return ssl;
+    }
+
     /** Builder for initializing {@link FlinkSingleConfig}. */
     public static class Builder {
 
@@ -88,6 +98,7 @@ public class FlinkSingleConfig extends FlinkConfigBase {
         private int timeout;
         private int database;
         private String password;
+        private Boolean ssl;
 
         private LettuceConfig lettuceConfig;
 
@@ -146,6 +157,17 @@ public class FlinkSingleConfig extends FlinkConfigBase {
             return this;
         }
 
+        /**
+         * Sets ssl.
+         *
+         * @param ssl whether enable ssl
+         * @return Builder itself
+         */
+        public Builder setSsl(Boolean ssl) {
+            this.ssl = ssl;
+            return this;
+        }
+
         public Builder setLettuceConfig(LettuceConfig lettuceConfig) {
             this.lettuceConfig = lettuceConfig;
             return this;
@@ -157,7 +179,7 @@ public class FlinkSingleConfig extends FlinkConfigBase {
          * @return PoolConfig
          */
         public FlinkSingleConfig build() {
-            return new FlinkSingleConfig(host, port, timeout, password, database, lettuceConfig);
+            return new FlinkSingleConfig(host, port, timeout, password, database, ssl, lettuceConfig);
         }
     }
 }
