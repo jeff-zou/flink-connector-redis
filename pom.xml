@@ -45,7 +45,7 @@ under the License.
 
     <groupId>io.github.jeff-zou</groupId>
     <artifactId>flink-connector-redis</artifactId>
-    <version>1.4.3</version>
+    <version>1.4.4.1</version>
     <packaging>jar</packaging>
 
     <distributionManagement>
