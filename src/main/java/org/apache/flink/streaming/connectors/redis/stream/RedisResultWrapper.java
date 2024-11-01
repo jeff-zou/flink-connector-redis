@@ -16,7 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.table;
+package org.apache.flink.streaming.connectors.redis.stream;
+
+import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
 
 import org.apache.flink.streaming.connectors.redis.config.RedisValueDataStructure;
 import org.apache.flink.streaming.connectors.redis.converter.RedisRowConverter;
@@ -24,8 +26,6 @@ import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.types.DataType;
 
 import java.util.List;
-
-import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
 
 public class RedisResultWrapper {
 

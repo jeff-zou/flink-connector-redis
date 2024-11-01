@@ -16,12 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.config;
+package org.apache.flink.streaming.connectors.redis.stream;
 
-/** rem type for sorted set**/
-public enum ZremType {
+import org.apache.flink.api.connector.source.SourceSplit;
+import org.apache.flink.connector.base.source.reader.fetcher.SplitFetcherManager;
+import org.apache.flink.connector.base.source.reader.synchronization.FutureCompletingBlockingQueue;
 
-    SCORE,
-    RANK,
-    LEX,
+import java.util.List;
+import java.util.function.Supplier;
+
+/**
+ * @author Jeff Zou
+ * @date 2024/10/25 10:26
+ */
+public class RedisSplitFetchManager extends SplitFetcherManager {
+    public RedisSplitFetchManager(
+            FutureCompletingBlockingQueue elementsQueue, Supplier splitReaderFactory) {
+        super(elementsQueue, splitReaderFactory);
+    }
+
+    @Override
+    public void addSplits(List splitsToAdd) {}
 }

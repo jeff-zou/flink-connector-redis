@@ -18,6 +18,11 @@
 
 package org.apache.flink.streaming.connectors.redis.datastream;
 
+import static org.apache.flink.streaming.connectors.redis.config.RedisOptions.TTL;
+import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_COMMAND;
+import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_MODE;
+import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_SINGLE;
+
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -26,7 +31,7 @@ import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.config.FlinkSingleConfig;
 import org.apache.flink.streaming.connectors.redis.mapper.RedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.mapper.RowRedisSinkMapper;
-import org.apache.flink.streaming.connectors.redis.table.RedisSinkFunction;
+import org.apache.flink.streaming.connectors.redis.stream.RedisSink;
 import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
 import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.catalog.ResolvedSchema;
@@ -39,11 +44,6 @@ import org.junit.platform.commons.util.Preconditions;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static org.apache.flink.streaming.connectors.redis.config.RedisOptions.TTL;
-import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_COMMAND;
-import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_MODE;
-import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_SINGLE;
 
 /** Created by jeff.zou on 2021/2/26. */
 public class DataStreamTest extends TestRedisConfigBase {
@@ -81,10 +81,9 @@ public class DataStreamTest extends TestRedisConfigBase {
                         .setPassword(REDIS_PASSWORD)
                         .build();
 
-        RedisSinkFunction redisSinkFunction =
-                new RedisSinkFunction<>(conf, redisMapper, resolvedSchema, configuration);
+        RedisSink redisSink = new RedisSink<>(conf, redisMapper, resolvedSchema, configuration);
 
-        dataStream.addSink(redisSinkFunction).setParallelism(1);
+        dataStream.sinkTo(redisSink).setParallelism(1);
         env.execute("RedisSinkTest");
 
         Preconditions.condition(singleRedisCommands.hget("tom", "math").equals("152"), "");

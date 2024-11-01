@@ -26,10 +26,11 @@ import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.mapper.RedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.mapper.RowRedisSinkMapper;
+import org.apache.flink.streaming.connectors.redis.stream.RedisSink;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.sink.DynamicTableSink;
-import org.apache.flink.table.connector.sink.SinkFunctionProvider;
+import org.apache.flink.table.connector.sink.SinkV2Provider;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
 
@@ -38,14 +39,13 @@ import java.util.Map;
 /** Created by jeff.zou on 2020/9/10. */
 public class RedisDynamicTableSink implements DynamicTableSink {
 
-    private FlinkConfigBase flinkConfigBase;
-    private RedisSinkMapper redisMapper;
-    private Map<String, String> properties;
-    private ReadableConfig config;
-    private Integer sinkParallelism;
-    private ResolvedSchema resolvedSchema;
-
     private final RedisCommand redisCommand;
+    private final FlinkConfigBase flinkConfigBase;
+    private final RedisSinkMapper redisMapper;
+    private final Map<String, String> properties;
+    private final ReadableConfig config;
+    private final Integer sinkParallelism;
+    private final ResolvedSchema resolvedSchema;
 
     public RedisDynamicTableSink(
             RedisCommand redisCommand,
@@ -75,14 +75,8 @@ public class RedisDynamicTableSink implements DynamicTableSink {
 
     @Override
     public SinkRuntimeProvider getSinkRuntimeProvider(Context context) {
-        RedisSinkFunction redisSinkFunction =
-                config.get(RedisOptions.SINK_LIMIT)
-                        ? new RedisLimitedSinkFunction(
-                                flinkConfigBase, redisMapper, resolvedSchema, config)
-                        : new RedisSinkFunction(
-                                flinkConfigBase, redisMapper, resolvedSchema, config);
-
-        return SinkFunctionProvider.of(redisSinkFunction, sinkParallelism);
+        RedisSink redisSink = new RedisSink(flinkConfigBase, redisMapper, resolvedSchema, config);
+        return SinkV2Provider.of(redisSink, sinkParallelism);
     }
 
     @Override

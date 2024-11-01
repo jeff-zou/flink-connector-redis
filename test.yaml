@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gz-flink-session # Pod的名称
+  namespace: flink # Pod所在的命名空间
+  labels:
+    app: gz-flink-session
+spec:
+  containers:
+    - name: gz-flink-session
+      image: xsjop-harbor.seasungame.com/datacenter/flink:1.15-3
+
+        - args:
+            - bash
+            - -c
+            -
+
+    command:
+      - /docker-entrypoint.sh
+    limits:
+      cpu: 4
+      memory: 4Gi
+      Requests:
+        cpu: 301m
+        memory: 4Gi
+    env:
+      - name: TZ
+        value: K8S_TIMEZONE
+      - name: _POD_IP_ADDRESS
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: status.podIP
+      - name: HADOOP_CONF_DIR
+        value: /opt/hadoop/conf
+      - name: KUBE_ENV
+        value: KUBE_FILE_NAME
+    lifecycle:
+      preStop:
+        exec:
+          command:
+            - sleep
+            - "10"
+  hostAliases:
+    - ip: "172.18.2.89"
+      hostnames:
+        - "namenode1"
+    - ip: "172.18.2.90"
+      hostnames:
+        - "namenode2"
+    - ip: "172.18.2.91"
+      hostnames:
+        - "datanode1"
+    - ip: "172.18.2.92"
+      hostnames:
+        - "datanode2"
+    - ip: "172.18.2.93"
+      hostnames:
+        - "datanode3"
+    - ip: "172.18.2.94"
+      hostnames:
+        - "datanode4"
+    - ip: "172.18.2.39"
+      hostnames:
+        - "kafka1.seasungame.com"
+    - ip: "172.18.2.40"
+      hostnames:
+        - "kafka2.seasungame.com"
+    - ip: "172.18.2.41"
+      hostnames:
+        - "kafka3.seasungame.com"
+    - ip: "172.18.2.70"
+      hostnames:
+        - "kafka4.seasungame.com"
+    - ip: "172.18.2.27"
+      hostnames:
+        - "realtime.xoyo.com"
+    - ip: "172.24.150.223"
+      hostnames:
+        - "hiveserver.whale.xoyo.com"
+    - ip: "172.24.160.35"
+      hostnames:
+        - "sh-kafka1.seasungame.com"
+    - ip: "172.24.160.36"
+      hostnames:
+        - "sh-kafka2.seasungame.com"
+    - ip: "172.24.160.37"
+      hostnames:
+        - "sh-kafka3.seasungame.com"
+    - ip: "172.24.160.38"
+      hostnames:
+        - "sh-kafka4.seasungame.com"
+    - ip: "172.24.160.39"
+      hostnames:
+        - "sh-kafka5.seasungame.com"
+    - ip: "172.24.160.40"
+      hostnames:
+        - "sh-kafka6.seasungame.com"
+    - ip: "172.24.160.41"
+      hostnames:
+        - "sh-kafka7.seasungame.com"

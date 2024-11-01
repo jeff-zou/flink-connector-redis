@@ -19,13 +19,13 @@
 package org.apache.flink.streaming.connectors.redis.config;
 
 /** query options. @Author:jeff.zou @Date: 2022/3/9.14:37 */
-public class RedisJoinConfig {
+public class RedisLookupConfig {
 
     private final long cacheMaxSize;
     private final long cacheTtl;
     private final boolean loadAll;
 
-    public RedisJoinConfig(long cacheMaxSize, long cacheTtl, boolean loadAll) {
+    public RedisLookupConfig(long cacheMaxSize, long cacheTtl, boolean loadAll) {
         this.cacheMaxSize = cacheMaxSize;
         this.cacheTtl = cacheTtl;
         this.loadAll = loadAll;
@@ -65,8 +65,8 @@ public class RedisJoinConfig {
             return this;
         }
 
-        public RedisJoinConfig build() {
-            return new RedisJoinConfig(cacheMaxSize, cacheTtl, loadAll);
+        public RedisLookupConfig build() {
+            return new RedisLookupConfig(cacheMaxSize, cacheTtl, loadAll);
         }
     }
 }

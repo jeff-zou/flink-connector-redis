@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.table;
+package org.apache.flink.streaming.connectors.redis.stream;
 
-import org.apache.flink.configuration.Configuration;
+import org.apache.flink.api.connector.sink2.Sink;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
@@ -30,38 +30,31 @@ import org.apache.flink.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @Author: Jeff Zou @Date: 2022/9/26 15:28 Specially used for Flink online debugging.
+ * @author Jeff Zou
+ * @date 2024/10/23 14:01
  */
-public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RedisLimitedSinkFunction.class);
-
-    private long maxOnline;
-
-    private long startTime;
-
-    private long sinkInterval;
-
-    private int maxNum;
-
+public class LimitedRedisWriter<IN> extends RedisWriter<IN> {
+    private static final Logger LOG = LoggerFactory.getLogger(LimitedRedisWriter.class);
+    private final long maxOnline;
+    private final long sinkInterval;
+    private final int maxNum;
+    protected Integer ttl;
+    protected int expireTimeSeconds = -1;
+    private final long startTime;
     private volatile int curNum;
 
-    /**
-     * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
-     *
-     * @param flinkConfigBase The configuration of {@link FlinkConfigBase}
-     * @param redisSinkMapper This is used to generate Redis command and key value from incoming
-     * @param resolvedSchema
-     */
-    public RedisLimitedSinkFunction(
+    public LimitedRedisWriter(
             FlinkConfigBase flinkConfigBase,
             RedisSinkMapper<IN> redisSinkMapper,
             ResolvedSchema resolvedSchema,
-            ReadableConfig config) {
-        super(flinkConfigBase, redisSinkMapper, resolvedSchema, config);
+            ReadableConfig config,
+            Sink.InitContext sinkInitContext)
+            throws Exception {
+        super(flinkConfigBase, redisSinkMapper, resolvedSchema, config, sinkInitContext);
         maxOnline = config.get(RedisOptions.SINK_LIMIT_MAX_ONLINE);
 
         Preconditions.checkState(
@@ -80,16 +73,11 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
                 maxNum > 0 && maxNum <= RedisOptions.SINK_LIMIT_MAX_NUM.defaultValue(),
                 "the max num must be more than 0 and less than %s.",
                 RedisOptions.SINK_LIMIT_MAX_NUM.defaultValue());
-    }
-
-    @Override
-    public void open(Configuration parameters) throws Exception {
-        super.open(parameters);
         startTime = System.currentTimeMillis();
     }
 
     @Override
-    public void invoke(IN input, Context context) throws Exception {
+    public void write(Object element, Context context) throws IOException, InterruptedException {
         long remainTime = maxOnline - (System.currentTimeMillis() - startTime);
         if (remainTime < 0) {
             throw new RuntimeException(
@@ -98,7 +86,7 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
                             + ", the debugging time has exceeded the max online time.");
         }
 
-        RowData rowData = (RowData) input;
+        RowData rowData = (RowData) element;
         RowKind kind = rowData.getRowKind();
         if (kind == RowKind.UPDATE_BEFORE) {
             return;
@@ -106,7 +94,7 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
 
         // all keys must expire 10 seconds after online debugging end.
         super.ttl = (int) remainTime / 1000 + 10;
-        super.invoke(input, context);
+        super.write(element, context);
 
         TimeUnit.MILLISECONDS.sleep(sinkInterval);
         curNum++;
@@ -118,4 +106,7 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
                             + curNum);
         }
     }
+
+    @Override
+    public void flush(boolean endOfInput) throws IOException, InterruptedException {}
 }

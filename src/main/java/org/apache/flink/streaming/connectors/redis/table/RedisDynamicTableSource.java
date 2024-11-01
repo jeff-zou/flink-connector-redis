@@ -22,11 +22,13 @@ import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigHandler;
-import org.apache.flink.streaming.connectors.redis.config.RedisJoinConfig;
+import org.apache.flink.streaming.connectors.redis.config.RedisLookupConfig;
 import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.mapper.RedisMapper;
 import org.apache.flink.streaming.connectors.redis.mapper.RowRedisQueryMapper;
+import org.apache.flink.streaming.connectors.redis.stream.RedisLookupFunction;
+import org.apache.flink.streaming.connectors.redis.stream.RedisSource;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.source.AsyncTableFunctionProvider;
@@ -34,6 +36,7 @@ import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.connector.source.LookupTableSource;
 import org.apache.flink.table.connector.source.ScanTableSource;
 import org.apache.flink.table.connector.source.SourceFunctionProvider;
+import org.apache.flink.table.connector.source.SourceProvider;
 import org.apache.flink.util.Preconditions;
 
 import java.util.Map;
@@ -41,14 +44,13 @@ import java.util.Map;
 /** redis dynamic table source. @Author: jeff.zou @Date: 2022/3/7.13:41 */
 public class RedisDynamicTableSource implements ScanTableSource, LookupTableSource {
 
-    private FlinkConfigBase flinkConfigBase;
+    private final FlinkConfigBase flinkConfigBase;
+    private final RedisMapper redisMapper;
+    private final RedisLookupConfig redisLookupConfig;
+    private final RedisCommand redisCommand;
     private Map<String, String> properties;
     private ResolvedSchema resolvedSchema;
     private ReadableConfig config;
-    private RedisMapper redisMapper;
-    private RedisJoinConfig redisJoinConfig;
-
-    private RedisCommand redisCommand;
 
     public RedisDynamicTableSource(
             RedisCommand redisCommand,
@@ -68,8 +70,8 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
         flinkConfigBase =
                 RedisHandlerServices.findRedisHandler(FlinkConfigHandler.class, properties)
                         .createFlinkConfig(config);
-        redisJoinConfig =
-                new RedisJoinConfig.Builder()
+        redisLookupConfig =
+                new RedisLookupConfig.Builder()
                         .setCacheTTL(config.get(RedisOptions.LOOKUP_CHCHE_TTL))
                         .setCacheMaxSize(config.get(RedisOptions.LOOKUP_CACHE_MAX_ROWS))
                         .setLoadAll(config.get(RedisOptions.LOOKUP_CACHE_LOAD_ALL))
@@ -83,17 +85,16 @@ public class RedisDynamicTableSource implements ScanTableSource, LookupTableSour
 
     @Override
     public ScanRuntimeProvider getScanRuntimeProvider(ScanContext runtimeProviderContext) {
-        RedisSourceFunction redisSourceFunction =
-                new RedisSourceFunction<>(redisMapper, config, flinkConfigBase, resolvedSchema);
-        return SourceFunctionProvider.of(
-                redisSourceFunction, this.redisCommand.isCommandBoundedness());
+        RedisSource redisSource =
+                new RedisSource<>(redisMapper, config, flinkConfigBase, resolvedSchema);
+        return SourceProvider.of(redisSource);
     }
 
     @Override
     public LookupRuntimeProvider getLookupRuntimeProvider(LookupContext context) {
         return AsyncTableFunctionProvider.of(
                 new RedisLookupFunction(
-                        flinkConfigBase, redisMapper, redisJoinConfig, resolvedSchema, config));
+                        flinkConfigBase, redisMapper, redisLookupConfig, resolvedSchema, config));
     }
 
     @Override
