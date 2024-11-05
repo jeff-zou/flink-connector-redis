@@ -18,9 +18,6 @@
 
 package org.apache.flink.streaming.connectors.redis.container;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.lettuce.core.Range;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.cluster.RedisClusterClient;
@@ -28,12 +25,14 @@ import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.async.RedisAdvancedClusterAsyncCommands;
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 /** Redis command container if we want to connect to a Redis cluster. */
 public class RedisClusterContainer implements RedisCommandsContainer, Closeable {
@@ -67,13 +66,7 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
     /** Closes the {@link RedisClusterClient}. */
     @Override
     public void close() {
-        try {
-            CompletableFuture completableFuture = this.connection.closeAsync();
-            completableFuture.get();
-            LOG.info("close async connection success!");
-        } catch (Exception e) {
-            LOG.error("close async connection error!", e);
-        }
+        this.connection.close();
         this.redisClusterClient.shutdown();
     }
 

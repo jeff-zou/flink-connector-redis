@@ -18,9 +18,6 @@
 
 package org.apache.flink.streaming.connectors.redis.container;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.lettuce.core.Range;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
@@ -28,10 +25,12 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Redis command container if we want to connect to a single Redis server or to Redis sentinels If
@@ -43,8 +42,7 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisContainer.class);
-
-    private transient RedisClient redisClient;
+    private final transient RedisClient redisClient;
     protected transient StatefulRedisConnection<String, String> connection;
     protected transient RedisAsyncCommands asyncCommands;
 
@@ -60,14 +58,8 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     /** Closes the redisClient instances. */
     @Override
     public void close() {
-        try {
-            CompletableFuture completableFuture = connection.closeAsync();
-            completableFuture.get();
-            LOG.info("close async connection success!");
-        } catch (Exception e) {
-            LOG.info("close async connection error!", e);
-        }
-        redisClient.shutdown();
+        this.connection.close();
+        this.redisClient.shutdown();
     }
 
     @Override

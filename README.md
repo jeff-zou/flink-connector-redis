@@ -22,8 +22,8 @@
 
 # 2 使用方法: 
 ## 2.1 工程直接引用
-项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.4.2.jar，
-否则使用flink-connector-redis-1.4.2-jar-with-dependencies.jar。
+项目依赖Lettuce(6.2.1)及netty-transport-native-epoll(4.1.82.Final),如flink环境有这两个包,则使用flink-connector-redis-1.4.3.jar，
+否则使用flink-connector-redis-1.4.3-jar-with-dependencies.jar。
 <br/>
 ```
 <dependency>
@@ -31,7 +31,7 @@
     <artifactId>flink-connector-redis</artifactId>
     <!-- 没有单独引入项目依赖Lettuce netty-transport-native-epoll依赖时 -->
     <!--            <classifier>jar-with-dependencies</classifier>-->
-    <version>1.4.2</version>
+    <version>1.4.3</version>
 </dependency>
 ```
 ## 2.2 自行打包
