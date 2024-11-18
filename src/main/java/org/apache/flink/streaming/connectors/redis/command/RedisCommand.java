@@ -18,9 +18,7 @@
 
 package org.apache.flink.streaming.connectors.redis.command;
 
-import org.apache.flink.streaming.connectors.redis.mapper.RedisDataType;
-
-/** All available commands for Redis. Each command belongs to a {@link RedisDataType} group. */
+/** All available commands for Redis. */
 public enum RedisCommand {
 
     /**
@@ -214,16 +212,15 @@ public enum RedisCommand {
             RedisDeleteCommand.NONE,
             true);
 
-    /** The {@link RedisDataType} this command belongs to. */
-    private RedisSelectCommand selectCommand;
+    private final RedisSelectCommand selectCommand;
 
-    private RedisInsertCommand insertCommand;
+    private final RedisInsertCommand insertCommand;
 
-    private RedisDeleteCommand deleteCommand;
+    private final RedisDeleteCommand deleteCommand;
 
-    private RedisJoinCommand joinCommand;
+    private final RedisJoinCommand joinCommand;
 
-    private boolean commandBoundedness;
+    private final boolean commandBoundedness;
 
     RedisCommand(
             RedisInsertCommand insertCommand,

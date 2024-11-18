@@ -18,6 +18,9 @@
 
 package org.apache.flink.streaming.connectors.redis.table;
 
+import io.lettuce.core.Range;
+import io.lettuce.core.RedisFuture;
+
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
@@ -31,7 +34,6 @@ import org.apache.flink.streaming.connectors.redis.config.ZremType;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainer;
 import org.apache.flink.streaming.connectors.redis.container.RedisCommandsContainerBuilder;
 import org.apache.flink.streaming.connectors.redis.converter.RedisRowConverter;
-import org.apache.flink.streaming.connectors.redis.mapper.RedisDataType;
 import org.apache.flink.streaming.connectors.redis.mapper.RedisSinkMapper;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.data.RowData;
@@ -40,9 +42,6 @@ import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.lettuce.core.Range;
-import io.lettuce.core.RedisFuture;
 
 import java.io.IOException;
 import java.time.LocalTime;
@@ -59,26 +58,18 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private static final long serialVersionUID = 1L;
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisSinkFunction.class);
-
-    protected Integer ttl;
-
-    private boolean setIfAbsent;
-
-    private boolean ttlKeyNotAbsent;
-
-    protected int expireTimeSeconds = -1;
-
-    private RedisSinkMapper<IN> redisSinkMapper;
-    private RedisCommand redisCommand;
-
-    private FlinkConfigBase flinkConfigBase;
-    private transient RedisCommandsContainer redisCommandsContainer;
-
     private final int maxRetryTimes;
-    private List<DataType> columnDataTypes;
-    private RedisValueDataStructure redisValueDataStructure;
-
-    private String zremrangeby;
+    private final boolean setIfAbsent;
+    private final boolean ttlKeyNotAbsent;
+    private final RedisSinkMapper<IN> redisSinkMapper;
+    private final RedisCommand redisCommand;
+    private final FlinkConfigBase flinkConfigBase;
+    private final List<DataType> columnDataTypes;
+    private final RedisValueDataStructure redisValueDataStructure;
+    private final String zremrangeby;
+    protected Integer ttl;
+    protected int expireTimeSeconds = -1;
+    private transient RedisCommandsContainer redisCommandsContainer;
 
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
@@ -118,7 +109,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
 
     /**
      * Called when new data arrives to the sink, and forwards it to Redis channel. Depending on the
-     * specified Redis data type (see {@link RedisDataType}), a different Redis command will be
+     * specified Redis data type, a different Redis command will be
      * applied. Available commands are RPUSH, LPUSH, SADD, PUBLISH, SET, SETEX, PFADD, HSET, ZADD.
      *
      * @param input The incoming data
@@ -174,7 +165,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 if (i >= this.maxRetryTimes) {
                     throw new RuntimeException("sink redis error ", e1);
                 }
-                Thread.sleep(500 * i);
+                Thread.sleep(500L * i);
             }
         }
     }
