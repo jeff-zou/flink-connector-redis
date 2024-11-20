@@ -22,5 +22,6 @@ public enum RedisJoinCommand {
     GET,
     HGET,
     ZSCORE,
+    XREAD,
     NONE
 }

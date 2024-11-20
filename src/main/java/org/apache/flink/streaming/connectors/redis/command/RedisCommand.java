@@ -210,6 +210,13 @@ public enum RedisCommand {
             RedisSelectCommand.GET,
             RedisJoinCommand.GET,
             RedisDeleteCommand.NONE,
+            true),
+
+    XADD(
+            RedisInsertCommand.DECRBY,
+            RedisSelectCommand.XREAD,
+            RedisJoinCommand.XREAD,
+            RedisDeleteCommand.XDEL,
             true);
 
     private final RedisSelectCommand selectCommand;

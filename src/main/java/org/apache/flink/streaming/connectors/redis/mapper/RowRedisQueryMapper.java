@@ -21,7 +21,7 @@ package org.apache.flink.streaming.connectors.redis.mapper;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommandBaseDescription;
 
-/** row redis mapper. @Author: jeff.zou @Date: 2022/3/7.14:59 */
+/** row redis mapper. @Author: Jeff.Zou @Date: 2022/3/7.14:59 */
 public class RowRedisQueryMapper<OUT> implements RedisMapper<OUT> {
 
     RedisCommand redisCommand;

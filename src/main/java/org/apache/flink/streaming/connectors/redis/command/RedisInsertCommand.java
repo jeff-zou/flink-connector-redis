@@ -38,5 +38,6 @@ public enum RedisInsertCommand {
     DECRBY,
     DEL,
     HDEL,
+    XADD,
     NONE
 }

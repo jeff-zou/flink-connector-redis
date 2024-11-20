@@ -25,5 +25,6 @@ public enum RedisSelectCommand {
     SRANDMEMBER,
     ZSCORE,
     SUBSCRIBE,
+    XREAD,
     NONE
 }

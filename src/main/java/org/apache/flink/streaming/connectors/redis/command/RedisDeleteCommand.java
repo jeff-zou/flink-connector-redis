@@ -28,5 +28,6 @@ public enum RedisDeleteCommand {
     HINCRBYFLOAT,
     INCRBY,
     INCRBYFLOAT,
+    XDEL,
     NONE
 }

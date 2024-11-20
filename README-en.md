@@ -45,8 +45,8 @@ After executing mvn package on the command line, import the generated package fl
 
 
 <br/>
- The project depends on Lettuce(6.2.1) and netty-transport-native-epoll(4.1.82.Final),flink-connection-redis-1.4.3.jar if these packages are available.
-Otherwise, use flink-connector-redis-1.4.3-jar-with-dependencies.jar.
+ The project depends on Lettuce(6.2.1) and netty-transport-native-epoll(4.1.82.Final),flink-connection-redis-1.4.4.jar if these packages are available.
+Otherwise, use flink-connector-redis-1.4.4-jar-with-dependencies.jar.
 <br/>
 
 Development environment engineering direct reference:
@@ -55,7 +55,7 @@ Development environment engineering direct reference:
 <dependency>
   <groupId>io.github.jeff-zou</groupId>
   <artifactId>flink-connector-redis</artifactId>
-  <version>1.4.3</version>
+  <version>1.4.4</version>
   <!-- When the Lettuce netty-transport-native-epoll dependency is not imported separately -->
     <!--            <classifier>jar-with-dependencies</classifier>-->
 </dependency>

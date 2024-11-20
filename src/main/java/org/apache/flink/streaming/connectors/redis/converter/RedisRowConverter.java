@@ -31,7 +31,7 @@ import java.util.Base64;
 
 import static org.apache.flink.table.types.logical.utils.LogicalTypeChecks.getPrecision;
 
-/** redis serialize . @Author: jeff.zou @Date: 2022/3/10.13:17 */
+/** redis serialize . @Author: Jeff.Zou @Date: 2022/3/10.13:17 */
 public class RedisRowConverter {
 
     private static final int TIMESTAMP_PRECISION_MIN = 0;
@@ -119,7 +119,8 @@ public class RedisRowConverter {
                 return (rowData, index) -> String.valueOf(rowData.getBoolean(index));
             case BINARY:
             case VARBINARY:
-                return (rowData, index) -> Base64.getEncoder().encodeToString(rowData.getBinary(index));
+                return (rowData, index) ->
+                        Base64.getEncoder().encodeToString(rowData.getBinary(index));
             case DECIMAL:
                 DecimalType decimalType = (DecimalType) fieldType;
                 precision = decimalType.getPrecision();
@@ -161,7 +162,8 @@ public class RedisRowConverter {
                                     "The precision %s of Timestamp is out of range [%s, %s]",
                                     precision, TIMESTAMP_PRECISION_MIN, TIMESTAMP_PRECISION_MAX));
                 }
-                return (rowData, index) -> String.valueOf(rowData.getTimestamp(index, precision).getMillisecond());
+                return (rowData, index) ->
+                        String.valueOf(rowData.getTimestamp(index, precision).getMillisecond());
             default:
                 throw new UnsupportedOperationException("Unsupported field type: " + fieldType);
         }

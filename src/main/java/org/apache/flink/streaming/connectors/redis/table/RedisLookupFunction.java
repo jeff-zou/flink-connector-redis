@@ -18,6 +18,8 @@
 
 package org.apache.flink.streaming.connectors.redis.table;
 
+import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
+
 import org.apache.flink.calcite.shaded.com.google.common.cache.Cache;
 import org.apache.flink.calcite.shaded.com.google.common.cache.CacheBuilder;
 import org.apache.flink.configuration.ReadableConfig;
@@ -50,23 +52,19 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
-
-/** redis lookup function. @Author: jeff.zou @Date: 2022/3/7.14:33 */
+/** redis lookup function. @Author: Jeff.Zou @Date: 2022/3/7.14:33 */
 public class RedisLookupFunction extends AsyncTableFunction<RowData> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisLookupFunction.class);
-
-    private RedisCommand redisCommand;
-    private FlinkConfigBase flinkConfigBase;
-    private RedisCommandsContainer redisCommandsContainer;
-
     private final long cacheMaxSize;
     private final long cacheTtl;
     private final int maxRetryTimes;
     private final List<DataType> dataTypes;
     private final boolean loadAll;
     private final RedisValueDataStructure redisValueDataStructure;
+    private final RedisCommand redisCommand;
+    private final FlinkConfigBase flinkConfigBase;
+    private RedisCommandsContainer redisCommandsContainer;
     private Cache<String, Object> cache;
 
     public RedisLookupFunction(
@@ -120,19 +118,17 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
                         }
                     } else {
                         String key =
-                                new StringBuilder(String.valueOf(keys[0]))
-                                        .append(CACHE_SEPERATOR)
-                                        .append(String.valueOf(keys[1]))
-                                        .toString();
+                                String.valueOf(keys[0]) +
+                                        CACHE_SEPERATOR +
+                                        keys[1];
                         genericRowData = (GenericRowData) cache.getIfPresent(key);
                     }
                     break;
                 case ZSCORE: {
                     String key =
-                            new StringBuilder(String.valueOf(keys[0]))
-                                    .append(CACHE_SEPERATOR)
-                                    .append(String.valueOf(keys[1]))
-                                    .toString();
+                            String.valueOf(keys[0]) +
+                                    CACHE_SEPERATOR +
+                                    keys[1];
                     genericRowData = (GenericRowData) cache.getIfPresent(key);
                     break;
                 }
@@ -156,7 +152,7 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
                 if (i >= maxRetryTimes) {
                     throw new RuntimeException("query redis error ", e);
                 }
-                Thread.sleep(500 * i);
+                Thread.sleep(500L * i);
             }
         }
     }
@@ -207,10 +203,9 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
                                     resultFuture.complete(Collections.singleton(rowData));
                                     if (cache != null && result != null) {
                                         String key =
-                                                new StringBuilder(String.valueOf(keys[0]))
-                                                        .append(CACHE_SEPERATOR)
-                                                        .append(String.valueOf(keys[1]))
-                                                        .toString();
+                                                String.valueOf(keys[0]) +
+                                                        CACHE_SEPERATOR +
+                                                        keys[1];
                                         cache.put(key, rowData);
                                     }
                                 });
@@ -228,10 +223,9 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
                                     resultFuture.complete(Collections.singleton(rowData));
                                     if (cache != null && result != null) {
                                         String key =
-                                                new StringBuilder(String.valueOf(keys[0]))
-                                                        .append(CACHE_SEPERATOR)
-                                                        .append(String.valueOf(keys[1]))
-                                                        .toString();
+                                                String.valueOf(keys[0]) +
+                                                        CACHE_SEPERATOR +
+                                                        keys[1];
                                         cache.put(key, rowData);
                                     }
                                 });

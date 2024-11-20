@@ -35,17 +35,16 @@ import org.apache.flink.util.Preconditions;
 
 import java.util.Map;
 
-/** Created by jeff.zou on 2020/9/10. */
+/** Created by Jeff.Zou on 2020/9/10. */
 public class RedisDynamicTableSink implements DynamicTableSink {
 
-    private FlinkConfigBase flinkConfigBase;
-    private RedisSinkMapper redisMapper;
-    private Map<String, String> properties;
-    private ReadableConfig config;
-    private Integer sinkParallelism;
-    private ResolvedSchema resolvedSchema;
-
     private final RedisCommand redisCommand;
+    private final FlinkConfigBase flinkConfigBase;
+    private final RedisSinkMapper redisMapper;
+    private final Map<String, String> properties;
+    private final ReadableConfig config;
+    private final Integer sinkParallelism;
+    private final ResolvedSchema resolvedSchema;
 
     public RedisDynamicTableSink(
             RedisCommand redisCommand,

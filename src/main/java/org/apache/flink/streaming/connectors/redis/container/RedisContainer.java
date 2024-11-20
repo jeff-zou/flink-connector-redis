@@ -18,12 +18,15 @@
 
 package org.apache.flink.streaming.connectors.redis.container;
 
+import io.lettuce.core.Limit;
 import io.lettuce.core.Range;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
+import io.lettuce.core.StreamMessage;
+import io.lettuce.core.XAddArgs;
+import io.lettuce.core.XReadArgs;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
-import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -474,11 +477,6 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public RedisClusterAsyncCommands getAsyncCommands() {
-        return asyncCommands;
-    }
-
-    @Override
     public RedisFuture<Long> getTTL(String key) {
         try {
             return asyncCommands.ttl(key);
@@ -599,6 +597,67 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
                         "Cannot send Redis message with command srandmember to key {} count {}error message {}",
                         key,
                         count,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<String> xadd(String key, XAddArgs xAddArgs, Object... keysAndvalues) {
+        try {
+            return asyncCommands.xadd(key, xAddArgs, keysAndvalues);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command xadd to key {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<List<StreamMessage>> xread(
+            XReadArgs xReadArgs, XReadArgs.StreamOffset<String>... streams) {
+        try {
+            return asyncCommands.xread(xReadArgs, streams);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command xread to key {} error message {}",
+                        streams[0].getName(),
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<List<StreamMessage>> xrange(String key, Range<String> range, Limit limit) {
+        try {
+            return asyncCommands.xrange(key, range, limit);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command xrange to key {} error message {}",
+                        key,
+                        e.getMessage());
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RedisFuture<Long> xlen(String key) {
+        try {
+            return asyncCommands.xlen(key);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(
+                        "Cannot send Redis message with command xlen to key {} error message {}",
+                        key,
                         e.getMessage());
             }
             throw e;

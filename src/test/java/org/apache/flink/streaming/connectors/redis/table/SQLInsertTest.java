@@ -18,6 +18,10 @@
 
 package org.apache.flink.streaming.connectors.redis.table;
 
+import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_COMMAND;
+
+import io.lettuce.core.Range;
+
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
@@ -27,11 +31,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.Preconditions;
 
-import io.lettuce.core.Range;
-
-import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_COMMAND;
-
-/** Created by jeff.zou on 2020/9/10. */
+/** Created by Jeff.Zou on 2020/9/10. */
 public class SQLInsertTest extends TestRedisConfigBase {
 
     @Test
@@ -163,7 +163,7 @@ public class SQLInsertTest extends TestRedisConfigBase {
         TableResult tableResult =
                 tEnv.executeSql("insert into redis_sink select * from (values('set', 'test2'))");
         tableResult.getJobClient().get().getJobExecutionResult().get();
-        Preconditions.condition(singleRedisCommands.sismember("set", "test2") == false, "");
+        Preconditions.condition(!singleRedisCommands.sismember("set", "test2"), "");
     }
 
     @Test
@@ -274,13 +274,11 @@ public class SQLInsertTest extends TestRedisConfigBase {
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         String s =
-                new StringBuilder()
-                        .append("test")
-                        .append(RedisDynamicTableFactory.CACHE_SEPERATOR)
-                        .append("11.3")
-                        .append(RedisDynamicTableFactory.CACHE_SEPERATOR)
-                        .append("10.3")
-                        .toString();
+                "test" +
+                        RedisDynamicTableFactory.CACHE_SEPERATOR +
+                        "11.3" +
+                        RedisDynamicTableFactory.CACHE_SEPERATOR +
+                        "10.3";
         Preconditions.condition(singleRedisCommands.get("test").equals(s), "");
     }
 

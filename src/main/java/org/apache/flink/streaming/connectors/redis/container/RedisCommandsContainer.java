@@ -18,9 +18,12 @@
 
 package org.apache.flink.streaming.connectors.redis.container;
 
+import io.lettuce.core.Limit;
 import io.lettuce.core.Range;
 import io.lettuce.core.RedisFuture;
-import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
+import io.lettuce.core.StreamMessage;
+import io.lettuce.core.XAddArgs;
+import io.lettuce.core.XReadArgs;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -52,6 +55,7 @@ public interface RedisCommandsContainer extends Serializable {
      * Sets fields in the hash stored at key to value, with TTL, if needed. Setting expire time to
      * key is optional. If key does not exist, a new key holding a hash is created. If key already
      * exists, it is overwritten.
+     *
      * @param key
      * @param hashField
      * @return
@@ -157,6 +161,7 @@ public interface RedisCommandsContainer extends Serializable {
 
     /**
      * Remove members from a specified score range
+     *
      * @param key
      * @param range
      * @return
@@ -165,6 +170,7 @@ public interface RedisCommandsContainer extends Serializable {
 
     /**
      * Remove members from a specified lex range
+     *
      * @param key
      * @param range
      * @return
@@ -173,6 +179,7 @@ public interface RedisCommandsContainer extends Serializable {
 
     /**
      * Remove members from a specified rank
+     *
      * @param key
      * @param start
      * @param stop
@@ -324,12 +331,35 @@ public interface RedisCommandsContainer extends Serializable {
      * @param count
      * @return
      */
-    public RedisFuture<List> srandmember(String key, long count);
+    RedisFuture<List> srandmember(String key, long count);
 
     /**
-     * get redis async commands.
-     *
+     * @param key
+     * @param xAddArgs
+     * @param keysAndvalues
      * @return
      */
-    RedisClusterAsyncCommands getAsyncCommands();
+    RedisFuture<String> xadd(String key, XAddArgs xAddArgs, Object... keysAndvalues);
+
+    /**
+     * @param xReadArgs
+     * @param streams
+     * @return
+     */
+    RedisFuture<List<StreamMessage>> xread(
+            XReadArgs xReadArgs, XReadArgs.StreamOffset<String>... streams);
+
+    /**
+     * @param key
+     * @param range
+     * @param limit
+     * @return
+     */
+    RedisFuture<List<StreamMessage>> xrange(String key, Range<String> range, Limit limit);
+
+    /**
+     * @param key
+     * @return
+     */
+    RedisFuture<Long> xlen(String key);
 }
