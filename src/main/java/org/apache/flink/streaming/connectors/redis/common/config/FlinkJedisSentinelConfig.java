@@ -18,16 +18,18 @@ public class FlinkJedisSentinelConfig extends FlinkJedisConfigBase {
     private static final Logger LOG = LoggerFactory.getLogger(FlinkJedisSentinelConfig.class);
 
     private final String masterName;
-    private final Set<String> sentinels;
+    private final String sentinelsInfo;
     private final int soTimeout;
     private final int database;
+
+    private final String sentinelsPassword;
 
     /**
      * Jedis Sentinels config. The master name and sentinels are mandatory, and when you didn't set
      * these, it throws NullPointerException.
      *
      * @param masterName master name of the replica set
-     * @param sentinels set of sentinel hosts
+     * @param sentinelsInfo set of sentinel hosts
      * @param connectionTimeout timeout connection timeout
      * @param soTimeout timeout socket timeout
      * @param password password, if any
@@ -40,21 +42,21 @@ public class FlinkJedisSentinelConfig extends FlinkJedisConfigBase {
      */
     private FlinkJedisSentinelConfig(
             String masterName,
-            Set<String> sentinels,
+            String sentinelsInfo,
             int connectionTimeout,
             int soTimeout,
             String password,
             int database,
             int maxTotal,
             int maxIdle,
-            int minIdle) {
+            int minIdle,
+            String sentinelsPassword) {
         super(connectionTimeout, maxTotal, maxIdle, minIdle, password);
         Objects.requireNonNull(masterName, "Master name should be presented");
-        Objects.requireNonNull(sentinels, "Sentinels information should be presented");
-        CheckUtil.checkArgument(!sentinels.isEmpty(), "Sentinel hosts should not be empty");
-
+        Objects.requireNonNull(sentinelsInfo, "Sentinels information should be presented");
+        this.sentinelsPassword = sentinelsPassword;
         this.masterName = masterName;
-        this.sentinels = new HashSet<>(sentinels);
+        this.sentinelsInfo = sentinelsInfo;
         this.soTimeout = soTimeout;
         this.database = database;
     }
@@ -73,8 +75,8 @@ public class FlinkJedisSentinelConfig extends FlinkJedisConfigBase {
      *
      * @return Set of Sentinels host addresses
      */
-    public Set<String> getSentinels() {
-        return sentinels;
+    public String getSentinelsInfo() {
+        return sentinelsInfo;
     }
 
     /**
@@ -95,10 +97,15 @@ public class FlinkJedisSentinelConfig extends FlinkJedisConfigBase {
         return database;
     }
 
+
+    public String getSentinelsPassword() {
+        return sentinelsPassword;
+    }
+
     /** Builder for initializing {@link FlinkJedisSentinelConfig}. */
     public static class Builder {
         private String masterName;
-        private Set<String> sentinels;
+        private String sentinelsInfo;
         private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
         private int soTimeout = Protocol.DEFAULT_TIMEOUT;
         private String password;
@@ -106,6 +113,8 @@ public class FlinkJedisSentinelConfig extends FlinkJedisConfigBase {
         private int maxTotal = GenericObjectPoolConfig.DEFAULT_MAX_TOTAL;
         private int maxIdle = GenericObjectPoolConfig.DEFAULT_MAX_IDLE;
         private int minIdle = GenericObjectPoolConfig.DEFAULT_MIN_IDLE;
+
+        private String sentinelsPassword;
 
         /**
          * Sets master name of the replica set.
@@ -121,11 +130,11 @@ public class FlinkJedisSentinelConfig extends FlinkJedisConfigBase {
         /**
          * Sets sentinels address.
          *
-         * @param sentinels host set of the sentinels
+         * @param   sentinelsInfo
          * @return Builder itself
          */
-        public Builder setSentinels(Set<String> sentinels) {
-            this.sentinels = sentinels;
+        public Builder setSentinelsInfo(String sentinelsInfo) {
+            this.sentinelsInfo = sentinelsInfo;
             return this;
         }
 
@@ -211,6 +220,11 @@ public class FlinkJedisSentinelConfig extends FlinkJedisConfigBase {
             return this;
         }
 
+        public Builder setSentinelsPassword(String sentinelsPassword) {
+            this.sentinelsPassword = sentinelsPassword;
+            return this;
+        }
+
         /**
          * Builds JedisSentinelConfig.
          *
@@ -219,35 +233,26 @@ public class FlinkJedisSentinelConfig extends FlinkJedisConfigBase {
         public FlinkJedisSentinelConfig build() {
             return new FlinkJedisSentinelConfig(
                     masterName,
-                    sentinels,
+                    sentinelsInfo,
                     connectionTimeout,
                     soTimeout,
                     password,
                     database,
                     maxTotal,
                     maxIdle,
-                    minIdle);
+                    minIdle,
+                    sentinelsPassword);
         }
     }
 
     @Override
     public String toString() {
-        return "JedisSentinelConfig{"
-                + "masterName='"
-                + masterName
-                + '\''
-                + ", connectionTimeout="
-                + connectionTimeout
-                + ", soTimeout="
-                + soTimeout
-                + ", database="
-                + database
-                + ", maxTotal="
-                + maxTotal
-                + ", maxIdle="
-                + maxIdle
-                + ", minIdle="
-                + minIdle
-                + '}';
+        return "FlinkJedisSentinelConfig{" +
+                "masterName='" + masterName + '\'' +
+                ", sentinelsInfo=" + sentinelsInfo +
+                ", soTimeout=" + soTimeout +
+                ", database=" + database +
+                ", sentinelsPassword='" + sentinelsPassword + '\'' +
+                '}';
     }
 }

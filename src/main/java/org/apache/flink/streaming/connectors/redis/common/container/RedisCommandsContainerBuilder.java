@@ -1,15 +1,20 @@
 package org.apache.flink.streaming.connectors.redis.common.container;
 
+import org.apache.commons.compress.utils.Sets;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisClusterConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisSentinelConfig;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisSentinelPool;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -107,15 +112,21 @@ public class RedisCommandsContainerBuilder {
         genericObjectPoolConfig.setMaxTotal(jedisSentinelConfig.getMaxTotal());
         genericObjectPoolConfig.setMinIdle(jedisSentinelConfig.getMinIdle());
 
+        String clientName = "flink_sql_redis_connector";
+        HashSet<String> set = new HashSet<>();
+        Collections.addAll(set, jedisSentinelConfig.getSentinelsInfo().split(","));
         JedisSentinelPool jedisSentinelPool =
                 new JedisSentinelPool(
                         jedisSentinelConfig.getMasterName(),
-                        jedisSentinelConfig.getSentinels(),
+                        set,
                         genericObjectPoolConfig,
                         jedisSentinelConfig.getConnectionTimeout(),
                         jedisSentinelConfig.getSoTimeout(),
                         jedisSentinelConfig.getPassword(),
-                        jedisSentinelConfig.getDatabase());
+                        jedisSentinelConfig.getDatabase(), clientName,
+                        jedisSentinelConfig.getConnectionTimeout(),
+                        jedisSentinelConfig.getSoTimeout(),jedisSentinelConfig.getSentinelsPassword(), clientName);
+
         return new RedisContainer(jedisSentinelPool);
     }
 }

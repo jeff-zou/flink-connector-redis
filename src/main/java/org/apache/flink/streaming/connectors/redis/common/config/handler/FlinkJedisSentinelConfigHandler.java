@@ -23,6 +23,10 @@ import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisSenti
 import org.apache.flink.streaming.connectors.redis.common.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.common.hanlder.FlinkJedisConfigHandler;
 import org.apache.flink.util.Preconditions;
+import org.apache.flink.util.StringUtils;
+
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_MODE;
+import static org.apache.flink.streaming.connectors.redis.descriptor.RedisValidator.REDIS_SENTINEL;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,19 +44,21 @@ public class FlinkJedisSentinelConfigHandler implements FlinkJedisConfigHandler 
     public FlinkJedisConfigBase createFlinkJedisConfig(ReadableConfig config) {
         String masterName = config.get(RedisOptions.REDIS_MASTER_NAME);
         String sentinelsInfo = config.get(RedisOptions.SENTINELS_INFO);
+        String sentinelsPassword =
+                StringUtils.isNullOrWhitespaceOnly(config.get(RedisOptions.SENTINELS_PASSWORD))
+                        ? null
+                        : config.get(RedisOptions.SENTINELS_PASSWORD);
         Preconditions.checkNotNull(masterName, "master should not be null in sentinel mode");
         Preconditions.checkNotNull(sentinelsInfo, "sentinels should not be null in sentinel mode");
-        Set<String> sentinels =
-                Arrays.asList(sentinelsInfo.split(",")).stream().collect(Collectors.toSet());
-        String sentinelsPassword = config.get(RedisOptions.SENTINELS_PASSWORD);
-        if (sentinelsPassword != null && sentinelsPassword.trim().isEmpty()) {
-            sentinelsPassword = null;
-        }
+
         FlinkJedisSentinelConfig flinkJedisSentinelConfig =
                 new FlinkJedisSentinelConfig.Builder()
+                        .setSentinelsInfo(sentinelsInfo)
                         .setMasterName(masterName)
-                        .setSentinels(sentinels)
-                        .setPassword(sentinelsPassword)
+                        .setConnectionTimeout(config.get(RedisOptions.TIMEOUT))
+                        .setDatabase(config.get(RedisOptions.DATABASE))
+                        .setPassword(config.get(RedisOptions.PASSWORD))
+                        .setSentinelsPassword(sentinelsPassword)
                         .build();
         return flinkJedisSentinelConfig;
     }
