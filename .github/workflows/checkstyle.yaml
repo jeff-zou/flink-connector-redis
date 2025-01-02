@@ -20,6 +20,9 @@ name: Code Style Checker
 
 on:
   pull_request:
+  push:
+    branches:
+      - dev
 
 jobs:
   java-checkstyle:
