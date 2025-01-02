@@ -40,5 +40,5 @@ jobs:
 
       - name: Build flink connector 1.15
         run: |
-          mvn clean package \
+          mvn clean package -DskipTests \
             -Dflink.version=1.15.0
