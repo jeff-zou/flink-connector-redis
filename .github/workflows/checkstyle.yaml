@@ -43,4 +43,5 @@ jobs:
 
       - name: Run java checkstyle
         run:
-          cd flink-doris-redis && mvn clean compile checkstyle:checkstyle
+          cd flink-doris-redis
+          mvn clean compile checkstyle:checkstyle
