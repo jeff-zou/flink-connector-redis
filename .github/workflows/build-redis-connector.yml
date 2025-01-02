@@ -16,7 +16,7 @@
 # under the License.
 #
 ---
-name: Build Connector
+name: Build Redis Connector
 on:
   pull_request:
   push:
