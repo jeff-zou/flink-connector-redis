@@ -22,7 +22,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - dev
 jobs:
   license-check:
     name: "License Check"
