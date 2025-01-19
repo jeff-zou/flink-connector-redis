@@ -63,7 +63,7 @@ public class TestRedisConfigBase {
         redisClient.shutdown();
     }
 
-    protected String sigleWith() {
+    protected String singleWith() {
         return "'connector'='redis', "
                 + "'host'='"
                 + REDIS_HOST
