@@ -45,7 +45,7 @@ import org.junit.platform.commons.util.Preconditions;
 import java.util.Arrays;
 import java.util.List;
 
-/** Created by Jeff.Zou on 2021/2/26. */
+/** Created by Jeff Zou on 2021/2/26. */
 public class DataStreamTest extends TestRedisConfigBase {
 
     @Test

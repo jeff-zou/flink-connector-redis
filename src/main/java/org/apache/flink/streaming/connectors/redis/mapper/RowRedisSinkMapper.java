@@ -33,15 +33,15 @@ import java.time.LocalTime;
 /** base row redis mapper implement. */
 public class RowRedisSinkMapper implements RedisSinkMapper<GenericRowData> {
 
-    private Integer ttl;
+    private final Integer ttl;
 
     private LocalTime expireTime;
 
-    private RedisCommand redisCommand;
+    private final RedisCommand redisCommand;
 
-    private Boolean setIfAbsent;
+    private final Boolean setIfAbsent;
 
-    private Boolean ttlKeyNotAbsent;
+    private final Boolean ttlKeyNotAbsent;
 
     public RowRedisSinkMapper(RedisCommand redisCommand, ReadableConfig config) {
         this.redisCommand = redisCommand;
@@ -63,20 +63,6 @@ public class RowRedisSinkMapper implements RedisSinkMapper<GenericRowData> {
     @Override
     public String getKeyFromData(RowData rowData, LogicalType logicalType, Integer keyIndex) {
         return RedisRowConverter.rowDataToString(logicalType, rowData, keyIndex);
-    }
-
-    @Override
-    public String getValueFromData(RowData rowData, LogicalType logicalType, Integer valueIndex) {
-        return RedisRowConverter.rowDataToString(logicalType, rowData, valueIndex);
-    }
-
-    @Override
-    public String getFieldFromData(RowData rowData, LogicalType logicalType, Integer fieldIndex) {
-        return RedisRowConverter.rowDataToString(logicalType, rowData, fieldIndex);
-    }
-
-    public RedisCommand getRedisCommand() {
-        return redisCommand;
     }
 
     @Override

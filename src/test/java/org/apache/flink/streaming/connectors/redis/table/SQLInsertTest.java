@@ -31,7 +31,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.Preconditions;
 
-/** Created by Jeff.Zou on 2020/9/10. */
+/** Created by Jeff Zou on 2020/9/10. */
 public class SQLInsertTest extends TestRedisConfigBase {
 
     @Test
@@ -107,7 +107,8 @@ public class SQLInsertTest extends TestRedisConfigBase {
                         + "',  'minIdle'='1'  )";
 
         tEnv.executeSql(ddl);
-        String sql = " insert into sink_redis select * from (values ('test_hash', '3', '18', 'city', '广州'))";
+        String sql =
+                " insert into sink_redis select * from (values ('test_hash', '3', '18', 'city', '广州'))";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         Preconditions.condition(singleRedisCommands.hget("test_hash", "city").equals("广州"), "");
@@ -274,11 +275,11 @@ public class SQLInsertTest extends TestRedisConfigBase {
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         String s =
-                "test" +
-                        RedisDynamicTableFactory.CACHE_SEPERATOR +
-                        "11.3" +
-                        RedisDynamicTableFactory.CACHE_SEPERATOR +
-                        "10.3";
+                "test"
+                        + RedisDynamicTableFactory.CACHE_SEPERATOR
+                        + "11.3"
+                        + RedisDynamicTableFactory.CACHE_SEPERATOR
+                        + "10.3";
         Preconditions.condition(singleRedisCommands.get("test").equals(s), "");
     }
 
@@ -471,21 +472,22 @@ public class SQLInsertTest extends TestRedisConfigBase {
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
         singleRedisCommands.del("test_zadd");
-        String datagen = "CREATE TABLE datagen (" +
-                "    score INT," +
-                "    mm VARCHAR" +
-                "  ) WITH (" +
-                "    'connector' = 'datagen'," +
-                "    'rows-per-second'='1'," +
-                "    'fields.score.kind'='sequence'," +
-                "    'fields.score.start'='1'," +
-                "    'fields.score.end'='10'," +
-                "    'fields.mm.length'='10'" +
-                "  )";
+        String datagen =
+                "CREATE TABLE datagen ("
+                        + "    score INT,"
+                        + "    mm VARCHAR"
+                        + "  ) WITH ("
+                        + "    'connector' = 'datagen',"
+                        + "    'rows-per-second'='1',"
+                        + "    'fields.score.kind'='sequence',"
+                        + "    'fields.score.start'='1',"
+                        + "    'fields.score.end'='10',"
+                        + "    'fields.mm.length'='10'"
+                        + "  )";
         String ddl =
-                "create table sink_redis(key VARCHAR, score INT, mm VARCHAR, " +
-                        "rem_min_score DOUBLE, rem_max_score DOUBLE) with ( " +
-                        "'connector'='redis', "
+                "create table sink_redis(key VARCHAR, score INT, mm VARCHAR, "
+                        + "rem_min_score DOUBLE, rem_max_score DOUBLE) with ( "
+                        + "'connector'='redis', "
                         + "'host'='"
                         + REDIS_HOST
                         + "','port'='"
@@ -501,13 +503,15 @@ public class SQLInsertTest extends TestRedisConfigBase {
 
         tEnv.executeSql(datagen);
         tEnv.executeSql(ddl);
-        String sql = " insert into sink_redis select 'test_zadd' AS key, score, mm, 1 as rem_min_score  ,5 as " +
-                "rem_max_score " +
-                "from datagen";
+        String sql =
+                " insert into sink_redis select 'test_zadd' AS key, score, mm, 1 as rem_min_score  ,5 as "
+                        + "rem_max_score "
+                        + "from datagen";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         Range<Integer> range = Range.create(1, 5);
-        Preconditions.condition(singleRedisCommands.zrangebyscore("test_zadd", range).size() == 0, "");
+        Preconditions.condition(
+                singleRedisCommands.zrangebyscore("test_zadd", range).size() == 0, "");
     }
 
     @Test
@@ -518,23 +522,24 @@ public class SQLInsertTest extends TestRedisConfigBase {
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
         singleRedisCommands.del("test_zadd");
-        String datagen = "CREATE TABLE datagen (" +
-                "    index INT," +
-                "    mm VARCHAR" +
-                "  ) WITH (" +
-                "    'connector' = 'datagen'," +
-                "    'rows-per-second'='1'," +
-                "    'fields.index.kind'='sequence'," +
-                "    'fields.index.start'='1'," +
-                "    'fields.index.end'='10'," +
-                "    'fields.mm.length'='5'" +
-                "  )";
+        String datagen =
+                "CREATE TABLE datagen ("
+                        + "    index INT,"
+                        + "    mm VARCHAR"
+                        + "  ) WITH ("
+                        + "    'connector' = 'datagen',"
+                        + "    'rows-per-second'='1',"
+                        + "    'fields.index.kind'='sequence',"
+                        + "    'fields.index.start'='1',"
+                        + "    'fields.index.end'='10',"
+                        + "    'fields.mm.length'='5'"
+                        + "  )";
         String ddl =
-                "create table sink_redis(key VARCHAR, score INT, mm VARCHAR, " +
-                        "rem_begin VARCHAR, rem_end VARCHAR" +
-                        ",primary key (key) not ENFORCED" +
-                        ") with ( " +
-                        "'connector'='redis', "
+                "create table sink_redis(key VARCHAR, score INT, mm VARCHAR, "
+                        + "rem_begin VARCHAR, rem_end VARCHAR"
+                        + ",primary key (key) not ENFORCED"
+                        + ") with ( "
+                        + "'connector'='redis', "
                         + "'host'='"
                         + REDIS_HOST
                         + "','port'='"
@@ -550,13 +555,15 @@ public class SQLInsertTest extends TestRedisConfigBase {
 
         tEnv.executeSql(datagen);
         tEnv.executeSql(ddl);
-        String sql = " insert into sink_redis select 'test_zadd' AS key, 100 as score, concat('aa', mm) mm, 'aa' as " +
-                "rem_begin ,'bb' as rem_end " +
-                "from datagen";
+        String sql =
+                " insert into sink_redis select 'test_zadd' AS key, 100 as score, concat('aa', mm) mm, 'aa' as "
+                        + "rem_begin ,'bb' as rem_end "
+                        + "from datagen";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         Range<String> range = Range.create("aa", "bb");
-        Preconditions.condition(singleRedisCommands.zrangebylex("test_zadd", range).size() == 0, "");
+        Preconditions.condition(
+                singleRedisCommands.zrangebylex("test_zadd", range).size() == 0, "");
     }
 
     @Test
@@ -567,23 +574,24 @@ public class SQLInsertTest extends TestRedisConfigBase {
                 EnvironmentSettings.newInstance().inStreamingMode().build();
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env, environmentSettings);
         singleRedisCommands.del("test_zadd");
-        String datagen = "CREATE TABLE datagen (" +
-                "    index INT," +
-                "    mm VARCHAR" +
-                "  ) WITH (" +
-                "    'connector' = 'datagen'," +
-                "    'rows-per-second'='1'," +
-                "    'fields.index.kind'='sequence'," +
-                "    'fields.index.start'='1'," +
-                "    'fields.index.end'='10'," +
-                "    'fields.mm.length'='5'" +
-                "  )";
+        String datagen =
+                "CREATE TABLE datagen ("
+                        + "    index INT,"
+                        + "    mm VARCHAR"
+                        + "  ) WITH ("
+                        + "    'connector' = 'datagen',"
+                        + "    'rows-per-second'='1',"
+                        + "    'fields.index.kind'='sequence',"
+                        + "    'fields.index.start'='1',"
+                        + "    'fields.index.end'='10',"
+                        + "    'fields.mm.length'='5'"
+                        + "  )";
         String ddl =
-                "create table sink_redis(key VARCHAR, score INT, mm VARCHAR, " +
-                        "rem_begin INT, rem_end INT" +
-                        ",primary key (key) not ENFORCED" +
-                        ") with ( " +
-                        "'connector'='redis', "
+                "create table sink_redis(key VARCHAR, score INT, mm VARCHAR, "
+                        + "rem_begin INT, rem_end INT"
+                        + ",primary key (key) not ENFORCED"
+                        + ") with ( "
+                        + "'connector'='redis', "
                         + "'host'='"
                         + REDIS_HOST
                         + "','port'='"
@@ -599,12 +607,12 @@ public class SQLInsertTest extends TestRedisConfigBase {
 
         tEnv.executeSql(datagen);
         tEnv.executeSql(ddl);
-        String sql = " insert into sink_redis select 'test_zadd' AS key, 100 as score, concat('aa', mm) mm, 0 as " +
-                "rem_begin ,9 as rem_end " +
-                "from datagen";
+        String sql =
+                " insert into sink_redis select 'test_zadd' AS key, 100 as score, concat('aa', mm) mm, 0 as "
+                        + "rem_begin ,9 as rem_end "
+                        + "from datagen";
         TableResult tableResult = tEnv.executeSql(sql);
         tableResult.getJobClient().get().getJobExecutionResult().get();
         Preconditions.condition(singleRedisCommands.zrange("test_zadd", 0, -1).size() == 0, "");
     }
-
 }

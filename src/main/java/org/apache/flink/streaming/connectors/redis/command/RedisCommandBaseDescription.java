@@ -22,7 +22,7 @@ import org.apache.flink.util.Preconditions;
 
 import java.io.Serializable;
 
-/** base description. @Author: Jeff.Zou @Date: 2022/3/9.14:55 */
+/** base description. @Author: Jeff Zou @Date: 2022/3/9.14:55 */
 public class RedisCommandBaseDescription implements Serializable {
 
     private static final long serialVersionUID = 1L;

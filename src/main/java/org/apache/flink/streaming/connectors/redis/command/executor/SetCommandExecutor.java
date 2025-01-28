@@ -16,21 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.connectors.redis.mapper;
+package org.apache.flink.streaming.connectors.redis.command.executor;
 
-import org.apache.flink.table.data.RowData;
-import org.apache.flink.table.types.logical.LogicalType;
+import org.apache.flink.streaming.connectors.redis.command.RedisInsertCommand;
 
 /**
- * @param <T>
+ * @author Jeff Zou
+ * @date 2024/12/24 10:48
  */
-public interface RedisSinkMapper<T> extends RedisMapper<T> {
+public class SetCommandExecutor implements CommandExecutor {
+    @Override
+    public Enum getCommand() {
+        return RedisInsertCommand.SET;
+    }
 
-    /**
-     * Extracts key from data.
-     *
-     * @param rowData source data
-     * @return key
-     */
-    String getKeyFromData(RowData rowData, LogicalType logicalType, Integer keyIndex);
+    @Override
+    public void exec() {}
 }

@@ -18,7 +18,7 @@
 
 package org.apache.flink.streaming.connectors.redis.config;
 
-/** query options. @Author:Jeff.Zou @Date: 2022/3/9.14:37 */
+/** query options. @Author:Jeff Zou @Date: 2022/3/9.14:37 */
 public class RedisJoinConfig {
 
     private final long cacheMaxSize;

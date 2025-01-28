@@ -28,7 +28,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.Preconditions;
 
-/** Created by Jeff.Zou on 2020/9/10. */
+/** Created by Jeff Zou on 2020/9/10. */
 public class SQLExpireTest extends TestRedisConfigBase {
 
     @Test

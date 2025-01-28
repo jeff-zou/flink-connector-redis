@@ -32,7 +32,7 @@ import org.apache.flink.util.FlinkRuntimeException;
 import java.util.HashSet;
 import java.util.Set;
 
-/** Created by Jeff.Zou on 2020/9/10. */
+/** Created by Jeff Zou on 2020/9/10. */
 public class RedisDynamicTableFactory
         implements DynamicTableSinkFactory, DynamicTableSourceFactory {
 

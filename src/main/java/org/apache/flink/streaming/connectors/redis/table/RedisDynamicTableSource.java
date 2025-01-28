@@ -38,17 +38,16 @@ import org.apache.flink.util.Preconditions;
 
 import java.util.Map;
 
-/** redis dynamic table source. @Author: Jeff.Zou @Date: 2022/3/7.13:41 */
+/** redis dynamic table source. @Author: Jeff Zou @Date: 2022/3/7.13:41 */
 public class RedisDynamicTableSource implements ScanTableSource, LookupTableSource {
 
     private final FlinkConfigBase flinkConfigBase;
+    private final RedisMapper redisMapper;
+    private final RedisJoinConfig redisJoinConfig;
+    private final RedisCommand redisCommand;
     private Map<String, String> properties;
     private ResolvedSchema resolvedSchema;
     private ReadableConfig config;
-    private final RedisMapper redisMapper;
-    private final RedisJoinConfig redisJoinConfig;
-
-    private final RedisCommand redisCommand;
 
     public RedisDynamicTableSource(
             RedisCommand redisCommand,

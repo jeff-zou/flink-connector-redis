@@ -35,7 +35,7 @@ import org.apache.flink.util.Preconditions;
 
 import java.util.Map;
 
-/** Created by Jeff.Zou on 2020/9/10. */
+/** Created by Jeff Zou on 2020/9/10. */
 public class RedisDynamicTableSink implements DynamicTableSink {
 
     private final RedisCommand redisCommand;

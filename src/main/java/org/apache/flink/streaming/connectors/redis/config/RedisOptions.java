@@ -21,7 +21,7 @@ package org.apache.flink.streaming.connectors.redis.config;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 
-/** Created by Jeff.Zou on 2020/9/10. */
+/** Created by Jeff Zou on 2020/9/10. */
 public class RedisOptions {
 
     public static final ConfigOption<Integer> TIMEOUT =

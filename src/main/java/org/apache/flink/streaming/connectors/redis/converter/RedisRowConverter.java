@@ -18,6 +18,8 @@
 
 package org.apache.flink.streaming.connectors.redis.converter;
 
+import static org.apache.flink.table.types.logical.utils.LogicalTypeChecks.getPrecision;
+
 import org.apache.flink.table.data.DecimalData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.TimestampData;
@@ -29,9 +31,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Base64;
 
-import static org.apache.flink.table.types.logical.utils.LogicalTypeChecks.getPrecision;
-
-/** redis serialize . @Author: Jeff.Zou @Date: 2022/3/10.13:17 */
+/** redis serialize . @Author: Jeff Zou @Date: 2022/3/10.13:17 */
 public class RedisRowConverter {
 
     private static final int TIMESTAMP_PRECISION_MIN = 0;
