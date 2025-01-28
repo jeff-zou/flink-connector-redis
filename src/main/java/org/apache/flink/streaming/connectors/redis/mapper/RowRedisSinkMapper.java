@@ -33,21 +33,24 @@ import java.time.LocalTime;
 /** base row redis mapper implement. */
 public class RowRedisSinkMapper implements RedisSinkMapper<GenericRowData> {
 
-    private Integer ttl;
+    private final Integer ttl;
 
     private LocalTime expireTime;
 
-    private RedisCommand redisCommand;
+    private final RedisCommand redisCommand;
 
-    private Boolean setIfAbsent;
+    private final Boolean setIfAbsent;
 
-    private Boolean ttlKeyNotAbsent;
+    private final Boolean ttlKeyNotAbsent;
+
+    private final Boolean auditLog;
 
     public RowRedisSinkMapper(RedisCommand redisCommand, ReadableConfig config) {
         this.redisCommand = redisCommand;
         this.ttl = config.get(RedisOptions.TTL);
         this.setIfAbsent = config.get(RedisOptions.SET_IF_ABSENT);
         this.ttlKeyNotAbsent = config.get(RedisOptions.TTL_KEY_NOT_ABSENT);
+        this.auditLog = config.get(RedisOptions.AUDIT_LOG);
         String expireOnTime = config.get(RedisOptions.EXPIRE_ON_TIME);
         if (!StringUtils.isNullOrWhitespaceOnly(expireOnTime)) {
             this.expireTime = LocalTime.parse(expireOnTime);
@@ -57,7 +60,7 @@ public class RowRedisSinkMapper implements RedisSinkMapper<GenericRowData> {
     @Override
     public RedisCommandDescription getCommandDescription() {
         return new RedisCommandDescription(
-                redisCommand, ttl, expireTime, setIfAbsent, ttlKeyNotAbsent);
+                redisCommand, ttl, expireTime, setIfAbsent, ttlKeyNotAbsent, auditLog);
     }
 
     @Override

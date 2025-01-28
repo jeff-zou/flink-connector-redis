@@ -117,6 +117,7 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.SCAN_RANGE_START);
         options.add(RedisOptions.SCAN_COUNT);
         options.add(RedisOptions.ZREM_RANGEBY);
+        options.add(RedisOptions.AUDIT_LOG);
         return options;
     }
 
