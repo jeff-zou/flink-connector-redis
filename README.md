@@ -86,7 +86,8 @@ on j.name = 'test'
 | scan.range.start      | (none) | Integer | 查询list结构时指定lrange start                                                                          |
 | scan.range.stop       | (none) | Integer | 查询list结构时指定lrange start                                                                          |
 | scan.count            | (none) | Integer | 查询set结构时指定srandmember count                                                                      |
-| zset.zremrangeby      | (none) | String  | 执行zadd之后，是否执行zremrangeby，取值：SCORE、LEX、RANK  |
+| zset.zremrangeby      | (none) | String  | 执行zadd之后，是否执行zremrangeby，取值：SCORE、LEX、RANK                                                       |
+| audit.log             | false  | Boolean | 打开sink日志                                                                                         |
 
 ### 3.1.1 command值与redis命令对应关系：
 

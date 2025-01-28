@@ -31,7 +31,7 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.Preconditions;
 
-/** Created by Jeff Zou on 2020/9/10. */
+/** Created by jeff Zou on 2020/9/10. */
 public class SQLInsertTest extends TestRedisConfigBase {
 
     @Test
@@ -51,7 +51,7 @@ public class SQLInsertTest extends TestRedisConfigBase {
                         + REDIS_COMMAND
                         + "'='"
                         + RedisCommand.SET
-                        + "')";
+                        + "', 'audit.log'='true')";
 
         tEnv.executeSql(ddl);
         String sql =

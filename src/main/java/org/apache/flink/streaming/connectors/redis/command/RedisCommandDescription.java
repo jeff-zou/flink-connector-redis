@@ -26,25 +26,29 @@ public class RedisCommandDescription extends RedisCommandBaseDescription impleme
 
     private static final long serialVersionUID = 1L;
 
-    private Integer ttl;
+    private final Integer ttl;
 
-    private Boolean setIfAbsent;
+    private final Boolean setIfAbsent;
 
-    private LocalTime expireTime;
+    private final LocalTime expireTime;
 
-    private boolean ttlKeyNotAbsent;
+    private final Boolean ttlKeyNotAbsent;
+
+    private final boolean auditLog;
 
     public RedisCommandDescription(
             RedisCommand redisCommand,
             Integer ttl,
             LocalTime expireTime,
             Boolean setIfAbsent,
-            Boolean ttlKeyNotAbsent) {
+            Boolean ttlKeyNotAbsent,
+            Boolean auditLog) {
         super(redisCommand);
         this.expireTime = expireTime;
         this.ttl = ttl;
         this.setIfAbsent = setIfAbsent;
         this.ttlKeyNotAbsent = ttlKeyNotAbsent;
+        this.auditLog = auditLog;
     }
 
     public Integer getTTL() {
@@ -61,5 +65,9 @@ public class RedisCommandDescription extends RedisCommandBaseDescription impleme
 
     public boolean getTtlKeyNotAbsent() {
         return ttlKeyNotAbsent;
+    }
+
+    public boolean isAuditLog() {
+        return auditLog;
     }
 }

@@ -68,6 +68,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private final List<DataType> columnDataTypes;
     private final RedisValueDataStructure redisValueDataStructure;
     private final String zremrangeby;
+    private final boolean auditLog;
     protected Integer ttl;
     protected int expireTimeSeconds = -1;
     private transient RedisCommandsContainer redisCommandsContainer;
@@ -99,6 +100,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         this.ttl = redisCommandDescription.getTTL();
         this.ttlKeyNotAbsent = redisCommandDescription.getTtlKeyNotAbsent();
         this.setIfAbsent = redisCommandDescription.getSetIfAbsent();
+        this.auditLog = redisCommandDescription.isAuditLog();
         if (redisCommandDescription.getExpireTime() != null) {
             this.expireTimeSeconds = redisCommandDescription.getExpireTime().toSecondOfDay();
         }
@@ -136,6 +138,9 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         }
 
         startSink(params, kind);
+        if (auditLog) {
+            LOG.info("{}", rowData);
+        }
     }
 
     /**

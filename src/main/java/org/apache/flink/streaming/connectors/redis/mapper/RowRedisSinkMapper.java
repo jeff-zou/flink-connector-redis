@@ -43,11 +43,14 @@ public class RowRedisSinkMapper implements RedisSinkMapper<GenericRowData> {
 
     private final Boolean ttlKeyNotAbsent;
 
+    private final Boolean auditLog;
+
     public RowRedisSinkMapper(RedisCommand redisCommand, ReadableConfig config) {
         this.redisCommand = redisCommand;
         this.ttl = config.get(RedisOptions.TTL);
         this.setIfAbsent = config.get(RedisOptions.SET_IF_ABSENT);
         this.ttlKeyNotAbsent = config.get(RedisOptions.TTL_KEY_NOT_ABSENT);
+        this.auditLog = config.get(RedisOptions.AUDIT_LOG);
         String expireOnTime = config.get(RedisOptions.EXPIRE_ON_TIME);
         if (!StringUtils.isNullOrWhitespaceOnly(expireOnTime)) {
             this.expireTime = LocalTime.parse(expireOnTime);
@@ -57,12 +60,26 @@ public class RowRedisSinkMapper implements RedisSinkMapper<GenericRowData> {
     @Override
     public RedisCommandDescription getCommandDescription() {
         return new RedisCommandDescription(
-                redisCommand, ttl, expireTime, setIfAbsent, ttlKeyNotAbsent);
+                redisCommand, ttl, expireTime, setIfAbsent, ttlKeyNotAbsent, auditLog);
     }
 
     @Override
     public String getKeyFromData(RowData rowData, LogicalType logicalType, Integer keyIndex) {
         return RedisRowConverter.rowDataToString(logicalType, rowData, keyIndex);
+    }
+
+    @Override
+    public String getValueFromData(RowData rowData, LogicalType logicalType, Integer valueIndex) {
+        return RedisRowConverter.rowDataToString(logicalType, rowData, valueIndex);
+    }
+
+    @Override
+    public String getFieldFromData(RowData rowData, LogicalType logicalType, Integer fieldIndex) {
+        return RedisRowConverter.rowDataToString(logicalType, rowData, fieldIndex);
+    }
+
+    public RedisCommand getRedisCommand() {
+        return redisCommand;
     }
 
     @Override

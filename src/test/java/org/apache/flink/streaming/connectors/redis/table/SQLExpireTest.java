@@ -44,7 +44,7 @@ public class SQLExpireTest extends TestRedisConfigBase {
 
         String sink =
                 "create table sink_redis(name varchar, level varchar, age varchar) with (  "
-                        + sigleWith()
+                        + singleWith()
                         + "'ttl'='10', '"
                         + REDIS_COMMAND
                         + "'='"
@@ -74,7 +74,7 @@ public class SQLExpireTest extends TestRedisConfigBase {
 
         String dim =
                 "create table sink_redis(name varchar, level varchar, age varchar) with ( "
-                        + sigleWith()
+                        + singleWith()
                         + " 'ttl'='8', 'ttl.key.not.absent'='true', '"
                         + REDIS_COMMAND
                         + "'='"

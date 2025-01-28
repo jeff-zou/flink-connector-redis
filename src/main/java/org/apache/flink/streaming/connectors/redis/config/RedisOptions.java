@@ -21,7 +21,7 @@ package org.apache.flink.streaming.connectors.redis.config;
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 
-/** Created by Jeff Zou on 2020/9/10. */
+/** Created by jeff.zou on 2020/9/10. */
 public class RedisOptions {
 
     public static final ConfigOption<Integer> TIMEOUT =
@@ -205,6 +205,11 @@ public class RedisOptions {
                     .stringType()
                     .defaultValue(null)
                     .withDescription("Remove related elements，Valid values: LEX,RANK,SCORE");
+    public static final ConfigOption<Boolean> AUDIT_LOG =
+            ConfigOptions.key("audit.log")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("Optional turn on the audit log switch.");
 
     private RedisOptions() {}
 }
