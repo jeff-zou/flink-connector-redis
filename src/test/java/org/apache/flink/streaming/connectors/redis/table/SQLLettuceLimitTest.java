@@ -44,7 +44,7 @@ public class SQLLettuceLimitTest extends TestRedisConfigBase {
 
         String sink =
                 "create table sink_redis(name varchar, level varchar, age varchar) with (  "
-                        + sigleWith()
+                        + singleWith()
                         + "'ttl'='10', '"
                         + REDIS_COMMAND
                         + "'='"
