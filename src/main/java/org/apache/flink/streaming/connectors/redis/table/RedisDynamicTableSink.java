@@ -26,17 +26,22 @@ import org.apache.flink.streaming.connectors.redis.config.RedisOptions;
 import org.apache.flink.streaming.connectors.redis.hanlder.RedisHandlerServices;
 import org.apache.flink.streaming.connectors.redis.mapper.RedisSinkMapper;
 import org.apache.flink.streaming.connectors.redis.mapper.RowRedisSinkMapper;
+import org.apache.flink.table.api.DataTypes;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.sink.DynamicTableSink;
 import org.apache.flink.table.connector.sink.SinkFunctionProvider;
+import org.apache.flink.table.connector.sink.abilities.SupportsWritingMetadata;
+import org.apache.flink.table.types.DataType;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /** Created by jeff.zou on 2020/9/10. */
-public class RedisDynamicTableSink implements DynamicTableSink {
+public class RedisDynamicTableSink implements DynamicTableSink, SupportsWritingMetadata {
 
     private FlinkConfigBase flinkConfigBase;
     private RedisSinkMapper redisMapper;
@@ -44,8 +49,8 @@ public class RedisDynamicTableSink implements DynamicTableSink {
     private ReadableConfig config;
     private Integer sinkParallelism;
     private ResolvedSchema resolvedSchema;
-
     private final RedisCommand redisCommand;
+    private List<String> consumedMetadataKeys;
 
     public RedisDynamicTableSink(
             RedisCommand redisCommand,
@@ -75,23 +80,53 @@ public class RedisDynamicTableSink implements DynamicTableSink {
 
     @Override
     public SinkRuntimeProvider getSinkRuntimeProvider(Context context) {
+        int ttlMetadataPosition = -1;
+        if (consumedMetadataKeys != null && consumedMetadataKeys.contains(MetaDataEnum.TTL.key)) {
+            ttlMetadataPosition = resolvedSchema.getColumnNames().indexOf(MetaDataEnum.TTL.key);
+        }
+
         RedisSinkFunction redisSinkFunction =
                 config.get(RedisOptions.SINK_LIMIT)
                         ? new RedisLimitedSinkFunction(
-                                flinkConfigBase, redisMapper, resolvedSchema, config)
+                                flinkConfigBase, redisMapper, resolvedSchema, config, ttlMetadataPosition)
                         : new RedisSinkFunction(
-                                flinkConfigBase, redisMapper, resolvedSchema, config);
+                                flinkConfigBase, redisMapper, resolvedSchema, config, ttlMetadataPosition);
 
         return SinkFunctionProvider.of(redisSinkFunction, sinkParallelism);
     }
 
     @Override
     public DynamicTableSink copy() {
-        return new RedisDynamicTableSink(redisCommand, properties, resolvedSchema, config);
+        RedisDynamicTableSink sink = new RedisDynamicTableSink(redisCommand, properties, resolvedSchema, config);
+        sink.consumedMetadataKeys = this.consumedMetadataKeys;
+        return sink;
     }
 
     @Override
     public String asSummaryString() {
         return "REDIS";
+    }
+
+    @Override
+    public Map<String, DataType> listWritableMetadata() {
+        return Collections.singletonMap(MetaDataEnum.TTL.key, MetaDataEnum.TTL.dataType);
+    }
+
+    @Override
+    public void applyWritableMetadata(List<String> metadataKeys, DataType consumedDataType) {
+        this.consumedMetadataKeys = metadataKeys;
+    }
+}
+
+enum MetaDataEnum {
+
+    TTL("ttl", DataTypes.INT());
+
+    public final String key;
+    public final DataType dataType;
+
+    MetaDataEnum(String key, DataType dataType) {
+        this.key = key;
+        this.dataType = dataType;
     }
 }

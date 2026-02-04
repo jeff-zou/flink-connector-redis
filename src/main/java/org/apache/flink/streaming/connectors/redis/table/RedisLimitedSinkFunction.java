@@ -61,7 +61,16 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
             RedisSinkMapper<IN> redisSinkMapper,
             ResolvedSchema resolvedSchema,
             ReadableConfig config) {
-        super(flinkConfigBase, redisSinkMapper, resolvedSchema, config);
+        this(flinkConfigBase, redisSinkMapper, resolvedSchema, config, -1);
+    }
+
+    public RedisLimitedSinkFunction(
+            FlinkConfigBase flinkConfigBase,
+            RedisSinkMapper<IN> redisSinkMapper,
+            ResolvedSchema resolvedSchema,
+            ReadableConfig config,
+            int ttlMetadataPosition) {
+        super(flinkConfigBase, redisSinkMapper, resolvedSchema, config, ttlMetadataPosition);
         maxOnline = config.get(RedisOptions.SINK_LIMIT_MAX_ONLINE);
 
         Preconditions.checkState(
@@ -105,7 +114,10 @@ public class RedisLimitedSinkFunction<IN> extends RedisSinkFunction<IN> {
         }
 
         // all keys must expire 10 seconds after online debugging end.
-        super.ttl = (int) remainTime / 1000 + 10;
+        // if there's TTL from metadata, we should respect that instead
+        if (this.getTtlMetadataPosition() < 0) {
+            super.defaultTtl = (int) remainTime / 1000 + 10;
+        }
         super.invoke(input, context);
 
         TimeUnit.MILLISECONDS.sleep(sinkInterval);

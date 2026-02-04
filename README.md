@@ -142,6 +142,47 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | ttl.on.time        | (none)  | String  | key的过期时间点,格式为LocalTime.toString(), eg: 10:00 12:12:01,当ttl未配置时才生效 |
 | ttl.key.not.absent | false   | boolean | 与ttl一起使用,当key不存在时才设置ttl                                           |
 
+## 3.3 sql ttl元数列使用
+
+支持 `ttl` 元数据列，允许在运行时将TTL值动态应用于 Redis key。
+
+### 使用方法
+
+#### 1. 在 Flink SQL 中定义包含 TTL 元数据的表
+
+```sql
+CREATE TABLE sink_table (
+    key STRING,
+    value STRING,
+    ttl INT METADATA  -- TTL 元数据列
+) WITH (
+    'connector' = 'redis',
+    'host' = 'localhost',
+    'port' = '6379',
+    'command' = 'set'
+);
+```
+
+#### 2. 使用 SQL 插入带 TTL 的数据
+
+```sql
+INSERT INTO sink_table 
+SELECT 
+    user_id,
+    user_data,
+    CASE 
+        WHEN user_type = 'premium' THEN 3600  -- 高级用户数据保留 1 小时
+        ELSE 600  -- 普通用户数据保留 10 分钟
+    END as ttl
+FROM user_events;
+```
+
+### 注意事项
+
+1. TTL 元数据列必须是 INT 类型  
+2. 当同时配置了连接器级别的 TTL 参数和元数据列 TTL 时，元数据列的值具有更高优先级  
+3. 如果元数据列中的 TTL 值为 NULL 或无效，则使用连接器默认的 TTL 设置  
+4. TTL 值单位为秒
 
 ## 3.3 在线调试SQL时，用于限制sink资源使用的参数:
 
@@ -238,7 +279,7 @@ create table join_table with ('command'='get', 'value.data.structure'='row') lik
 create table result_table(uid VARCHAR, username VARCHAR, score double, score2 double) with ('connector'='print')
 
 -- create source table --
-create table source_table(uid VARCHAR, username VARCHAR, proc_time as procTime()) with ('connector'='datagen', 'fields.uid.kind'='sequence', 'fields.uid.start'='1', 'fields.uid.end'='2')
+create table source_table(uid VARCHAR, username VARCHAR, proc_time as ProcTime()) with ('connector'='datagen', 'fields.uid.kind'='sequence', 'fields.uid.start'='1', 'fields.uid.end'='2')
 
 -- 关联查询维表，获得维表的多个字段值 --
 insert

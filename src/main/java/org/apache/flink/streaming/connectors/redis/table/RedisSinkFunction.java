@@ -68,9 +68,10 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
     private final RedisValueDataStructure redisValueDataStructure;
     private final String zremrangeby;
     private final boolean auditLog;
-    protected Integer ttl;
+    protected Integer defaultTtl;
     protected int expireTimeSeconds = -1;
     private transient RedisCommandsContainer redisCommandsContainer;
+    private final int ttlMetadataPosition;
 
     /**
      * Creates a new {@link RedisSinkFunction} that connects to the Redis server.
@@ -84,6 +85,15 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             RedisSinkMapper<IN> redisSinkMapper,
             ResolvedSchema resolvedSchema,
             ReadableConfig readableConfig) {
+        this(flinkConfigBase, redisSinkMapper, resolvedSchema, readableConfig, -1);
+    }
+
+    public RedisSinkFunction(
+            FlinkConfigBase flinkConfigBase,
+            RedisSinkMapper<IN> redisSinkMapper,
+            ResolvedSchema resolvedSchema,
+            ReadableConfig readableConfig,
+            int ttlMetadataPosition) {
         Objects.requireNonNull(flinkConfigBase, "Redis connection pool config should not be null");
         Objects.requireNonNull(redisSinkMapper, "Redis Mapper can not be null");
 
@@ -96,7 +106,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 redisCommandDescription, "Redis Mapper data type description can not be null");
 
         this.redisCommand = redisCommandDescription.getRedisCommand();
-        this.ttl = redisCommandDescription.getTTL();
+        this.defaultTtl = redisCommandDescription.getTTL();
         this.ttlKeyNotAbsent = redisCommandDescription.getTtlKeyNotAbsent();
         this.setIfAbsent = redisCommandDescription.getSetIfAbsent();
         this.auditLog = redisCommandDescription.isAuditLog();
@@ -107,6 +117,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         this.columnDataTypes = resolvedSchema.getColumnDataTypes();
         this.redisValueDataStructure = readableConfig.get(RedisOptions.VALUE_DATA_STRUCTURE);
         this.zremrangeby = readableConfig.get(RedisOptions.ZREM_RANGEBY);
+        this.ttlMetadataPosition = ttlMetadataPosition;
     }
 
     /**
@@ -123,6 +134,17 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         if (kind == RowKind.UPDATE_BEFORE) {
             return;
         }
+
+        // Handle TTL from metadata if available
+        Integer effectiveTtl = this.defaultTtl;
+        if (ttlMetadataPosition >= 0 && ttlMetadataPosition < rowData.getArity()
+                && !rowData.isNullAt(ttlMetadataPosition)) {
+            int ttlFromMetadata = rowData.getInt(ttlMetadataPosition);
+            if (ttlFromMetadata > 0) {
+                effectiveTtl = ttlFromMetadata;
+            }
+        }
+
         String[] params = new String[calcParamNumByCommand(rowData.getArity())];
         for (int i = 0; i < params.length; i++) {
             params[i] =
@@ -135,8 +157,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         if (redisValueDataStructure == RedisValueDataStructure.row) {
             params[params.length - 1] = serializeWholeRow(rowData);
         }
-
-        startSink(params, kind);
+        startSink(params, kind, effectiveTtl);
         if (auditLog) {
             LOG.info("{}", rowData);
         }
@@ -148,7 +169,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      * @param params
      * @throws Exception
      */
-    private void startSink(String[] params, RowKind kind) throws Exception {
+    private void startSink(String[] params, RowKind kind, Integer ttl) throws Exception {
         for (int i = 0; i <= maxRetryTimes; i++) {
             try {
                 RedisFuture redisFuture = null;
@@ -159,7 +180,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 }
 
                 if (redisFuture != null) {
-                    redisFuture.whenComplete((r, t) -> setTtl(params[0]));
+                    redisFuture.whenComplete((r, t) -> setTtl(params[0], ttl));
                 }
 
                 break;
@@ -390,7 +411,7 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
      *
      * @param key
      */
-    private void setTtl(String key) {
+    private void setTtl(String key, Integer ttl) {
         if (redisCommand == RedisCommand.DEL) {
             return;
         }
@@ -424,8 +445,6 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                                                     : 86400 + expireTimeSeconds - now);
                                 }
                             });
-        } else if (ttl != null) {
-            this.redisCommandsContainer.expire(key, ttl);
         }
     }
 
@@ -505,5 +524,9 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
         if (redisCommandsContainer != null) {
             redisCommandsContainer.close();
         }
+    }
+
+    public int getTtlMetadataPosition() {
+        return ttlMetadataPosition;
     }
 }

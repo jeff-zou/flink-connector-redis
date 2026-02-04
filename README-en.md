@@ -124,6 +124,47 @@ key: name, field:subject, value: name\01subject\01score.
 | ttl.on.time        | (none)  | String  | The expiration time of the key in LocalTime.toString(), eg: 10:00 12:12:01, if ttl is not configured |
 | ttl.key.not.absent | false   | boolean | Used with ttl, which is set when the key doesn't exist                                                                              |
 
+##### Flink Redis Connector TTL metadata usage guide
+
+Support the `ttl` metadata column, allowing the TTL value to be dynamically applied to Redis keys at runtime.
+
+###### How to use
+
+**1. Define a table with TTL metadata in Flink SQL**
+
+```sql
+CREATE TABLE sink_table (
+    key STRING,
+    value STRING,
+    ttl INT METADATA,  -- TTL metadata column
+) WITH (
+    'connector' = 'redis',
+    'host' = 'localhost',
+    'port' = '6379',
+    'command' = 'set'
+);
+```
+
+**2. Use streaming SQL to insert data with different TTLs**
+
+```sql
+INSERT INTO sink_table 
+SELECT 
+    user_id,
+    user_data,
+    CASE 
+        WHEN user_type = 'premium' THEN 3600  -- keep premium user data for 1 hour
+        ELSE 600  -- keep normal user data for 10 minutes
+    END as ttl
+FROM user_events;
+```
+
+###### Notes
+
+1. The TTL metadata column must be of type `INT`.  
+2. When both connector-level TTL parameters and the metadata TTL column are configured, the metadata column value has higher priority.  
+3. If the TTL value in the metadata column is `NULL` or invalid, the connector’s default TTL setting is used instead.  
+4. The TTL unit is seconds.
 
 ##### Additional sink parameters when u debugging sql online which need to limit the resource usage:
 
