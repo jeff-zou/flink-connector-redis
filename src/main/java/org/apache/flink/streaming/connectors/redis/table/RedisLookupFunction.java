@@ -18,8 +18,6 @@
 
 package org.apache.flink.streaming.connectors.redis.table;
 
-import org.apache.flink.calcite.shaded.com.google.common.cache.Cache;
-import org.apache.flink.calcite.shaded.com.google.common.cache.CacheBuilder;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommandBaseDescription;
@@ -48,7 +46,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.flink.streaming.connectors.redis.table.RedisDynamicTableFactory.CACHE_SEPERATOR;
 
@@ -67,7 +64,7 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
     private final List<DataType> dataTypes;
     private final boolean loadAll;
     private final RedisValueDataStructure redisValueDataStructure;
-    private Cache<String, Object> cache;
+    private transient RedisLookupCache cache;
 
     public RedisLookupFunction(
             FlinkConfigBase flinkConfigBase,
@@ -298,10 +295,7 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
         this.cache =
                 cacheMaxSize == -1 || cacheTtl == -1
                         ? null
-                        : CacheBuilder.newBuilder()
-                                .expireAfterWrite(cacheTtl, TimeUnit.SECONDS)
-                                .maximumSize(cacheMaxSize)
-                                .build();
+                        : new RedisLookupCache(cacheTtl, cacheMaxSize);
     }
 
     @Override
@@ -311,7 +305,7 @@ public class RedisLookupFunction extends AsyncTableFunction<RowData> {
         }
 
         if (cache != null) {
-            cache.cleanUp();
+            cache.clear();
             cache = null;
         }
     }

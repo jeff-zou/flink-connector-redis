@@ -18,15 +18,15 @@
 
 package org.apache.flink.streaming.connectors.redis.container;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.lettuce.core.Range;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.cluster.api.async.RedisClusterAsyncCommands;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.util.List;

@@ -18,10 +18,6 @@
 
 package org.apache.flink.streaming.connectors.redis.table;
 
-import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_COMMAND;
-
-import io.lettuce.core.Range;
-
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.redis.command.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.table.base.TestRedisConfigBase;
@@ -30,6 +26,10 @@ import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.Preconditions;
+
+import io.lettuce.core.Range;
+
+import static org.apache.flink.streaming.connectors.redis.config.RedisValidator.REDIS_COMMAND;
 
 /** Created by jeff.zou on 2020/9/10. */
 public class SQLInsertTest extends TestRedisConfigBase {
