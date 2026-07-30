@@ -29,20 +29,58 @@ public abstract class FlinkConfigBase implements Serializable {
 
     protected final int connectionTimeout;
 
+    protected final String username;
+
     protected final String password;
+
+    protected final boolean ssl;
+
+    protected final boolean sslVerifyPeer;
 
     protected final LettuceConfig lettuceConfig;
 
-    protected FlinkConfigBase(int connectionTimeout, String password, LettuceConfig lettuceConfig) {
+    protected FlinkConfigBase(
+            int connectionTimeout,
+            String username,
+            String password,
+            boolean ssl,
+            boolean sslVerifyPeer,
+            LettuceConfig lettuceConfig) {
         Preconditions.checkArgument(
                 connectionTimeout >= 0, "connection timeout can not be negative");
+        this.username = username;
         this.password = password;
+        this.ssl = ssl;
+        this.sslVerifyPeer = sslVerifyPeer;
         this.connectionTimeout = connectionTimeout;
         this.lettuceConfig = lettuceConfig;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     public String getPassword() {
         return password;
+    }
+
+    /**
+     * Returns whether the connection is established over TLS/SSL.
+     *
+     * @return true if TLS/SSL is enabled
+     */
+    public boolean isSsl() {
+        return ssl;
+    }
+
+    /**
+     * Returns whether the peer certificate is verified when TLS/SSL is enabled. Only meaningful when
+     * {@link #isSsl()} returns true.
+     *
+     * @return true if the peer certificate is verified
+     */
+    public boolean isSslVerifyPeer() {
+        return sslVerifyPeer;
     }
 
     /**
@@ -63,9 +101,16 @@ public abstract class FlinkConfigBase implements Serializable {
         return "FlinkConfigBase{"
                 + "connectionTimeout="
                 + connectionTimeout
+                + ", username='"
+                + username
+                + '\''
                 + ", password='"
                 + password
                 + '\''
+                + ", ssl="
+                + ssl
+                + ", sslVerifyPeer="
+                + sslVerifyPeer
                 + ", lettuceConfig="
                 + lettuceConfig
                 + '}';

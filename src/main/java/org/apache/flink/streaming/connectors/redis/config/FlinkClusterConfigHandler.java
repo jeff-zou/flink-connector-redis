@@ -45,7 +45,10 @@ public class FlinkClusterConfigHandler implements FlinkConfigHandler {
         FlinkClusterConfig.Builder builder =
                 new FlinkClusterConfig.Builder()
                         .setNodesInfo(nodesInfo)
+                        .setUsername(config.get(RedisOptions.USERNAME))
                         .setPassword(config.get(RedisOptions.PASSWORD))
+                        .setSsl(config.get(RedisOptions.SSL))
+                        .setSslVerifyPeer(config.get(RedisOptions.SSL_VERIFY_PEER))
                         .setLettuceConfig(lettuceConfig);
 
         builder.setTimeout(config.get(RedisOptions.TIMEOUT));
