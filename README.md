@@ -68,6 +68,7 @@ on j.name = 'test'
 | host                  | (none) | String  | Redis IP                                                                                         |
 | port                  | 6379   | Integer | Redis 端口                                                                                         |
 | password              | null   | String  | 如果没有设置，则为 null                                                                                   |
+| username              | (none) | String  | redis 6 引入的 ACL 用户名，仅在同时设置了 password 时生效                                                         |
 | database              | 0      | Integer | 默认使用 db0                                                                                         |
 | timeout               | 2000   | Integer | 连接超时时间，单位 ms，默认 1s                                                                               |
 | cluster-nodes         | (none) | String  | 集群ip与端口，当redis-mode为cluster时不为空，如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000          |
@@ -88,6 +89,8 @@ on j.name = 'test'
 | scan.count            | (none) | Integer | 查询set结构时指定srandmember count                                                                      |
 | zset.zremrangeby      | (none) | String  | 执行zadd之后，是否执行zremrangeby，取值：SCORE、LEX、RANK                                                       |
 | audit.log             | false  | Boolean | 打开sink日志                                                                                         |
+| ssl                   | false  | Boolean | 是否使用 TLS/SSL 连接 redis                                                                            |
+| ssl.verify-peer       | true   | Boolean | ssl 开启时是否校验对端证书，使用自签名证书时需设为 false                                                                |
 
 ### 3.1.1 command值与redis命令对应关系：
 
@@ -160,6 +163,37 @@ create table sink_redis(name VARCHAR, subject VARCHAR, score VARCHAR)  with ('co
 | master.name        | (none) | String | 主名                                                      |
 | sentinels.info     | (none) | String | 如：10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000 |
 | sentinels.password | (none) | String | sentinel进程密码                                            |
+
+## 3.5 使用 TLS/SSL 与 redis ACL 用户名:
+
+`ssl` 与 `username` 在 single、cluster、sentinel 三种模式下均可使用。设置了 `username`
+时使用 redis 6 引入的 ACL 认证（`AUTH username password`），未设置时行为不变（`AUTH password`）。
+
+```sql
+-- 连接开启了 TLS 且启用了 ACL 的 redis
+create table sink_redis(name varchar, level varchar) with (
+    'connector'='redis',
+    'host'='10.11.80.147',
+    'port'='6379',
+    'redis-mode'='single',
+    'ssl'='true',
+    'username'='flink',
+    'password'='******',
+    'command'='set'
+);
+
+-- 服务端使用自签名证书时，关闭证书校验
+create table sink_redis(name varchar, level varchar) with (
+    'connector'='redis',
+    'host'='10.11.80.147',
+    'port'='6379',
+    'redis-mode'='single',
+    'ssl'='true',
+    'ssl.verify-peer'='false',
+    'password'='******',
+    'command'='set'
+);
+```
 
 # 4 数据类型转换
 

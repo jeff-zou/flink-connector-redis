@@ -41,8 +41,14 @@ public class FlinkClusterConfig extends FlinkConfigBase {
      * @throws NullPointerException if parameter {@code nodes} is {@code null}
      */
     private FlinkClusterConfig(
-            String nodesInfo, int connectionTimeout, String password, LettuceConfig lettuceConfig) {
-        super(connectionTimeout, password, lettuceConfig);
+            String nodesInfo,
+            int connectionTimeout,
+            String username,
+            String password,
+            boolean ssl,
+            boolean sslVerifyPeer,
+            LettuceConfig lettuceConfig) {
+        super(connectionTimeout, username, password, ssl, sslVerifyPeer, lettuceConfig);
 
         Objects.requireNonNull(nodesInfo, "nodesInfo information should be presented");
         this.nodesInfo = nodesInfo;
@@ -53,7 +59,10 @@ public class FlinkClusterConfig extends FlinkConfigBase {
 
         private String nodesInfo;
         private int timeout;
+        private String username;
         private String password;
+        private boolean ssl;
+        private boolean sslVerifyPeer = true;
 
         private LettuceConfig lettuceConfig;
 
@@ -73,8 +82,35 @@ public class FlinkClusterConfig extends FlinkConfigBase {
             return this;
         }
 
+        public Builder setUsername(String username) {
+            this.username = username;
+            return this;
+        }
+
         public Builder setPassword(String password) {
             this.password = password;
+            return this;
+        }
+
+        /**
+         * Sets whether to connect over TLS/SSL.
+         *
+         * @param ssl ssl, default value is false
+         * @return Builder itself
+         */
+        public Builder setSsl(boolean ssl) {
+            this.ssl = ssl;
+            return this;
+        }
+
+        /**
+         * Sets whether to verify the peer certificate, only meaningful when ssl is enabled.
+         *
+         * @param sslVerifyPeer sslVerifyPeer, default value is true
+         * @return Builder itself
+         */
+        public Builder setSslVerifyPeer(boolean sslVerifyPeer) {
+            this.sslVerifyPeer = sslVerifyPeer;
             return this;
         }
 
@@ -89,7 +125,8 @@ public class FlinkClusterConfig extends FlinkConfigBase {
          * @return ClusterConfig
          */
         public FlinkClusterConfig build() {
-            return new FlinkClusterConfig(nodesInfo, timeout, password, lettuceConfig);
+            return new FlinkClusterConfig(
+                    nodesInfo, timeout, username, password, ssl, sslVerifyPeer, lettuceConfig);
         }
     }
 }

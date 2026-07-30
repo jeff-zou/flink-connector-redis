@@ -44,6 +44,13 @@ public class RedisOptions {
                     .intType()
                     .defaultValue(1)
                     .withDescription("Optional minIdle for connect to redis");
+    public static final ConfigOption<String> USERNAME =
+            ConfigOptions.key("username")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription(
+                            "Optional username for connect to redis, only takes effect together with"
+                                    + " password, used by the redis ACL introduced in redis 6.");
     public static final ConfigOption<String> PASSWORD =
             ConfigOptions.key("password")
                     .stringType()
@@ -210,6 +217,19 @@ public class RedisOptions {
                     .booleanType()
                     .defaultValue(false)
                     .withDescription("Optional turn on the audit log switch.");
+    public static final ConfigOption<Boolean> SSL =
+            ConfigOptions.key("ssl")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("Optional connect to redis over TLS/SSL.");
+    public static final ConfigOption<Boolean> SSL_VERIFY_PEER =
+            ConfigOptions.key("ssl.verify-peer")
+                    .booleanType()
+                    .defaultValue(true)
+                    .withDescription(
+                            "Optional verify the peer certificate when ssl is enabled, set it to"
+                                    + " false to accept self-signed certificates.");
 
-    private RedisOptions() {}
+    private RedisOptions() {
+    }
 }

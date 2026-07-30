@@ -18,6 +18,13 @@
 
 package org.apache.flink.streaming.connectors.redis.container;
 
+import org.apache.flink.annotation.VisibleForTesting;
+import org.apache.flink.streaming.connectors.redis.config.FlinkClusterConfig;
+import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
+import org.apache.flink.streaming.connectors.redis.config.FlinkSentinelConfig;
+import org.apache.flink.streaming.connectors.redis.config.FlinkSingleConfig;
+import org.apache.flink.util.StringUtils;
+
 import io.lettuce.core.AbstractRedisClient;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
@@ -26,12 +33,6 @@ import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
-
-import org.apache.flink.streaming.connectors.redis.config.FlinkClusterConfig;
-import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.config.FlinkSentinelConfig;
-import org.apache.flink.streaming.connectors.redis.config.FlinkSingleConfig;
-import org.apache.flink.util.StringUtils;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -78,6 +79,32 @@ public class RedisClientBuilder {
     }
 
     /**
+     * Applies the authentication and the TLS/SSL settings shared by all the redis modes to the given
+     * uri builder.
+     *
+     * <p>When a username is configured the redis ACL command {@code AUTH username password}
+     * introduced in redis 6 is used, otherwise the connection falls back to {@code AUTH password}.
+     *
+     * @param builder uri builder to configure
+     * @param config configuration holding the credentials and the ssl settings
+     */
+    @VisibleForTesting
+    static void applyAuthenticationAndSsl(RedisURI.Builder builder, FlinkConfigBase config) {
+        if (!StringUtils.isNullOrWhitespaceOnly(config.getPassword())) {
+            if (StringUtils.isNullOrWhitespaceOnly(config.getUsername())) {
+                builder.withPassword(config.getPassword().toCharArray());
+            } else {
+                builder.withAuthentication(
+                        config.getUsername(), config.getPassword().toCharArray());
+            }
+        }
+
+        if (config.isSsl()) {
+            builder.withSsl(true).withVerifyPeer(config.isSslVerifyPeer());
+        }
+    }
+
+    /**
      * Builds container for single Redis environment.
      *
      * @param singleConfig configuration for redis
@@ -93,9 +120,7 @@ public class RedisClientBuilder {
                         .withHost(singleConfig.getHost())
                         .withPort(singleConfig.getPort())
                         .withDatabase(singleConfig.getDatabase());
-        if (!StringUtils.isNullOrWhitespaceOnly(singleConfig.getPassword())) {
-            builder.withPassword(singleConfig.getPassword().toCharArray());
-        }
+        applyAuthenticationAndSsl(builder, singleConfig);
 
         return RedisClient.create(clientResources, builder.build());
     }
@@ -120,11 +145,7 @@ public class RedisClientBuilder {
                                             RedisURI.builder()
                                                     .withHost(redis[0])
                                                     .withPort(Integer.parseInt(redis[1]));
-                                    if (!StringUtils.isNullOrWhitespaceOnly(
-                                            clusterConfig.getPassword())) {
-                                        builder.withPassword(
-                                                clusterConfig.getPassword().toCharArray());
-                                    }
+                                    applyAuthenticationAndSsl(builder, clusterConfig);
                                     return builder.build();
                                 })
                         .collect(Collectors.toList());
@@ -165,19 +186,13 @@ public class RedisClientBuilder {
                 .forEach(
                         node -> {
                             String[] redis = node.split(":");
-                            if (StringUtils.isNullOrWhitespaceOnly(sentinelConfig.getPassword())) {
-                                builder.withSentinel(
-                                        redis[0],
-                                        Integer.parseInt(redis[1]),
-                                        sentinelConfig.getSentinelsPassword());
-                            } else {
-                                builder.withSentinel(
-                                        redis[0],
-                                        Integer.parseInt(redis[1]),
-                                        sentinelConfig.getSentinelsPassword())
-                                        .withPassword(sentinelConfig.getPassword().toCharArray());
-                            }
+                            builder.withSentinel(
+                                    redis[0],
+                                    Integer.parseInt(redis[1]),
+                                    sentinelConfig.getSentinelsPassword());
                         });
+
+        applyAuthenticationAndSsl(builder, sentinelConfig);
 
         return RedisClient.create(clientResources, builder.build());
     }

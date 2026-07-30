@@ -55,10 +55,13 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
             int connectionTimeout,
             int soTimeout,
             int database,
+            String username,
             String password,
             String sentinelsPassword,
+            boolean ssl,
+            boolean sslVerifyPeer,
             LettuceConfig lettuceConfig) {
-        super(connectionTimeout, password, lettuceConfig);
+        super(connectionTimeout, username, password, ssl, sslVerifyPeer, lettuceConfig);
         Objects.requireNonNull(masterName, "Master name should be presented");
         Objects.requireNonNull(sentinelsInfo, "Sentinels information should be presented");
         this.masterName = masterName;
@@ -111,8 +114,11 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
         private int connectionTimeout;
         private int soTimeout;
         private int database;
+        private String username;
         private String password;
         private String sentinelsPassword;
+        private boolean ssl;
+        private boolean sslVerifyPeer = true;
 
         private LettuceConfig lettuceConfig;
 
@@ -165,6 +171,11 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
             return this;
         }
 
+        public Builder setUsername(String username) {
+            this.username = username;
+            return this;
+        }
+
         public Builder setPassword(String password) {
             this.password = password;
             return this;
@@ -172,6 +183,28 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
 
         public Builder setSentinelsPassword(String sentinelsPassword) {
             this.sentinelsPassword = sentinelsPassword;
+            return this;
+        }
+
+        /**
+         * Sets whether to connect over TLS/SSL.
+         *
+         * @param ssl ssl, default value is false
+         * @return Builder itself
+         */
+        public Builder setSsl(boolean ssl) {
+            this.ssl = ssl;
+            return this;
+        }
+
+        /**
+         * Sets whether to verify the peer certificate, only meaningful when ssl is enabled.
+         *
+         * @param sslVerifyPeer sslVerifyPeer, default value is true
+         * @return Builder itself
+         */
+        public Builder setSslVerifyPeer(boolean sslVerifyPeer) {
+            this.sslVerifyPeer = sslVerifyPeer;
             return this;
         }
 
@@ -192,8 +225,11 @@ public class FlinkSentinelConfig extends FlinkConfigBase {
                     connectionTimeout,
                     soTimeout,
                     database,
+                    username,
                     password,
                     sentinelsPassword,
+                    ssl,
+                    sslVerifyPeer,
                     lettuceConfig);
         }
     }

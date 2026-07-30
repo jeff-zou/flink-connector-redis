@@ -118,6 +118,9 @@ public class RedisDynamicTableFactory
         options.add(RedisOptions.SCAN_COUNT);
         options.add(RedisOptions.ZREM_RANGEBY);
         options.add(RedisOptions.AUDIT_LOG);
+        options.add(RedisOptions.USERNAME);
+        options.add(RedisOptions.SSL);
+        options.add(RedisOptions.SSL_VERIFY_PEER);
         return options;
     }
 
