@@ -93,6 +93,7 @@ key: name, field:subject, value: name\01subject\01score.
 | host                  | (none)   | String  | Redis IP                                                                                                                                                                                           |
 | port                  | 6379     | Integer | Redis port                                                                                                                                                                                         |
 | password              | null     | String  | null if not set                                                                                                                                                                                    |
+| username              | (none)   | String  | Username for the redis ACL introduced in redis 6, only takes effect when password is also set                                                                                                      |
 | database              | 0        | Integer | db0 is used by default                                                                                                                                                                             |
 | timeout               | 2000     | Integer | Connection timeout, in ms, default 1s                                                                                                                                                              |
 | cluster-nodes         | (none)   | String  | Cluster ip and port, not empty when redis-mode is cluster, such as:10.11.80.147:7000,10.11.80.147:7001,10.11.80.147:8000                                                                           |
@@ -114,6 +115,8 @@ key: name, field:subject, value: name\01subject\01score.
 | scan.count            | (none)   | Integer | srandmember count                                                                                                                                                                                  |
 | zset.zremrangeby      | (none)   | String  | After executing zadd, whether to execute zremrangeby,Valid values are:SCORE、LEX、RANK                                                                                                               |
 | audit.log             | false    | Boolean | Turn on the audit log switch                                                                                                                                                                       |
+| ssl                   | false    | Boolean | Connect to redis over TLS/SSL                                                                                                                                                                      |
+| ssl.verify-peer       | true     | Boolean | Verify the peer certificate when ssl is enabled, set it to false to accept a self-signed certificate                                                                                               |
 
 
 ##### sink with ttl parameters
@@ -141,6 +144,38 @@ key: name, field:subject, value: name\01subject\01score.
 | master.name        | (none)  | String | master name |
 | sentinels.info     | (none)  | String |             |
 | sentinels.password | none)   | String |             |
+
+##### Connecting over TLS/SSL and with a redis ACL username:
+
+`ssl` and `username` work in single, cluster and sentinel mode. When `username` is set the
+connection authenticates with the redis 6 ACL form `AUTH username password`, otherwise the
+existing `AUTH password` behaviour is kept.
+
+```sql
+-- connect to a TLS enabled redis with ACL authentication
+create table sink_redis(name varchar, level varchar) with (
+    'connector'='redis',
+    'host'='10.11.80.147',
+    'port'='6379',
+    'redis-mode'='single',
+    'ssl'='true',
+    'username'='flink',
+    'password'='******',
+    'command'='set'
+);
+
+-- disable certificate verification when the server uses a self-signed certificate
+create table sink_redis(name varchar, level varchar) with (
+    'connector'='redis',
+    'host'='10.11.80.147',
+    'port'='6379',
+    'redis-mode'='single',
+    'ssl'='true',
+    'ssl.verify-peer'='false',
+    'password'='******',
+    'command'='set'
+);
+```
 
 ### Data Type Converter
 
