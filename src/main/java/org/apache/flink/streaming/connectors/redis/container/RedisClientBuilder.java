@@ -18,6 +18,12 @@
 
 package org.apache.flink.streaming.connectors.redis.container;
 
+import org.apache.flink.streaming.connectors.redis.config.FlinkClusterConfig;
+import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
+import org.apache.flink.streaming.connectors.redis.config.FlinkSentinelConfig;
+import org.apache.flink.streaming.connectors.redis.config.FlinkSingleConfig;
+import org.apache.flink.util.StringUtils;
+
 import io.lettuce.core.AbstractRedisClient;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
@@ -26,12 +32,6 @@ import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
-
-import org.apache.flink.streaming.connectors.redis.config.FlinkClusterConfig;
-import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
-import org.apache.flink.streaming.connectors.redis.config.FlinkSentinelConfig;
-import org.apache.flink.streaming.connectors.redis.config.FlinkSingleConfig;
-import org.apache.flink.util.StringUtils;
 
 import java.time.Duration;
 import java.util.Arrays;

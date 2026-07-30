@@ -211,5 +211,6 @@ public class RedisOptions {
                     .defaultValue(false)
                     .withDescription("Optional turn on the audit log switch.");
 
-    private RedisOptions() {}
+    private RedisOptions() {
+    }
 }

@@ -18,9 +18,6 @@
 
 package org.apache.flink.streaming.connectors.redis.table;
 
-import io.lettuce.core.Range;
-import io.lettuce.core.RedisFuture;
-
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
@@ -42,6 +39,9 @@ import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.lettuce.core.Range;
+import io.lettuce.core.RedisFuture;
 
 import java.io.IOException;
 import java.time.LocalTime;
@@ -192,20 +192,19 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             case SADD:
                 redisFuture = this.redisCommandsContainer.sadd(params[0], params[1]);
                 break;
-            case SET:
-                {
-                    if (!this.setIfAbsent) {
-                        redisFuture = this.redisCommandsContainer.set(params[0], params[1]);
-                    } else {
-                        redisFuture = this.redisCommandsContainer.exists(params[0]);
-                        redisFuture.whenComplete(
-                                (existsVal, throwable) -> {
-                                    if ((int) existsVal == 0) {
-                                        this.redisCommandsContainer.set(params[0], params[1]);
-                                    }
-                                });
-                    }
+            case SET: {
+                if (!this.setIfAbsent) {
+                    redisFuture = this.redisCommandsContainer.set(params[0], params[1]);
+                } else {
+                    redisFuture = this.redisCommandsContainer.exists(params[0]);
+                    redisFuture.whenComplete(
+                            (existsVal, throwable) -> {
+                                if ((int) existsVal == 0) {
+                                    this.redisCommandsContainer.set(params[0], params[1]);
+                                }
+                            });
                 }
+            }
                 break;
             case PFADD:
                 redisFuture = this.redisCommandsContainer.pfadd(params[0], params[1]);
@@ -257,48 +256,46 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
             case SREM:
                 redisFuture = this.redisCommandsContainer.srem(params[0], params[1]);
                 break;
-            case HSET:
-                {
-                    if (!this.setIfAbsent) {
-                        redisFuture =
-                                this.redisCommandsContainer.hset(params[0], params[1], params[2]);
-                    } else {
-                        redisFuture = this.redisCommandsContainer.hexists(params[0], params[1]);
-                        redisFuture.whenComplete(
-                                (exist, throwable) -> {
-                                    if (!(Boolean) exist) {
-                                        this.redisCommandsContainer.hset(
-                                                params[0], params[1], params[2]);
-                                    }
-                                });
-                    }
+            case HSET: {
+                if (!this.setIfAbsent) {
+                    redisFuture =
+                            this.redisCommandsContainer.hset(params[0], params[1], params[2]);
+                } else {
+                    redisFuture = this.redisCommandsContainer.hexists(params[0], params[1]);
+                    redisFuture.whenComplete(
+                            (exist, throwable) -> {
+                                if (!(Boolean) exist) {
+                                    this.redisCommandsContainer.hset(
+                                            params[0], params[1], params[2]);
+                                }
+                            });
                 }
+            }
                 break;
-            case HMSET:
-                {
-                    if (params.length < 2) {
-                        throw new RuntimeException("params length must be greater than 2");
-                    }
-                    if (params.length % 2 != 1) {
-                        throw new RuntimeException("params length must be odd");
-                    }
-                    // 遍历把params第一个下标作为key，从第二个下标作为value，存进map中
-                    Map<String, String> hashField = new HashMap<>();
-                    for (int i = 1; i < params.length; i++) {
-                        hashField.put(params[i], params[++i]);
-                    }
-                    if (!this.setIfAbsent) {
-                        redisFuture = this.redisCommandsContainer.hmset(params[0], hashField);
-                    } else {
-                        redisFuture = this.redisCommandsContainer.exists(params[0]);
-                        redisFuture.whenComplete(
-                                (exist, throwable) -> {
-                                    if (!(Boolean) exist) {
-                                        this.redisCommandsContainer.hmset(params[0], hashField);
-                                    }
-                                });
-                    }
+            case HMSET: {
+                if (params.length < 2) {
+                    throw new RuntimeException("params length must be greater than 2");
                 }
+                if (params.length % 2 != 1) {
+                    throw new RuntimeException("params length must be odd");
+                }
+                // 遍历把params第一个下标作为key，从第二个下标作为value，存进map中
+                Map<String, String> hashField = new HashMap<>();
+                for (int i = 1; i < params.length; i++) {
+                    hashField.put(params[i], params[++i]);
+                }
+                if (!this.setIfAbsent) {
+                    redisFuture = this.redisCommandsContainer.hmset(params[0], hashField);
+                } else {
+                    redisFuture = this.redisCommandsContainer.exists(params[0]);
+                    redisFuture.whenComplete(
+                            (exist, throwable) -> {
+                                if (!(Boolean) exist) {
+                                    this.redisCommandsContainer.hmset(params[0], hashField);
+                                }
+                            });
+                }
+            }
                 break;
             case HINCRBY:
                 redisFuture =
@@ -357,10 +354,9 @@ public class RedisSinkFunction<IN> extends RichSinkFunction<IN> {
                 Double d = -Double.valueOf(params[1]);
                 redisFuture = this.redisCommandsContainer.zincrBy(params[0], d, params[2]);
                 break;
-            case HDEL:
-                {
-                    redisFuture = this.redisCommandsContainer.hdel(params[0], params[1]);
-                }
+            case HDEL: {
+                redisFuture = this.redisCommandsContainer.hdel(params[0], params[1]);
+            }
                 break;
             case HINCRBY:
                 redisFuture =
