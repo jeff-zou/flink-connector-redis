@@ -18,6 +18,7 @@
 
 package org.apache.flink.streaming.connectors.redis.container;
 
+import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.streaming.connectors.redis.config.FlinkClusterConfig;
 import org.apache.flink.streaming.connectors.redis.config.FlinkConfigBase;
 import org.apache.flink.streaming.connectors.redis.config.FlinkSentinelConfig;
@@ -87,8 +88,8 @@ public class RedisClientBuilder {
      * @param builder uri builder to configure
      * @param config configuration holding the credentials and the ssl settings
      */
-    private static void applyAuthenticationAndSsl(
-            RedisURI.Builder builder, FlinkConfigBase config) {
+    @VisibleForTesting
+    static void applyAuthenticationAndSsl(RedisURI.Builder builder, FlinkConfigBase config) {
         if (!StringUtils.isNullOrWhitespaceOnly(config.getPassword())) {
             if (StringUtils.isNullOrWhitespaceOnly(config.getUsername())) {
                 builder.withPassword(config.getPassword().toCharArray());
